@@ -1,11 +1,11 @@
-# Golem Rush 🌟
+# Golem Runner 🌟
 
 ![image](https://github.com/user-attachments/assets/4b1212be-e1b1-437a-9c26-50a59bb63191)
 
 
 ## 📱 About
 
-Golem Rush is a captivating mobile endless runner where elemental golems race through magical realms. Built during the Starknet Hackathon: Re{ignite}, this game combines fun gameplay with powerful blockchain technology!
+Golem Runner is a captivating mobile endless runner where elemental golems race through magical realms. Built during the Starknet Hackathon: Re{ignite}, this game combines fun gameplay with powerful blockchain technology!
 
 Players can:
 - 🏃‍♂️ Control different elemental golems with simple tap controls
