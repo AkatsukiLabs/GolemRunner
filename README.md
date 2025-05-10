@@ -1,6 +1,6 @@
 # Golem Runner 🌟
 
-![image](https://github.com/user-attachments/assets/4b1212be-e1b1-437a-9c26-50a59bb63191)
+![image](https://github.com/user-attachments/assets/1f3af6f8-645f-4c60-b7ef-5efc7107ca70)
 
 
 ## 📱 About
