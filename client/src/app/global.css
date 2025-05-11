@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 43, 43, 43;
+  --background-rgb: 38, 69, 61;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom styles for the carousel */
+.slick-slide {
+  transition: all 0.3s ease;
+}
+
+.slick-center {
+  transform: scale(1.1);
+  z-index: 10;
+}
+
+/* Remove focus outlines for better game UI */
+button:focus,
+a:focus {
+  outline: none;
+}
+
+/* Prevent text selection for better mobile experience */
+* {
+  user-select: none;
+}
