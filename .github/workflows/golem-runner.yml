@@ -35,10 +35,22 @@ jobs:
           asdf install scarb 2.9.2
           asdf global scarb 2.9.2
       
+      # Create file .tool-versions in the contract directory
+      - name: Create .tool-versions file
+        run: |
+          echo "dojo 1.2.1" > contract/.tool-versions
+          echo "scarb 2.9.2" >> contract/.tool-versions
+      
       - name: Build contracts
         working-directory: contract
-        run: sozo build
+        run: |
+          # Asegurarnos que sozo está en el PATH
+          export PATH="$HOME/.asdf/installs/dojo/1.2.1/bin:$PATH"
+          sozo build
       
       - name: Run tests
         working-directory: contract
-        run: sozo test
+        run: |
+          # Asegurarnos que sozo está en el PATH
+          export PATH="$HOME/.asdf/installs/dojo/1.2.1/bin:$PATH"
+          sozo test
