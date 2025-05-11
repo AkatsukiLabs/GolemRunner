@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
-import Image from "next/image"
 import type { Golem } from "../../types/golem"
 
 interface GolemDetailModalProps {
@@ -12,33 +11,31 @@ interface GolemDetailModalProps {
 export function GolemDetailModal({ golem, onClose }: GolemDetailModalProps) {
   const [frameIndex, setFrameIndex] = useState(0)
 
-  // Sample sprite frames for animation
+  // Construye las rutas de los frames basados en el nombre de la imagen
   const spriteFrames = [
-    `${golem.image.replace(".png", "")}_frame1.png`,
-    `${golem.image.replace(".png", "")}_frame2.png`,
-    `${golem.image.replace(".png", "")}_frame3.png`,
-    `${golem.image.replace(".png", "")}_frame4.png`,
+    golem.image.replace(".png", "") + "_frame1.png",
+    golem.image.replace(".png", "") + "_frame2.png",
+    golem.image.replace(".png", "") + "_frame3.png",
+    golem.image.replace(".png", "") + "_frame4.png",
   ]
 
-  // Animate sprite frames
+  // Ciclo de animación de sprites
   useEffect(() => {
     const interval = setInterval(() => {
       setFrameIndex((prev) => (prev + 1) % spriteFrames.length)
-    }, 200) // Change frame every 200ms
-
+    }, 200)
     return () => clearInterval(interval)
   }, [spriteFrames.length])
 
-  const rarityColors = {
+  const rarityColors: Record<string, string> = {
     Common: "bg-gray-500",
     Rare: "bg-blue-500",
     Epic: "bg-purple-500",
     Legendary: "bg-yellow-500",
   }
+  const rarityColor = rarityColors[golem.rarity] || "bg-gray-500"
 
-  const rarityColor = rarityColors[golem.rarity]
-
-  // Sample golem stats
+  // Genera stats de ejemplo
   const stats = {
     strength: Math.floor(Math.random() * 100) + 1,
     speed: Math.floor(Math.random() * 100) + 1,
@@ -61,6 +58,7 @@ export function GolemDetailModal({ golem, onClose }: GolemDetailModalProps) {
         exit={{ scale: 0.9, y: 20 }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-luckiest text-2xl text-primary">{golem.name}</h2>
           <button
@@ -72,6 +70,7 @@ export function GolemDetailModal({ golem, onClose }: GolemDetailModalProps) {
           </button>
         </div>
 
+        {/* Animación de sprite */}
         <div className="flex justify-center mb-4">
           <div className="relative w-40 h-40">
             <AnimatePresence mode="wait">
@@ -83,14 +82,13 @@ export function GolemDetailModal({ golem, onClose }: GolemDetailModalProps) {
                 transition={{ duration: 0.1 }}
                 className="absolute inset-0"
               >
-                <Image
+                <img
                   src={spriteFrames[frameIndex] || golem.image || "/placeholder.svg"}
-                  alt={golem.name}
-                  fill
-                  className="object-contain"
+                  alt={`${golem.name} frame ${frameIndex + 1}`}
+                  className="w-full h-full object-contain"
                   onError={(e) => {
-                    const target = e.target as HTMLImageElement
-                    target.src = golem.image || "/placeholder.svg?height=160&width=160"
+                    const img = e.currentTarget as HTMLImageElement
+                    img.src = golem.image || "/placeholder.svg?height=160&width=160"
                   }}
                 />
               </motion.div>
@@ -98,47 +96,48 @@ export function GolemDetailModal({ golem, onClose }: GolemDetailModalProps) {
           </div>
         </div>
 
+        {/* Rareza */}
         <div className="flex justify-center mb-3">
           <span className={`inline-block ${rarityColor} text-surface rounded-full px-3 py-1 text-sm`}>
             {golem.rarity}
           </span>
         </div>
 
-        <p className="font-rubik text-text-primary text-center mb-4">{golem.description}</p>
+        {/* Descripción */}
+        <p className="font-rubik text-text-primary text-center mb-4">
+          {golem.description}
+        </p>
 
+        {/* Stats */}
         <div className="bg-screen/10 rounded-lg p-3 mb-4">
           <h3 className="font-bangers text-lg text-primary mb-2 text-center">Stats</h3>
           <div className="grid grid-cols-2 gap-2">
-            <div>
-              <p className="text-sm text-text-secondary">Strength</p>
-              <div className="h-2 bg-surface/50 rounded-full overflow-hidden">
-                <div className="h-full bg-primary" style={{ width: `${stats.strength}%` }}></div>
+            {Object.entries(stats).map(([key, value]) => (
+              <div key={key}>
+                <p className="text-sm text-text-secondary capitalize">{key}</p>
+                <div className="h-2 bg-surface/50 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full ${
+                      key === "special"
+                        ? "bg-accent-glow"
+                        : key === "speed"
+                        ? "bg-secondary"
+                        : key === "defense"
+                        ? "bg-text-secondary"
+                        : "bg-primary"
+                    }`}
+                    style={{ width: `${value}%` }}
+                  />
+                </div>
               </div>
-            </div>
-            <div>
-              <p className="text-sm text-text-secondary">Speed</p>
-              <div className="h-2 bg-surface/50 rounded-full overflow-hidden">
-                <div className="h-full bg-secondary" style={{ width: `${stats.speed}%` }}></div>
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-text-secondary">Defense</p>
-              <div className="h-2 bg-surface/50 rounded-full overflow-hidden">
-                <div className="h-full bg-text-secondary" style={{ width: `${stats.defense}%` }}></div>
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-text-secondary">Special</p>
-              <div className="h-2 bg-surface/50 rounded-full overflow-hidden">
-                <div className="h-full bg-accent-glow" style={{ width: `${stats.special}%` }}></div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
+        {/* Cerrar */}
         <button
-          className="w-full py-2 rounded-lg font-medium text-surface bg-primary hover:bg-primary-hover active:bg-primary-active transition-colors"
           onClick={onClose}
+          className="w-full py-2 rounded-lg font-medium text-surface bg-primary hover:bg-primary-hover active:bg-primary-active transition-colors"
         >
           Close
         </button>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { motion, useAnimation } from "framer-motion"
-import Image from "next/image"
 
 interface CoverScreenProps {
   onLoadingComplete: () => void
@@ -11,9 +10,8 @@ export function CoverScreen({ onLoadingComplete }: CoverScreenProps) {
   const controls = useAnimation()
 
   useEffect(() => {
-    // Start the loading animation
     const startTime = Date.now()
-    const duration = 2000 // 2 seconds
+    const duration = 2000 // 2s
 
     const animateLoading = () => {
       const elapsed = Date.now() - startTime
@@ -23,16 +21,11 @@ export function CoverScreen({ onLoadingComplete }: CoverScreenProps) {
       if (progress < 1) {
         requestAnimationFrame(animateLoading)
       } else {
-        // Loading complete, wait a moment before navigating
-        setTimeout(() => {
-          onLoadingComplete()
-        }, 500)
+        setTimeout(onLoadingComplete, 500)
       }
     }
 
     requestAnimationFrame(animateLoading)
-
-    // Animate the loading bar
     controls.start({
       width: "100%",
       transition: { duration: 2, ease: "easeInOut" },
@@ -41,22 +34,20 @@ export function CoverScreen({ onLoadingComplete }: CoverScreenProps) {
 
   return (
     <div className="fixed inset-0 bg-screen flex flex-col items-center justify-center">
-      {/* Cover Image */}
+      {/* Background Cover */}
       <div className="absolute inset-0 z-0">
-        <Image
-          src="/cover.png"
-          alt="GolemRunner"
-          fill
-          className="object-cover object-center"
-          priority
+        <img
+          src="client/src/assets/Cover.png"
+          alt="GolemRunner Cover"
+          className="w-full h-full object-cover object-center"
           onError={(e) => {
-            const target = e.target as HTMLImageElement
-            target.src = "/placeholder.svg?height=800&width=450"
+            const img = e.currentTarget as HTMLImageElement
+            img.src = "/placeholder.svg?height=800&width=450"
           }}
         />
       </div>
 
-      {/* Game Title */}
+      {/* Title */}
       <motion.div
         className="z-10 text-center mb-auto mt-16"
         initial={{ opacity: 0, y: -20 }}
@@ -66,14 +57,18 @@ export function CoverScreen({ onLoadingComplete }: CoverScreenProps) {
         <h1 className="font-luckiest text-5xl text-surface drop-shadow-lg mb-2">
           Golem<span className="text-primary">Runner</span>
         </h1>
-        <p className="font-bangers text-xl text-surface/90 drop-shadow-md">The Magical Stone Realms</p>
+        <p className="font-bangers text-xl text-surface/90 drop-shadow-md">
+          The Magical Stone Realms
+        </p>
       </motion.div>
 
       {/* Loading Bar */}
       <div className="absolute bottom-8 left-4 right-4 z-10">
         <div className="mb-2 flex justify-between items-center">
           <p className="font-rubik text-sm text-surface">Loading game assets...</p>
-          <p className="font-rubik text-sm text-surface">{Math.round(loadingProgress)}%</p>
+          <p className="font-rubik text-sm text-surface">
+            {Math.round(loadingProgress)}%
+          </p>
         </div>
         <div className="h-2 bg-surface/30 rounded-full overflow-hidden">
           <motion.div

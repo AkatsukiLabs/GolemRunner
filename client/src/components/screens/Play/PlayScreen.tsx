@@ -9,7 +9,7 @@ interface PlayScreenProps {
   onClose: () => void
   coins: number
   onSpendCoins: (amount: number) => void
-  onNavigation?: (screen: "home" | "play" | "market" | "stats" | "profile" | "ranking") => void
+  onNavigation?: (screen: "home" | "play" | "market" | "profile" | "ranking") => void
 }
 
 export function PlayScreen({ onClose, coins, onSpendCoins, onNavigation }: PlayScreenProps) {

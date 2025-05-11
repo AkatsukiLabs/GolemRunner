@@ -1,4 +1,3 @@
-import Image from "next/image"
 import { motion } from "framer-motion"
 import { Coins } from "lucide-react"
 import type { Map } from "../../types/map"
@@ -19,24 +18,28 @@ export function MapCard({ map, coins, onUnlock, onPlay }: MapCardProps) {
       whileHover={{ y: -5 }}
       transition={{ type: "spring", stiffness: 300 }}
     >
+      {/* Imagen del mapa */}
       <div className="relative w-full h-36 rounded-lg overflow-hidden mb-3">
-        <Image
+        <img
           src={map.image || "/placeholder.svg"}
           alt={`${map.name} map`}
-          fill
-          className="object-cover"
-          // Fallback image if the map image is not available
+          className="w-full h-full object-cover"
           onError={(e) => {
-            const target = e.target as HTMLImageElement
-            target.src = "/placeholder.svg?height=144&width=256"
+            const img = e.currentTarget as HTMLImageElement
+            img.src = "/placeholder.svg?height=144&width=256"
           }}
         />
       </div>
 
-      <h3 className="font-luckiest text-lg text-primary mt-2">{map.name}</h3>
+      {/* Nombre y descripción */}
+      <h3 className="font-luckiest text-lg text-primary mt-2">
+        {map.name}
+      </h3>
+      <p className="text-text-primary text-sm text-center mt-1 mb-3 font-rubik">
+        {map.description}
+      </p>
 
-      <p className="text-text-primary text-sm text-center mt-1 mb-3 font-rubik">{map.description}</p>
-
+      {/* Botones de Play o Unlock */}
       {map.unlocked ? (
         <button
           onClick={onPlay}
@@ -48,11 +51,13 @@ export function MapCard({ map, coins, onUnlock, onPlay }: MapCardProps) {
         <button
           onClick={onUnlock}
           disabled={!canUnlock}
-          className={`flex items-center justify-center gap-2 px-6 py-2 rounded-lg font-medium mt-auto w-full text-center ${
-            canUnlock
-              ? "bg-secondary text-surface hover:bg-secondary-hover active:bg-secondary/90 transition-colors"
-              : "bg-secondary/50 text-surface/70 cursor-not-allowed"
-          }`}
+          className={`
+            flex items-center justify-center gap-2 px-6 py-2 rounded-lg font-medium
+            mt-auto w-full text-center transition-colors
+            ${canUnlock
+              ? "bg-secondary text-surface hover:bg-secondary-hover active:bg-secondary/90"
+              : "bg-secondary/50 text-surface/70 cursor-not-allowed"}
+          `}
         >
           <span>Unlock for</span>
           <Coins className="h-4 w-4" />

@@ -16,7 +16,7 @@ interface ProfileScreenProps {
   nextLevelExperience: number
   ownedGolems: Golem[]
   unlockedMaps: Map[]
-  onNavigation: (screen: "home" | "play" | "market" | "stats" | "profile" | "ranking") => void
+  onNavigation: (screen: "home" | "play" | "market" | "profile" | "ranking") => void
 }
 
 export function ProfileScreen({

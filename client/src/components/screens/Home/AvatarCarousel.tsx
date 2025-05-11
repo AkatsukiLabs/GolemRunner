@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import Slider from "react-slick"
 import { motion } from "framer-motion"
-import Image from "next/image"
 
 interface Character {
   id: number
@@ -17,15 +16,16 @@ interface AvatarCarouselProps {
   onSelect: (character: Character) => void
 }
 
-export function AvatarCarousel({ characters, selectedCharacter, onSelect }: AvatarCarouselProps) {
+export function AvatarCarousel({
+  characters,
+  selectedCharacter,
+  onSelect,
+}: AvatarCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0)
 
   useEffect(() => {
-    // Find the index of the selected character
-    const index = characters.findIndex((char) => char.id === selectedCharacter.id)
-    if (index !== -1) {
-      setActiveIndex(index)
-    }
+    const idx = characters.findIndex((c) => c.id === selectedCharacter.id)
+    if (idx !== -1) setActiveIndex(idx)
   }, [selectedCharacter, characters])
 
   const settings = {
@@ -52,7 +52,9 @@ export function AvatarCarousel({ characters, selectedCharacter, onSelect }: Avat
             <div className="relative flex flex-col items-center justify-center">
               <div
                 className={`relative transition-all duration-300 ${
-                  index === activeIndex ? "scale-100 opacity-100 z-10" : "scale-75 opacity-50 z-0"
+                  index === activeIndex
+                    ? "scale-100 opacity-100 z-10"
+                    : "scale-75 opacity-50 z-0"
                 }`}
               >
                 {index === activeIndex && (
@@ -67,35 +69,37 @@ export function AvatarCarousel({ characters, selectedCharacter, onSelect }: Avat
                     }}
                     transition={{
                       duration: 2,
-                      repeat: Number.POSITIVE_INFINITY,
+                      repeat: Infinity,
                       repeatType: "reverse",
                     }}
                   />
                 )}
-                <Image
+
+                {/* Avatar */}
+                <img
                   src={character.image || "/placeholder.svg"}
                   alt={character.name}
                   width={120}
                   height={120}
                   className="object-contain"
-                  // Fallback image if the character image is not available
                   onError={(e) => {
-                    const target = e.target as HTMLImageElement
-                    target.src = "/placeholder.svg?height=120&width=120"
+                    const img = e.currentTarget
+                    img.src = "/placeholder.svg?height=120&width=120"
                   }}
                 />
               </div>
+
+              {/* Plataforma */}
               <div className="mt-[-10px] w-24 h-8">
-                <Image
+                <img
                   src="/stone-platform.png"
                   alt="Stone platform"
                   width={96}
                   height={32}
                   className="object-contain"
-                  // Fallback for the platform image
                   onError={(e) => {
-                    const target = e.target as HTMLImageElement
-                    target.src = "/placeholder.svg?height=32&width=96"
+                    const img = e.currentTarget
+                    img.src = "/placeholder.svg?height=32&width=96"
                   }}
                 />
               </div>

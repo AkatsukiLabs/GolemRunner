@@ -1,35 +1,24 @@
 import { useEffect, useState, useMemo } from "react"
 import { motion } from "framer-motion"
 import Particles, { initParticlesEngine } from "@tsparticles/react"
-import type {
-  Engine,
-  Container,
-  IOptions,
-  RecursivePartial,
-} from "@tsparticles/engine"
+import type { Engine, Container, IOptions, RecursivePartial } from "@tsparticles/engine"
 import { MoveDirection } from "@tsparticles/engine"
 import { loadFull } from "tsparticles"
-import Image from "next/image"
 import type { Golem } from "../../types/golem"
 
 interface PurchaseAnimationProps {
   golem: Golem
 }
 
-export function PurchaseAnimation({
-  golem,
-}: PurchaseAnimationProps): JSX.Element | null {
-  // 1) Estado para saber cuándo el engine está listo
+export function PurchaseAnimation({ golem }: PurchaseAnimationProps): JSX.Element | null {
   const [engineLoaded, setEngineLoaded] = useState(false)
 
-  // 2) Inicializa el engine con loadFull
   useEffect(() => {
     initParticlesEngine(async (engine: Engine) => {
       await loadFull(engine)
     }).then(() => setEngineLoaded(true))
   }, [])
 
-  // 3) Auto-play sonido de éxito
   useEffect(() => {
     const audio = new Audio("/purchase-success.mp3")
     audio.volume = 0.5
@@ -40,12 +29,10 @@ export function PurchaseAnimation({
     }
   }, [])
 
-  // 4) Callback async cuando las partículas ya están montadas
   const particlesLoaded = async (container?: Container): Promise<void> => {
     console.log("Confetti particles loaded", container)
   }
 
-  // 5) Opciones memoizadas, tipadas como RecursivePartial<IOptions>
   const options = useMemo<RecursivePartial<IOptions>>(
     () => ({
       fullScreen: { enable: false },
@@ -59,18 +46,9 @@ export function PurchaseAnimation({
         opacity: {
           value: 0.8,
           random: true,
-          animation: {
-            enable: true,
-            speed: 1,
-            minimumValue: 0.1,
-            sync: false,
-          },
+          animation: { enable: true, speed: 1, minimumValue: 0.1, sync: false },
         },
-        size: {
-          value: 10,
-          random: true,
-          animation: { enable: false },
-        },
+        size: { value: 10, random: true, animation: { enable: false } },
         links: { enable: false },
         move: {
           enable: true,
@@ -87,9 +65,7 @@ export function PurchaseAnimation({
         events: {
           onHover: { enable: false },
           onClick: { enable: false },
-          resize: {
-            enable: true,
-          },
+          resize: { enable: true },
         },
       },
       detectRetina: true,
@@ -97,8 +73,15 @@ export function PurchaseAnimation({
     []
   )
 
-  // 6) Hasta que el engine esté listo, no renderizamos nada
   if (!engineLoaded) return null
+
+  const rarityColors: Record<string, string> = {
+    common: "bg-gray-500",
+    rare: "bg-blue-500",
+    epic: "bg-purple-500",
+    legendary: "bg-yellow-500",
+  }
+  const rarityClass = rarityColors[golem.rarity.toLowerCase()] || "bg-gray-500"
 
   return (
     <motion.div
@@ -119,11 +102,7 @@ export function PurchaseAnimation({
       <motion.div
         className="bg-surface p-6 rounded-xl shadow-lg z-10 flex flex-col items-center max-w-xs w-full"
         initial={{ scale: 0.8, y: 20 }}
-        animate={{
-          scale: 1,
-          y: 0,
-          transition: { type: "spring", stiffness: 300, damping: 15 },
-        }}
+        animate={{ scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 15 } }}
       >
         {/* Imagen con glow */}
         <motion.div
@@ -131,22 +110,17 @@ export function PurchaseAnimation({
           animate={{
             rotate: [0, -5, 5, -5, 0],
             scale: [1, 1.05, 1, 1.05, 1],
-            transition: {
-              duration: 1.5,
-              repeat: Infinity,
-              repeatType: "reverse",
-            },
+            transition: { duration: 1.5, repeat: Infinity, repeatType: "reverse" },
           }}
           className="relative w-32 h-32 mb-4"
         >
-          <Image
+          <img
             src={golem.image || "/placeholder.svg"}
             alt={golem.name}
-            fill
-            className="object-contain"
+            className="w-full h-full object-contain"
             onError={(e) => {
-              const target = e.target as HTMLImageElement
-              target.src = "/placeholder.svg?height=128&width=128"
+              const img = e.currentTarget
+              img.src = "/placeholder.svg?height=128&width=128"
             }}
           />
           <motion.div
@@ -167,7 +141,7 @@ export function PurchaseAnimation({
         </h2>
 
         <span
-          className={`inline-block bg-${golem.rarity.toLowerCase()} text-surface rounded-full px-3 py-1 text-sm mb-3`}
+          className={`inline-block ${rarityClass} text-surface rounded-full px-3 py-1 text-sm mb-3`}
         >
           {golem.rarity}
         </span>

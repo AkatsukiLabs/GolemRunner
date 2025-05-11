@@ -13,7 +13,7 @@ interface MarketScreenProps {
   level: number
   onPurchase: (price: number) => boolean
   onAddGolem: (golem: Golem) => void
-  onNavigation?: (screen: "home" | "play" | "market" | "stats" | "profile" | "ranking") => void
+  onNavigation?: (screen: "home" | "play" | "market" | "profile" | "ranking") => void
 }
 
 export function MarketScreen({ coins, level, onPurchase, onAddGolem, onNavigation }: MarketScreenProps) {

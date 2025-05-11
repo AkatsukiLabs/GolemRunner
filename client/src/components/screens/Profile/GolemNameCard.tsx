@@ -1,5 +1,4 @@
 import { motion } from "framer-motion"
-import Image from "next/image"
 import type { Golem } from "../../types/golem"
 
 interface GolemNameCardProps {
@@ -8,14 +7,14 @@ interface GolemNameCardProps {
 }
 
 export function GolemNameCard({ golem, onClick }: GolemNameCardProps) {
-  const rarityColors = {
+  const rarityColors: Record<string, string> = {
     Common: "bg-gray-500",
     Rare: "bg-blue-500",
     Epic: "bg-purple-500",
     Legendary: "bg-yellow-500",
   }
 
-  const rarityColor = rarityColors[golem.rarity]
+  const rarityColor = rarityColors[golem.rarity] || "bg-gray-500"
 
   return (
     <motion.div
@@ -25,21 +24,24 @@ export function GolemNameCard({ golem, onClick }: GolemNameCardProps) {
       onClick={onClick}
     >
       <div className="relative w-20 h-20 mb-2">
-        <Image
+        <img
           src={golem.image || "/placeholder.svg"}
           alt={golem.name}
-          fill
-          className="object-contain"
+          className="w-full h-full object-contain"
           onError={(e) => {
-            const target = e.target as HTMLImageElement
-            target.src = "/placeholder.svg?height=80&width=80"
+            const img = e.currentTarget as HTMLImageElement
+            img.src = "/placeholder.svg?height=80&width=80"
           }}
         />
       </div>
 
-      <h3 className="font-luckiest text-base text-primary text-center">{golem.name}</h3>
+      <h3 className="font-luckiest text-base text-primary text-center">
+        {golem.name}
+      </h3>
 
-      <span className={`inline-block ${rarityColor} text-surface rounded-full px-2 py-0.5 text-xs mt-1`}>
+      <span
+        className={`inline-block ${rarityColor} text-surface rounded-full px-2 py-0.5 text-xs mt-1`}
+      >
         {golem.rarity}
       </span>
     </motion.div>

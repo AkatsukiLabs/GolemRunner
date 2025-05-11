@@ -3,7 +3,7 @@ import { motion } from "framer-motion"
 import { ShoppingBag, Play, Trophy, User } from "lucide-react"
 
 interface NavBarProps {
-  onNavigation?: (screen: "home" | "play" | "market" | "stats" | "profile" | "ranking") => void
+  onNavigation?: (screen: "home" | "play" | "market" | "profile" | "ranking") => void
   activeTab?: string
 }
 

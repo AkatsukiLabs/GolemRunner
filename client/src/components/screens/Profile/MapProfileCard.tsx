@@ -1,5 +1,4 @@
 import { motion } from "framer-motion"
-import Image from "next/image"
 import { Trophy } from "lucide-react"
 import type { Map } from "../../types/map"
 
@@ -14,25 +13,31 @@ export function MapProfileCard({ map }: MapProfileCardProps) {
       whileHover={{ y: -5, scale: 1.03 }}
       transition={{ type: "spring", stiffness: 300 }}
     >
+      {/* Imagen del mapa */}
       <div className="relative w-full h-24 rounded-lg overflow-hidden mb-2">
-        <Image
+        <img
           src={map.image || "/placeholder.svg"}
           alt={map.name}
-          fill
-          className="object-cover"
+          className="w-full h-full object-cover"
           onError={(e) => {
-            const target = e.target as HTMLImageElement
-            target.src = "/placeholder.svg?height=96&width=160"
+            const img = e.currentTarget as HTMLImageElement
+            img.src = "/placeholder.svg?height=96&width=160"
           }}
         />
       </div>
 
-      <h3 className="font-luckiest text-base text-primary mb-1 text-center">{map.name}</h3>
+      {/* Nombre */}
+      <h3 className="font-luckiest text-base text-primary mb-1 text-center">
+        {map.name}
+      </h3>
 
+      {/* High Score */}
       {map.highScore !== undefined && (
         <div className="flex items-center text-secondary">
           <Trophy className="h-4 w-4 mr-1" />
-          <span className="font-rubik text-sm">High Score: {map.highScore.toLocaleString()}</span>
+          <span className="font-rubik text-sm">
+            High Score: {map.highScore.toLocaleString()}
+          </span>
         </div>
       )}
     </motion.div>
