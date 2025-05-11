@@ -1,72 +1,47 @@
-// Starknet imports
-use core::num::traits::zero::Zero;
-use golem_runner::types::rarity::Rarity;
+use core::byte_array::ByteArrayTrait;
 
-// Model
 #[derive(Drop, Serde, IntrospectPacked, Debug)]
-#[dojo::model]
-pub struct Golem {
-    #[key]
-    pub id: u256,
-    pub name: felt252,
-    pub description: felt252,
-    pub price: u256,
-    pub rarity: Rarity,    
-    pub is_starter: bool   
+pub enum Rarity {
+    Basic,
+    Common,
+    Uncommon,
+    Rare,
+    VeryRare,
+    Epic,
+    Unique,
 }
 
-// Traits Implementations
 #[generate_trait]
-pub impl GolemImpl of GolemTrait {
-    fn new(
-        id: u256,
-        name: felt252,
-        description: felt252,
-        price: u256,
-        rarity: Rarity,
-        is_starter: bool,
-    ) -> Golem {
-        Golem {
-            id,
-            name,
-            description,
-            price,
-            rarity,
-            is_starter,
+pub impl RarityImpl of RarityTrait {
+    fn is_rare(self: @Rarity) -> bool {
+        match self {
+            Rarity::Rare | Rarity::VeryRare | Rarity::Epic | Rarity::Unique => true,
+            _ => false,
         }
     }
 }
 
-pub impl ZeroableGolemTrait of Zero<Golem> {
-    #[inline(always)]
-    fn zero() -> Golem {
-        Golem {
-            id: 0,
-            name: '',
-            description: '',
-            price: 0,
-            rarity: Rarity::Basic,
-            is_starter: false,
-        }
-    }
-
-    #[inline(always)]
-    fn is_zero(self: @Golem) -> bool {
-        *self.id == 0
-    }
-
-    #[inline(always)]
-    fn is_non_zero(self: @Golem) -> bool {
-        !self.is_zero()
+pub impl RarityDisplay of core::fmt::Display<Rarity> {
+    fn fmt(self: @Rarity, ref f: core::fmt::Formatter) -> Result<(), core::fmt::Error> {
+        let s = match self {
+            Rarity::Basic => "Basic",
+            Rarity::Common => "Common",
+            Rarity::Uncommon => "Uncommon",
+            Rarity::Rare => "Rare",
+            Rarity::VeryRare => "Very Rare",
+            Rarity::Epic => "Epic",
+            Rarity::Unique => "Unique",
+        };
+        f.buffer.append(@s);
+        Result::Ok(())
     }
 }
 
 
-// Tests
 #[cfg(test)]
 mod tests {
-    use super::{Golem, GolemImpl, GolemTrait, ZeroableGolemTrait};
     use golem_runner::types::rarity::{Rarity, RarityTrait};
+    use golem_runner::models::golem::{Golem, GolemTrait, ZeroableGolemTrait};
 
     #[test]
     #[available_gas(1000000)]
@@ -92,9 +67,9 @@ mod tests {
         assert_eq!(golem.description, description, "Golem description should match");
         assert_eq!(golem.price, price, "Golem price should match");
         
-        // Verify that the rarity is assigned correctly
+        // Verificar que la rareza se asigna correctamente
         match golem.rarity {
-            Rarity::Epic => (), // Correct
+            Rarity::Epic => (), // Correcto
             _ => panic!("Golem rarity should be Epic"),
         }
         
@@ -204,5 +179,26 @@ mod tests {
             Rarity::Common => (), // Correct for starter golem
             _ => panic!("Starter golem should have Common rarity"),
         }
+    }
+    
+    #[test]
+    #[available_gas(1000000)]
+    fn test_rarity_display() {
+        // Test display impl for Rarity
+        let basic_str = format!("{}", Rarity::Basic);
+        let common_str = format!("{}", Rarity::Common);
+        let uncommon_str = format!("{}", Rarity::Uncommon);
+        let rare_str = format!("{}", Rarity::Rare);
+        let very_rare_str = format!("{}", Rarity::VeryRare);
+        let epic_str = format!("{}", Rarity::Epic);
+        let unique_str = format!("{}", Rarity::Unique);
+        
+        assert_eq!(basic_str, "Basic", "Basic should display correctly");
+        assert_eq!(common_str, "Common", "Common should display correctly");
+        assert_eq!(uncommon_str, "Uncommon", "Uncommon should display correctly");
+        assert_eq!(rare_str, "Rare", "Rare should display correctly");
+        assert_eq!(very_rare_str, "Very Rare", "Very Rare should display correctly");
+        assert_eq!(epic_str, "Epic", "Epic should display correctly");
+        assert_eq!(unique_str, "Unique", "Unique should display correctly");
     }
 }
