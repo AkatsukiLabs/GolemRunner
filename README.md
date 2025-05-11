@@ -12,7 +12,7 @@ Players can:
 - 🔮 Unlock new golem characters with unique abilities
 - 🏆 Compete on verifiable blockchain leaderboards
 - 🌍 Progress through stunning elemental worlds
-- 💰 Collect magical cois during their runs
+- 💰 Collect magical coins during their runs
 
 ## ✨ Features
 
