@@ -47,6 +47,18 @@ pub impl PlayerImpl of PlayerTrait {
         self.coins += amount;
     }
 
+    fn decrease_coins(ref self: Player, amount: u64) -> bool {
+        // Verify that the player has enough coins
+        if self.coins < amount {
+            return false; // Insufficient coins
+        }
+        
+        // Subtract coins safely
+        self.coins -= amount;
+        
+        return true; 
+    }
+
     fn add_points(ref self: Player, points: u64) {
         self.total_points += points;
     }

@@ -1,5 +1,6 @@
 use core::byte_array::ByteArrayTrait;
 
+
 #[derive(Drop, Serde, IntrospectPacked, Debug)]
 pub enum Rarity {
     Basic,
@@ -42,6 +43,7 @@ pub impl RarityDisplay of core::fmt::Display<Rarity> {
 mod tests {
     use golem_runner::types::rarity::{Rarity, RarityTrait};
     use golem_runner::models::golem::{Golem, GolemTrait, ZeroableGolemTrait};
+    use starknet::{ContractAddress, contract_address_const};
 
     #[test]
     #[available_gas(1000000)]
@@ -49,17 +51,22 @@ mod tests {
         let id: u256 = 1;
         let name = 'Fire Golem';
         let description = 'A fiery elemental being';
-        let price: u256 = 500;
+        let price: u64 = 500;
         let rarity = Rarity::Epic;
         let is_starter = false;
+        let is_unlocked = true;
+
+        let mock_address: ContractAddress = contract_address_const::<0x123>();
         
         let golem = GolemTrait::new(
             id,
+            mock_address,
             name,
             description,
             price,
             rarity,
             is_starter,
+            is_unlocked,
         );
         
         assert_eq!(golem.id, id, "Golem ID should match the initialized ID");
@@ -101,46 +108,56 @@ mod tests {
         // Create golems with different rarities
         let basic_golem = GolemTrait::new(
             1,
+            contract_address_const::<0x123>(),
             'Clay Golem',
             'A simple golem made of clay',
             50,
             Rarity::Basic,
             true,
+            false
         );
         
         let common_golem = GolemTrait::new(
             2,
+            contract_address_const::<0x123>(),
             'Stone Golem',
             'A basic earth elemental',
             100,
             Rarity::Common,
             true,
+            false,
         );
         
         let rare_golem = GolemTrait::new(
             3,
+            contract_address_const::<0x123>(),
             'Water Golem',
             'A flowing water elemental',
             500,
             Rarity::Rare,
             false,
+            false,
         );
         
         let epic_golem = GolemTrait::new(
             4,
+            contract_address_const::<0x123>(),
             'Fire Golem',
             'A blazing fire elemental',
             1000,
             Rarity::Epic,
             false,
+            false,
         );
         
         let unique_golem = GolemTrait::new(
             5,
+            contract_address_const::<0x123>(),
             'Lightning Golem',
             'A powerful lightning elemental',
             2500,
             Rarity::Unique,
+            false,
             false,
         );
         
@@ -164,11 +181,13 @@ mod tests {
         // Create a starter golem
         let starter_golem = GolemTrait::new(
             1,
+            contract_address_const::<0x123>(),
             'Earth Golem',
             'A basic starter golem',
             0,  // Price 0 for starter golem
             Rarity::Common,
             true,
+            false,
         );
         
         // Verify that the starter golem has the expected properties
