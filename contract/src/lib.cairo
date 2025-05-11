@@ -13,12 +13,12 @@ pub mod models {
     pub mod player;
     pub mod golem;
     pub mod world;
-    pub mod player_item;
 }
 
 pub mod types {
     pub mod rarity;
-    pub mod item;
+    pub mod golem;
+    pub mod world;
 }
 
 pub mod tests {

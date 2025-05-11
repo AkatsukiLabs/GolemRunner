@@ -1,5 +1,9 @@
 // Starknet imports
 use core::num::traits::zero::Zero;
+use starknet::ContractAddress;
+
+// Constants imports
+use golem_runner::constants;
 
 // Model
 #[derive(Drop, Serde, IntrospectPacked, Debug)]
@@ -7,10 +11,13 @@ use core::num::traits::zero::Zero;
 pub struct World {
     #[key]
     pub id: u256,
+    #[key]
+    pub player_id: ContractAddress,
     pub name: felt252,
     pub description: felt252,
-    pub price: u256,
-    pub is_starter: bool   
+    pub price: u64,
+    pub is_starter: bool,
+    pub is_unlocked: bool, 
 }
 
 // Traits Implementations
@@ -18,31 +25,37 @@ pub struct World {
 pub impl WorldImpl of WorldTrait {
     fn new(
         id: u256,
+        player_id: ContractAddress,
         name: felt252,
         description: felt252,
-        price: u256,
+        price: u64,
         is_starter: bool,
+        is_unlocked: bool,
     ) -> World {
         World {
             id,
+            player_id,
             name,
             description,
             price,
             is_starter,
+            is_unlocked,
         }
     }
     
 }
 
-impl ZeroableWorldTrait of Zero<World> {
+pub impl ZeroableWorldTrait of Zero<World> {
     #[inline(always)]
     fn zero() -> World {
         World {
             id: 0,
+            player_id: constants::ZERO_ADDRESS(),
             name: '',
             description: '',
             price: 0,
             is_starter: false,
+            is_unlocked: false,
         }
     }
 
@@ -61,6 +74,7 @@ impl ZeroableWorldTrait of Zero<World> {
 #[cfg(test)]
 mod tests {
     use super::{World, WorldImpl, WorldTrait, ZeroableWorldTrait};
+    use starknet::{ContractAddress, contract_address_const};
 
     #[test]
     #[available_gas(1000000)]
@@ -68,15 +82,20 @@ mod tests {
         let id: u256 = 1;
         let name = 'Fire Realm';
         let description = 'A world of flames and pain';
-        let price: u256 = 1000;
+        let price: u64 = 1000;
         let is_starter = false;
+        let is_unlocked = true;
+
+        let mock_address: ContractAddress = contract_address_const::<0x123>();
         
         let world = WorldTrait::new(
             id,
+            mock_address,
             name,
             description,
             price,
             is_starter,
+            is_unlocked
         );
         
         assert_eq!(world.id, id, "World ID should match the initialized ID");
