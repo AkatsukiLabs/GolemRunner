@@ -1,6 +1,6 @@
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
-import Cover from "../Cover/cover";
-import Home from "../Home/home";
+import Cover from "../screens/Cover/cover";
+import Home from "../screens/Home/home";
 
 function Main() {
   return (
