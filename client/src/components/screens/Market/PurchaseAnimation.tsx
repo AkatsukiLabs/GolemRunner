@@ -1,8 +1,14 @@
-import { useEffect, useCallback } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { motion } from "framer-motion"
-import Particles from "react-tsparticles"
+import Particles, { initParticlesEngine } from "@tsparticles/react"
+import type {
+  Engine,
+  Container,
+  IOptions,
+  RecursivePartial,
+} from "@tsparticles/engine"
+import { MoveDirection } from "@tsparticles/engine"
 import { loadFull } from "tsparticles"
-import type { Container, Engine } from "tsparticles-engine"
 import Image from "next/image"
 import type { Golem } from "../../types/golem"
 
@@ -10,26 +16,89 @@ interface PurchaseAnimationProps {
   golem: Golem
 }
 
-export function PurchaseAnimation({ golem }: PurchaseAnimationProps) {
-  const particlesInit = useCallback(async (engine: Engine) => {
-    await loadFull(engine)
+export function PurchaseAnimation({
+  golem,
+}: PurchaseAnimationProps): JSX.Element | null {
+  // 1) Estado para saber cuándo el engine está listo
+  const [engineLoaded, setEngineLoaded] = useState(false)
+
+  // 2) Inicializa el engine con loadFull
+  useEffect(() => {
+    initParticlesEngine(async (engine: Engine) => {
+      await loadFull(engine)
+    }).then(() => setEngineLoaded(true))
   }, [])
 
-  const particlesLoaded = useCallback(async (container: Container | undefined) => {
-    console.log("Confetti particles loaded", container)
-  }, [])
-
-  // Auto-play the animation when component mounts
+  // 3) Auto-play sonido de éxito
   useEffect(() => {
     const audio = new Audio("/purchase-success.mp3")
     audio.volume = 0.5
     audio.play().catch((err) => console.log("Audio play failed:", err))
-
     return () => {
       audio.pause()
       audio.currentTime = 0
     }
   }, [])
+
+  // 4) Callback async cuando las partículas ya están montadas
+  const particlesLoaded = async (container?: Container): Promise<void> => {
+    console.log("Confetti particles loaded", container)
+  }
+
+  // 5) Opciones memoizadas, tipadas como RecursivePartial<IOptions>
+  const options = useMemo<RecursivePartial<IOptions>>(
+    () => ({
+      fullScreen: { enable: false },
+      fpsLimit: 60,
+      particles: {
+        number: { value: 100, density: { enable: true, area: 800 } },
+        color: {
+          value: ["#FF8F3F", "#FF5722", "#5BB3DB", "#E6DCC7", "#26453D"],
+        },
+        shape: { type: "circle" },
+        opacity: {
+          value: 0.8,
+          random: true,
+          animation: {
+            enable: true,
+            speed: 1,
+            minimumValue: 0.1,
+            sync: false,
+          },
+        },
+        size: {
+          value: 10,
+          random: true,
+          animation: { enable: false },
+        },
+        links: { enable: false },
+        move: {
+          enable: true,
+          speed: 6,
+          direction: MoveDirection.none,
+          random: true,
+          straight: false,
+          outModes: { default: "out" },
+        },
+        collisions: { enable: false },
+      },
+      interactivity: {
+        detectsOn: "canvas",
+        events: {
+          onHover: { enable: false },
+          onClick: { enable: false },
+          resize: {
+            enable: true,
+          },
+        },
+      },
+      detectRetina: true,
+    }),
+    []
+  )
+
+  // 6) Hasta que el engine esté listo, no renderizamos nada
+  if (!engineLoaded) return null
 
   return (
     <motion.div
@@ -38,87 +107,25 @@ export function PurchaseAnimation({ golem }: PurchaseAnimationProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
+      {/* Fondo de partículas */}
       <Particles
         id="purchaseParticles"
-        init={particlesInit}
-        loaded={particlesLoaded}
         className="absolute inset-0 z-0"
-        options={{
-          fullScreen: false,
-          fpsLimit: 60,
-          particles: {
-            number: {
-              value: 100,
-              density: {
-                enable: true,
-                value_area: 800,
-              },
-            },
-            color: {
-              value: ["#FF8F3F", "#FF5722", "#5BB3DB", "#E6DCC7", "#26453D"],
-            },
-            shape: {
-              type: "circle",
-            },
-            opacity: {
-              value: 0.8,
-              random: true,
-              anim: {
-                enable: true,
-                speed: 1,
-                opacity_min: 0.1,
-                sync: false,
-              },
-            },
-            size: {
-              value: 10,
-              random: true,
-              anim: {
-                enable: false,
-              },
-            },
-            line_linked: {
-              enable: false,
-            },
-            move: {
-              enable: true,
-              speed: 6,
-              direction: "none",
-              random: true,
-              straight: false,
-              out_mode: "out",
-              bounce: false,
-            },
-          },
-          interactivity: {
-            detect_on: "canvas",
-            events: {
-              onhover: {
-                enable: false,
-              },
-              onclick: {
-                enable: false,
-              },
-              resize: true,
-            },
-          },
-          retina_detect: true,
-        }}
+        options={options}
+        particlesLoaded={particlesLoaded}
       />
 
+      {/* Tarjeta de confirmación */}
       <motion.div
         className="bg-surface p-6 rounded-xl shadow-lg z-10 flex flex-col items-center max-w-xs w-full"
         initial={{ scale: 0.8, y: 20 }}
         animate={{
           scale: 1,
           y: 0,
-          transition: {
-            type: "spring",
-            stiffness: 300,
-            damping: 15,
-          },
+          transition: { type: "spring", stiffness: 300, damping: 15 },
         }}
       >
+        {/* Imagen con glow */}
         <motion.div
           initial={{ rotate: -10, scale: 0.9 }}
           animate={{
@@ -126,7 +133,7 @@ export function PurchaseAnimation({ golem }: PurchaseAnimationProps) {
             scale: [1, 1.05, 1, 1.05, 1],
             transition: {
               duration: 1.5,
-              repeat: Number.POSITIVE_INFINITY,
+              repeat: Infinity,
               repeatType: "reverse",
             },
           }}
@@ -142,8 +149,6 @@ export function PurchaseAnimation({ golem }: PurchaseAnimationProps) {
               target.src = "/placeholder.svg?height=128&width=128"
             }}
           />
-
-          {/* Glow effect */}
           <motion.div
             className="absolute inset-0 rounded-full"
             animate={{
@@ -153,15 +158,13 @@ export function PurchaseAnimation({ golem }: PurchaseAnimationProps) {
                 "0 0 20px rgba(255,143,63,0.5)",
               ],
             }}
-            transition={{
-              duration: 2,
-              repeat: Number.POSITIVE_INFINITY,
-              repeatType: "reverse",
-            }}
+            transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
           />
         </motion.div>
 
-        <h2 className="font-luckiest text-xl text-primary mb-2">{golem.name} Acquired!</h2>
+        <h2 className="font-luckiest text-xl text-primary mb-2">
+          {golem.name} Acquired!
+        </h2>
 
         <span
           className={`inline-block bg-${golem.rarity.toLowerCase()} text-surface rounded-full px-3 py-1 text-sm mb-3`}
@@ -169,7 +172,9 @@ export function PurchaseAnimation({ golem }: PurchaseAnimationProps) {
           {golem.rarity}
         </span>
 
-        <p className="text-text-primary text-center mb-4">{golem.description}</p>
+        <p className="text-text-primary text-center mb-4">
+          {golem.description}
+        </p>
 
         <motion.p
           className="text-secondary font-bold"
@@ -183,3 +188,5 @@ export function PurchaseAnimation({ golem }: PurchaseAnimationProps) {
     </motion.div>
   )
 }
+
+export default PurchaseAnimation

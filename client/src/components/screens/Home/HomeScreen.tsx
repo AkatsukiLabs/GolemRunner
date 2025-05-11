@@ -12,7 +12,7 @@ interface HomeScreenProps {
   onMarketClick: () => void
   coins: number
   level: number
-  onNavigation: (screen: "home" | "play" | "market" | "ranking" | "profile") => void
+  onNavigation: (screen: "home" | "play" | "market" | "ranking" | "profile" | "stats") => void
 }
 
 export function HomeScreen({ onPlayClick, onMarketClick, coins, level, onNavigation }: HomeScreenProps) {

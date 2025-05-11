@@ -1,16 +1,16 @@
 import { useState } from "react"
 import { CoverScreen } from "../components/screens/Cover/cover-screen"
-import { HomeScreen } from "../components/screens/home/home-screen"
-import { PlayScreen } from "../components/screens/play/play-screen"
-import { MarketScreen } from "../components/screens/market/market-screen"
-import { ProfileScreen } from "../components/screens/profile/profile-screen"
-import { RankingScreen } from "../components/screens/ranking/ranking-screen"
+import { HomeScreen } from "../components/screens/Home/HomeScreen"
+import { PlayScreen } from "../components/screens/Play/PlayScreen"
+import { MarketScreen } from "../components/screens/Market/MarketScreen"
+import { ProfileScreen } from "../components/screens/Profile/ProfileScreen"
+import { RankingScreen } from "../components/screens/Ranking/RankingScreen"
 import type { Golem } from "../components/types/golem"
 import type { Map } from "../components/types/map"
 import { defaultGolems } from "../constants/golems"
 import { defaultMaps } from "../constants/maps"
 
-type Screen = "cover" | "home" | "play" | "market" | "ranking" | "profile"
+type Screen = "cover" | "home" | "play" | "market" | "ranking" | "profile" | "stats"
 
 export default function Home() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("cover")
