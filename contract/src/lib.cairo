@@ -18,6 +18,7 @@ pub mod models {
 
 pub mod types {
     pub mod rarity;
+    pub mod item;
 }
 
 pub mod tests {
