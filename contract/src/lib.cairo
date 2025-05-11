@@ -16,6 +16,10 @@ pub mod models {
     pub mod player_item;
 }
 
+pub mod types {
+    pub mod rarity;
+}
+
 pub mod tests {
     mod test_player;
     mod test_golem;
