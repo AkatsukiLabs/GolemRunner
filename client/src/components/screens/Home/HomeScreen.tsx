@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Coins } from "lucide-react"
-import { AvatarCarousel } from "./AvatarCarousel"
+import { AvatarCarouselTriangular } from "./AvatarCarousel"
 import { CharacterCard } from "./CharacterCard"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
 import { NavBar } from "../../layout/NavBar"
@@ -70,7 +70,7 @@ export function HomeScreen({ onPlayClick, onMarketClick, coins, level, onNavigat
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <AvatarCarousel
+          <AvatarCarouselTriangular
             characters={characters}
             selectedCharacter={selectedCharacter}
             onSelect={handleCharacterSelect}
