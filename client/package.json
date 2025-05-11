@@ -24,11 +24,12 @@
     "@dojoengine/utils": "1.2.1",
     "@starknet-react/chains": "^3.1.0",
     "@starknet-react/core": "^3.5.0",
-    "starknet": "6.11.0",
     "@types/uuid": "^10.0.0",
     "immer": "^10.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-router-dom": "^7.6.0",
+    "starknet": "6.11.0",
     "uuid": "^10.0.0",
     "vite-plugin-wasm": "^3.4.1",
     "zustand": "^4.5.6"
