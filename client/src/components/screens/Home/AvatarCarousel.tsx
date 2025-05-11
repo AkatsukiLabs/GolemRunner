@@ -17,7 +17,7 @@ interface AvatarCarouselProps {
   onSelect: (character: Character) => void
 }
 
-export function AvatarCarouselTriangular({
+export function AvatarCarouselMobile({
   characters,
   selectedCharacter,
   onSelect,
@@ -29,24 +29,24 @@ export function AvatarCarouselTriangular({
     if (idx !== -1) setActiveIndex(idx)
   }, [selectedCharacter, characters])
 
-  // Calcular posiciones para un carrusel triangular (centro y dos lados)
+  // Calcular posiciones para un carrusel con énfasis en el elemento central
   const getPositions = (index: number, active: number, total: number) => {
     // Determinar la posición relativa al elemento activo
     const relativeIndex = ((index - active) % total + total) % total
     
     // Posiciones para centro y lados
     const positions = {
-      // Elemento central (seleccionado)
-      0: { x: 0, scale: 1, opacity: 1, zIndex: 3 },
-      // Elemento a la izquierda 
-      1: { x: -110, scale: 0.7, opacity: 0.4, zIndex: 2 },
-      [total - 1]: { x: 110, scale: 0.7, opacity: 0.4, zIndex: 2 },
+      // Elemento central (seleccionado) - más grande y destacado
+      0: { x: 0, scale: 1.25, opacity: 1, zIndex: 3 },
+      // Elementos laterales - más pequeños y semitransparentes
+      1: { x: 140, scale: 0.6, opacity: 0.3, zIndex: 2 },
+      [total - 1]: { x: -140, scale: 0.6, opacity: 0.3, zIndex: 2 },
     }
     
-    // Posiciones para los elementos más alejados (muy poco visibles)
+    // Posiciones para los elementos más alejados (muy poco visibles o invisibles)
     for (let i = 2; i < Math.floor(total / 2) + 1; i++) {
-      positions[i] = { x: -160, scale: 0.5, opacity: 0.2, zIndex: 1 }
-      positions[total - i] = { x: 160, scale: 0.5, opacity: 0.2, zIndex: 1 }
+      positions[i] = { x: 200, scale: 0.4, opacity: 0.1, zIndex: 1 }
+      positions[total - i] = { x: -200, scale: 0.4, opacity: 0.1, zIndex: 1 }
     }
     
     // Si es un elemento que no está en posiciones especiales, ponerlo fuera de la vista
@@ -112,13 +112,13 @@ export function AvatarCarouselTriangular({
   }
 
   return (
-    <div className="relative w-full h-64 overflow-hidden" {...bind()}>
-      {/* Fondo con gradiente */}
-      <div className="absolute inset-0 bg-gradient-to-b from-screen to-screen/80" />
+    <div className="relative w-full h-52 overflow-hidden" {...bind()}>
+      {/* Fondo con área de interacción */}
+      <div className="absolute inset-0 bg-blue-900/20" />
       
       {/* Flechas de navegación */}
       <button 
-        className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-surface/20 backdrop-blur-sm rounded-full z-20 text-surface"
+        className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-surface/15 backdrop-blur-sm rounded-full z-20 text-surface"
         onClick={goToPrev}
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
@@ -127,7 +127,7 @@ export function AvatarCarouselTriangular({
       </button>
       
       <button 
-        className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-surface/20 backdrop-blur-sm rounded-full z-20 text-surface"
+        className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-surface/15 backdrop-blur-sm rounded-full z-20 text-surface"
         onClick={goToNext}
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
@@ -140,13 +140,14 @@ export function AvatarCarouselTriangular({
         {springs.map((props, index) => (
           <animated.div
             key={characters[index].id}
-            className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center w-40 h-48 cursor-pointer"
+            className="absolute top-1/2 left-1/2 -translate-y-1/2 flex flex-col items-center justify-center w-44 cursor-pointer"
             style={{
               x: props.x,
               y: props.y,
               scale: props.scale,
               opacity: props.opacity,
               zIndex: props.zIndex,
+              transform: props.scale.to(s => `translate(-50%, -50%) scale(${s})`),
             }}
             onClick={() => {
               if (index !== activeIndex) {
@@ -155,17 +156,17 @@ export function AvatarCarouselTriangular({
               }
             }}
           >
-            {/* Contenedor del personaje con sombra */}
-            <div className="relative w-32 h-32 mb-4">
+            {/* Contenedor del personaje */}
+            <div className="relative w-full">
               {/* Efecto de brillo para el personaje seleccionado */}
               {index === activeIndex && (
                 <motion.div
                   className="absolute -inset-4 rounded-full z-0"
                   animate={{
                     boxShadow: [
-                      "0 0 8px rgba(255,87,34,0.2)",
-                      "0 0 16px rgba(255,87,34,0.4)",
-                      "0 0 8px rgba(255,87,34,0.2)",
+                      "0 0 12px rgba(255,87,34,0.2)",
+                      "0 0 24px rgba(255,87,34,0.4)",
+                      "0 0 12px rgba(255,87,34,0.2)",
                     ],
                   }}
                   transition={{
@@ -178,30 +179,22 @@ export function AvatarCarouselTriangular({
 
               {/* Imagen del personaje */}
               <img
-                src={characters[index].image || "/placeholder.svg"}
+                src={characters[index].image}
                 alt={characters[index].name}
-                className="w-full h-full object-contain z-10 relative"
-                onError={(e) => {
-                  const img = e.currentTarget
-                  img.src = "/placeholder.svg?height=128&width=128"
-                }}
+                className="w-full h-auto object-contain z-10 relative"
               />
             </div>
 
             {/* Plataforma */}
-            <div className="relative w-40 h-12 -mt-2">
+            <div className="relative w-32 h-8 -mt-1">
               {/* Sombra de la plataforma */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-32 h-6 bg-black/30 blur-md rounded-full -z-10"></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-24 h-4 bg-black/30 blur-md rounded-full -z-10"></div>
               
               {/* Imagen de la plataforma */}
               <img
                 src="/stone-platform.png"
                 alt="Platform"
                 className="w-full h-full object-contain"
-                onError={(e) => {
-                  const img = e.currentTarget
-                  img.src = "/placeholder.svg?height=48&width=160"
-                }}
               />
             </div>
           </animated.div>
@@ -209,7 +202,7 @@ export function AvatarCarouselTriangular({
       </div>
       
       {/* Indicadores de posición */}
-      <div className="absolute bottom-0 w-full flex justify-center gap-1.5 py-2">
+      <div className="absolute bottom-1 w-full flex justify-center gap-1.5 py-1">
         {characters.map((_, index) => (
           <button
             key={index}
