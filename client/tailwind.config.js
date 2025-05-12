@@ -42,7 +42,7 @@ module.exports = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        screen: '#26453D',
+        screen: '#0D2930',
         surface: '#E6DCC7',
         'primary-hover': '#FF9A5A',
         'primary-active': '#E67336',
@@ -50,6 +50,9 @@ module.exports = {
         'text-primary': '#2B2B2B',
         'text-secondary': '#5BB3DB',
         'accent-glow': '#FF5722',
+      },
+      backgroundImage: {
+        'golem-gradient': 'linear-gradient(90deg, #FF6B00, #FFC800)',
       },
       borderRadius: {
         lg: 'var(--radius)',
