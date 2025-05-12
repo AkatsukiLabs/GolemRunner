@@ -16,25 +16,79 @@ pub mod game {
     use super::super::super::models::player::PlayerTrait;
     use super::{IGame};
 
+    // Achievement import
+    use golem_runner::achievements::achievement::{Achievement, AchievementTrait};
+
     // Store import
     use golem_runner::store::{StoreTrait};
 
+    // Starknet imports
     use core::num::traits::{SaturatingAdd, SaturatingMul};
+    use starknet::{get_block_timestamp};
+
+    // Constant import
+    use golem_runner::constants;
 
     // Models import
     use golem_runner::models::player::{Player, PlayerAssert};
     use golem_runner::models::ranking::{RankingTrait};
+
+    // Dojo achievements imports
+    use achievement::components::achievable::AchievableComponent;
+    use achievement::store::{StoreTrait as AchievementStoreTrait};
+    component!(path: AchievableComponent, storage: achievable, event: AchievableEvent);
+    impl AchievableInternalImpl = AchievableComponent::InternalImpl<ContractState>;
 
     // Dojo Imports
     #[allow(unused_imports)]
     use dojo::model::{ModelStorage};
     #[allow(unused_imports)]
     use dojo::world::{WorldStorage, WorldStorageTrait};
+    #[allow(unused_imports)]
+    use dojo::event::EventStorage;
 
     use starknet::{get_caller_address};
 
+    #[storage]
+    struct Storage {
+        #[substorage(v0)]
+        achievable: AchievableComponent::Storage,
+    }
+
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    enum Event {
+        #[flat]
+        AchievableEvent: AchievableComponent::Event,
+    }
+
     // Constructor
-    fn dojo_init(ref self: ContractState) {}
+    fn dojo_init(ref self: ContractState) {
+        let mut world = self.world(@"golem_runner");
+
+        let mut achievement_id: u8 = 1;
+        while achievement_id <= constants::ACHIEVEMENTS_COUNT {
+            let achievement: Achievement = achievement_id.into();
+            self
+                .achievable
+                .create(
+                    world,
+                    id: achievement.identifier(),
+                    hidden: achievement.hidden(),
+                    index: achievement.index(),
+                    points: achievement.points(),
+                    start: achievement.start(),
+                    end: achievement.end(),
+                    group: achievement.group(),
+                    icon: achievement.icon(),
+                    title: achievement.title(),
+                    description: achievement.description(),
+                    tasks: achievement.tasks(),
+                    data: achievement.data(),
+                );
+            achievement_id += 1;
+        }
+    }
 
     // Implementation of the interface methods
     #[abi(embed_v0)]
@@ -85,6 +139,7 @@ pub mod game {
         fn update_player_ranking(ref self: ContractState, world_id: u256, points: u64) {
             let mut world = self.world(@"golem_runner");
             let store = StoreTrait::new(world);
+            let achievement_store = AchievementStoreTrait::new(world);
 
             let player_address = get_caller_address();
 
@@ -101,6 +156,21 @@ pub mod game {
                     store.write_ranking(@ranking);
                 }
             }
+
+            // Emit events for achievements progression
+            let mut achievement_id = constants::ACHIEVEMENTS_INITIAL_ID;
+            let counter = constants::ACHIEVEMENTS_COUNT;
+            let stop = counter + achievement_id;
+
+            let player = store.read_player();
+            player.assert_exists();
+            
+            while achievement_id <= stop {
+                let task: Achievement = achievement_id.into(); // u8 to Achievement
+                let task_identifier = task.identifier(); // Achievement identifier is the task to complete
+                achievement_store.progress(player.address.into(), task_identifier, 1, get_block_timestamp());
+                achievement_id += 1;
+            };
         }
 
         // --------- Unlock Player Items ---------
