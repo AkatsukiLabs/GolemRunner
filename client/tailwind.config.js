@@ -14,6 +14,17 @@ module.exports = {
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
+
+        primary: '#FF6B00',            // naranja brillante
+        'primary-hover': '#FF9A5A',    // naranja claro en hover
+        'primary-active': '#E67336',   // naranja oscuro en active
+        'secondary-hover': '#FF6D3B',
+
+        // Colores de texto personalizados
+        cream: '#E6DCC7',              // crema suave
+        dark: '#2B2B2B',               // gris/negro
+        screen: '#0D2930', 
+
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
@@ -45,7 +56,7 @@ module.exports = {
         screen: '#0D2930',
         surface: '#E6DCC7',
         'primary-hover': '#FF9A5A',
-        'primary-active': '#E67336',
+        'primary-active': '#FF6B00',
         'secondary-hover': '#FF6D3B',
         'text-primary': '#2B2B2B',
         'text-secondary': '#5BB3DB',

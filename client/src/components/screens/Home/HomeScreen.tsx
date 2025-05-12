@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Coins } from "lucide-react"
+import coinIcon from "../../../assets/icons/CoinIcon.png";
+import levelIcon from "../../../assets/icons/levelicon2.png";
 import { AvatarCarouselFixed } from "./AvatarCarousel"
 import { CharacterCard } from "./CharacterCard"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
@@ -39,26 +40,41 @@ export function HomeScreen({ onPlayClick, onMarketClick, coins, level, onNavigat
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <Coins className="text-primary mr-1 h-5 w-5" />
-          <span className="text-surface font-bold">{coins}</span>
+        <img
+          src={coinIcon}
+          alt="Coin Icon"
+          className="h-5 w-5 mr-1"
+        />
+        <span className="text-surface font-bold">
+          {coins}
+        </span>
         </motion.div>
 
         <motion.h1
-          className="font-bangers text-2xl text-surface"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          Home
-        </motion.h1>
+        className="
+          flex-1 text-center mx-4
+          font-bangers font-bold text-3xl tracking-wide
+          bg-golem-gradient bg-clip-text text-transparent
+          overflow-visible"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
+        GOLEM RUNNER
+      </motion.h1>
 
         <motion.div
-          className="flex items-center justify-center bg-secondary w-8 h-8 rounded-full text-surface font-bold"
+          className="flex items-center justify-center bg-secondary w-auto px-2 h-8 rounded-full text-surface font-bold space-x-1"
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          {level}
+          <span>{level}</span>
+          <img
+            src={levelIcon}
+            alt="Level Icon"
+            className="h-7 w-7"
+          />
         </motion.div>
       </div>
 

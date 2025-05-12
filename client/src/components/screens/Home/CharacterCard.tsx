@@ -21,7 +21,8 @@ export function CharacterCard({ character, onSelect }: CharacterCardProps) {
     Legendary: "bg-yellow-500",
   }
 
-  const rarityColor = rarityColors[character.rarity as keyof typeof rarityColors] || "bg-secondary"
+  const rarityColor =
+    rarityColors[character.rarity as keyof typeof rarityColors] || "bg-secondary"
 
   return (
     <motion.div
@@ -31,17 +32,28 @@ export function CharacterCard({ character, onSelect }: CharacterCardProps) {
       transition={{ duration: 0.3 }}
       key={character.id}
     >
-      <h2 className="font-luckiest text-xl text-primary mb-1">{character.name}</h2>
-      <span className={`inline-block ${rarityColor} text-surface rounded-full px-2 py-0.5 text-sm mb-2`}>
+      <h2 className="font-luckiest text-xl text-dark mb-1">
+        {character.name}
+      </h2>
+      <span
+        className={`
+          inline-block ${rarityColor} text-cream font-luckiest tracking-wide
+          rounded-full px-2 py-0.5 text-sm mb-2
+        `}
+      >
         {character.rarity}
       </span>
-      <p className="font-rubik text-base text-text-primary mb-4">{character.description}</p>
+      <p className="font-luckiest text-base text-text-primary mb-4">
+        {character.description}
+      </p>
+
       <button
         onClick={onSelect}
-        className="w-full py-2 rounded-lg font-medium text-surface bg-primary hover:bg-primary-hover active:bg-primary-active transition-colors duration-200"
+        className="btn-cr-yellow"
       >
         Select
       </button>
     </motion.div>
   )
 }
+
