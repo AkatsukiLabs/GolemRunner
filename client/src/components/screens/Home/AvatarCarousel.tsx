@@ -28,34 +28,34 @@ export function AvatarCarouselFixed({
     if (idx !== -1) setActiveIndex(idx)
   }, [selectedCharacter, characters])
 
-  // Calcular posiciones para un carrusel con énfasis en el elemento central
+  // Calculate positions for a carousel with emphasis on the central element
   const getPositions = (index: number, active: number, total: number) => {
-    // Determinar la posición relativa al elemento activo
+    // Determine the position relative to the active element
     const relativeIndex = ((index - active) % total + total) % total
     
-    // Posiciones para centro y lados - valores ajustados para mejor alineación
+    // Positions for center and sides - adjusted values for better alignment
     const positions = {
-      // Elemento central (seleccionado) - más grande y destacado
+      // Central (selected) element - larger and highlighted
       0: { x: 0, scale: 1.3, opacity: 1, zIndex: 3 },
-      // Elementos laterales - más pequeños, simétricos y semitransparentes
+      // Side elements - smaller, symmetrical, and semi-transparent
       1: { x: 110, scale: 1, opacity: 0.3, zIndex: 2 },
       [total - 1]: { x: -140, scale: 1, opacity: 0.3, zIndex: 2 },
     }
     
-    // Posiciones para los elementos más alejados (muy poco visibles o invisibles)
+    // Positions for farther elements (barely visible or invisible)
     for (let i = 2; i < Math.floor(total / 2) + 1; i++) {
       positions[i] = { x: 180, scale: 0.3, opacity: 0.1, zIndex: 1 }
       positions[total - i] = { x: -180, scale: 0.3, opacity: 0.1, zIndex: 1 }
     }
     
-    // Si es un elemento que no está en posiciones especiales, ponerlo fuera de la vista
+    // If it's an element not in special positions, place it out of view
     const fallback = { x: 0, scale: 0, opacity: 0, zIndex: 0 }
     
-    // Devolver la posición correspondiente o la posición por defecto
+    // Return the corresponding position or the default position
     return positions[relativeIndex] || fallback
   }
 
-  // Crear springs para todos los elementos
+  // Create springs for all elements
   const [springs, api] = useSprings(characters.length, (index) => {
     const { x, scale, opacity, zIndex } = getPositions(index, activeIndex, characters.length)
     return {
@@ -68,7 +68,7 @@ export function AvatarCarouselFixed({
     }
   })
 
-  // Actualizar springs cuando cambia el índice activo
+  // Update springs when the active index changes
   useEffect(() => {
     api.start((index) => {
       const { x, scale, opacity, zIndex } = getPositions(index, activeIndex, characters.length)
@@ -82,18 +82,18 @@ export function AvatarCarouselFixed({
     })
   }, [activeIndex, characters.length, api])
 
-  // Manejar navegación con gestos
+  // Handle navigation with gestures
   const bind = useDrag(
     ({ direction: [xDir], distance: [distX], cancel }) => {
       if (Math.abs(distX) > 50) {
-        // Determinar si vamos hacia adelante o hacia atrás
+        // Determine whether to move forward or backward
         const nextIndex = (activeIndex + (xDir < 0 ? 1 : -1) + characters.length) % characters.length
         setActiveIndex(nextIndex)
         onSelect(characters[nextIndex])
         cancel()
       }
     },
-    { axis: "x",filterTaps: true }
+    { axis: "x", filterTaps: true }
   )
 
   return (
@@ -102,7 +102,7 @@ export function AvatarCarouselFixed({
       style={{ touchAction: 'pan-y' }}
       className="relative w-full h-48 md:h-64 overflow-visible flex items-center justify-center">
 
-      {/* Contenedor para los personajes */}
+      {/* Container for the characters */}
       <div className="relative w-full h-full flex items-center justify-center">
         {springs.map((props, index) => (
           <animated.div
@@ -123,9 +123,9 @@ export function AvatarCarouselFixed({
               }
             }}
           >
-            {/* Contenedor del personaje */}
+            {/* Character container */}
             <div className="relative">
-              {/* Spotlight teatral desde abajo */}
+              {/* Theatrical spotlight from below */}
               {index === activeIndex && (
                 <div
                   className="
@@ -140,7 +140,7 @@ export function AvatarCarouselFixed({
                 />
               )}
 
-              {/* Imagen del personaje */}
+              {/* Character image */}
               <img
                 src={characters[index].image}
                 alt={characters[index].name}

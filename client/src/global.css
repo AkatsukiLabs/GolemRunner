@@ -37,7 +37,7 @@ a:focus {
 }
 
 @layer components {
-  /* Botón amarillo estilo “Battle” */
+  /* Yellow button styled as "Battle" */
   .btn-cr-yellow {
     @apply relative inline-flex items-center justify-center
            px-6 py-2 rounded-lg font-bold text-cream font-luckiest tracking-wide
@@ -46,7 +46,7 @@ a:focus {
     background-image: linear-gradient(to bottom, #FF6B00, #FF6B00);
   }
 
-  /* Botón azul estilo “Party!” */
+  /* Blue button styled as "Party!" */
   .btn-cr-blue {
     @apply relative inline-flex items-center justify-center
            px-6 py-2
