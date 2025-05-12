@@ -132,7 +132,7 @@ export function AvatarCarouselFixed({
         </svg>
       </button>
       
-      {/* Contenedor para los personajes - SIN FONDO AZUL */}
+      {/* Contenedor para los personajes */}
       <div className="relative w-full h-full flex items-center justify-center">
         {springs.map((props, index) => (
           <animated.div
@@ -144,7 +144,7 @@ export function AvatarCarouselFixed({
               scale: props.scale,
               opacity: props.opacity,
               zIndex: props.zIndex,
-              transform: props.scale.to(s => `translate(-50%, -50%) scale(${s})`),
+              transform: props.scale.to((s) => `translate(-50%, -50%) scale(${s})`),
             }}
             onClick={() => {
               if (index !== activeIndex) {
@@ -155,22 +155,18 @@ export function AvatarCarouselFixed({
           >
             {/* Contenedor del personaje */}
             <div className="relative">
-              {/* Efecto de brillo para el personaje seleccionado */}
+              {/* Spotlight teatral desde abajo */}
               {index === activeIndex && (
-                <motion.div
-                  className="absolute -inset-4 rounded-full z-0"
-                  animate={{
-                    boxShadow: [
-                      "0 0 12px rgba(255,87,34,0.2)",
-                      "0 0 24px rgba(255,87,34,0.4)",
-                      "0 0 12px rgba(255,87,34,0.2)",
-                    ],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    repeatType: "reverse",
-                  }}
+                <div
+                  className="
+                    absolute bottom-0 left-1/2 
+                    -translate-x-1/3
+                    w-32 h-40 
+                    bg-gradient-to-t from-white/40 to-transparent 
+                    rounded-t-full 
+                    filter blur-lg 
+                    pointer-events-none 
+                    animate-pulse"
                 />
               )}
 
