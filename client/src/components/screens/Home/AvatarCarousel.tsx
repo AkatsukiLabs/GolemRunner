@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
 import { useSprings, animated } from "@react-spring/web"
 import { useDrag } from "@use-gesture/react"
 
@@ -39,8 +38,8 @@ export function AvatarCarouselFixed({
       // Elemento central (seleccionado) - más grande y destacado
       0: { x: 0, scale: 1.3, opacity: 1, zIndex: 3 },
       // Elementos laterales - más pequeños, simétricos y semitransparentes
-      1: { x: 120, scale: 0.5, opacity: 0.3, zIndex: 2 },
-      [total - 1]: { x: -120, scale: 0.5, opacity: 0.3, zIndex: 2 },
+      1: { x: 110, scale: 1, opacity: 0.3, zIndex: 2 },
+      [total - 1]: { x: -140, scale: 1, opacity: 0.3, zIndex: 2 },
     }
     
     // Posiciones para los elementos más alejados (muy poco visibles o invisibles)
@@ -94,44 +93,15 @@ export function AvatarCarouselFixed({
         cancel()
       }
     },
-    { axis: "x" }
+    { axis: "x",filterTaps: true }
   )
 
-  // Función para ir al siguiente personaje
-  const goToNext = () => {
-    const nextIndex = (activeIndex + 1) % characters.length
-    setActiveIndex(nextIndex)
-    onSelect(characters[nextIndex])
-  }
-
-  // Función para ir al personaje anterior
-  const goToPrev = () => {
-    const prevIndex = (activeIndex - 1 + characters.length) % characters.length
-    setActiveIndex(prevIndex)
-    onSelect(characters[prevIndex])
-  }
-
   return (
-    <div className="relative w-full h-48 md:h-64 overflow-visible flex items-center justify-center" {...bind()}>
-      {/* Flechas de navegación */}
-      <button 
-        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-surface/15 backdrop-blur-sm rounded-full z-20 text-surface"
-        onClick={goToPrev}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-      
-      <button 
-        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-surface/15 backdrop-blur-sm rounded-full z-20 text-surface"
-        onClick={goToNext}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-      
+    <div
+      {...bind()}
+      style={{ touchAction: 'pan-y' }}
+      className="relative w-full h-48 md:h-64 overflow-visible flex items-center justify-center">
+
       {/* Contenedor para los personajes */}
       <div className="relative w-full h-full flex items-center justify-center">
         {springs.map((props, index) => (
@@ -175,29 +145,13 @@ export function AvatarCarouselFixed({
                 src={characters[index].image}
                 alt={characters[index].name}
                 className="w-48 h-48 object-contain z-10 relative transform translate-x-4"
-                style={{ 
+                style={{
                   filter: index !== activeIndex ? 'grayscale(30%)' : 'none',
-                  maxWidth: 'none' 
+                  maxWidth: 'none'
                 }}
               />
             </div>
           </animated.div>
-        ))}
-      </div>
-      
-      {/* Indicadores de posición */}
-      <div className="absolute bottom-0 w-full flex justify-center gap-1.5 py-1">
-        {characters.map((_, index) => (
-          <button
-            key={index}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === activeIndex ? "bg-primary w-4" : "bg-surface/30"
-            }`}
-            onClick={() => {
-              setActiveIndex(index)
-              onSelect(characters[index])
-            }}
-          />
         ))}
       </div>
     </div>
