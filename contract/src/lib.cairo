@@ -12,6 +12,7 @@ pub mod models {
     pub mod player;
     pub mod golem;
     pub mod world;
+    pub mod ranking;
 }
 
 pub mod types {

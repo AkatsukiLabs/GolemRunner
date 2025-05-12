@@ -9,6 +9,7 @@ use dojo::model::ModelStorage;
 use golem_runner::models::player::{Player, PlayerTrait};
 use golem_runner::models::golem::{Golem, GolemTrait, ZeroableGolemTrait};
 use golem_runner::models::world::{World, WorldTrait, ZeroableWorldTrait};
+use golem_runner::models::ranking::{Ranking};
 
 // Types imports
 use golem_runner::types::rarity::{Rarity};
@@ -42,12 +43,19 @@ pub impl StoreImpl of StoreTrait {
         self.world.read_model(player_address)
     }
 
-    fn read_golem(self: Store, golem_id: u256, player_id: ContractAddress) -> Golem {
-        self.world.read_model((golem_id, player_id))
+    fn read_golem(self: Store, golem_id: u256) -> Golem {
+        let player_address = get_caller_address();
+        self.world.read_model((golem_id, player_address))
     }
 
-    fn read_world(self: Store, world_id: u256, player_id: ContractAddress) -> World {
-        self.world.read_model((world_id, player_id))
+    fn read_world(self: Store, world_id: u256) -> World {
+        let player_address = get_caller_address();
+        self.world.read_model((world_id, player_address))
+    }
+
+    fn read_ranking(self: Store, world_id: u256) -> Ranking {
+        let player_address = get_caller_address();
+        self.world.read_model((world_id, player_address))
     }
 
     // --------- Setters ---------
@@ -61,6 +69,10 @@ pub impl StoreImpl of StoreTrait {
 
     fn write_world(mut self: Store, world: @World) {
         self.world.write_model(world)
+    }
+
+    fn write_ranking(mut self: Store, ranking: @Ranking) {
+        self.world.write_model(ranking)
     }
     
     // --------- New entities ---------
@@ -203,8 +215,7 @@ pub impl StoreImpl of StoreTrait {
     
     // --------- Helper "Purchase" methods ---------
     fn unlock_golem(mut self: Store, golem_id: u256) -> bool {
-        let player_id = get_caller_address();
-        let mut golem = self.read_golem(golem_id, player_id);
+        let mut golem = self.read_golem(golem_id);
         
         // Verify that the golem exists
         if golem.is_zero() {
@@ -236,8 +247,7 @@ pub impl StoreImpl of StoreTrait {
     }
 
     fn unlock_world(mut self: Store, world_id: u256) -> bool {
-        let player_id = get_caller_address();
-        let mut world = self.read_world(world_id, player_id);
+        let mut world = self.read_world(world_id);
         
         // Verify that the world exists
         if world.is_zero() {

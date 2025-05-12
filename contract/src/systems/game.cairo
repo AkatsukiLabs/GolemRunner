@@ -4,6 +4,7 @@ pub trait IGame<T> {
     // --------- Core gameplay methods ---------
     fn spawn_player(ref self: T);
     fn reward_player(ref self: T, points: u64, coins_collected: u64);
+    fn update_player_ranking(ref self: T, world_id: u256, points: u64);
     // --------- Unlock Items ---------
     fn unlock_golem_store(ref self: T, golem_id: u256) -> bool;
     fn unlock_world_store(ref self: T, world_id: u256) -> bool;
@@ -22,6 +23,7 @@ pub mod game {
 
     // Models import
     use golem_runner::models::player::{Player, PlayerAssert};
+    use golem_runner::models::ranking::{RankingTrait};
 
     // Dojo Imports
     #[allow(unused_imports)]
@@ -29,15 +31,16 @@ pub mod game {
     #[allow(unused_imports)]
     use dojo::world::{WorldStorage, WorldStorageTrait};
 
+    use starknet::{get_caller_address};
+
     // Constructor
     fn dojo_init(ref self: ContractState) {}
 
     // Implementation of the interface methods
     #[abi(embed_v0)]
     impl GameImpl of IGame<ContractState> {
-
         // --------- Core gameplay methods ---------
-        
+
         // Method to create a new player with its initial items
         fn spawn_player(ref self: ContractState) {
             let mut world = self.world(@"golem_runner");
@@ -45,7 +48,7 @@ pub mod game {
 
             // Create a new player
             store.new_player();
-            
+
             // Init player items
             store.init_player_items();
         }
@@ -54,7 +57,7 @@ pub mod game {
         fn reward_player(ref self: ContractState, points: u64, coins_collected: u64) {
             let mut world = self.world(@"golem_runner");
             let store = StoreTrait::new(world);
-            
+
             let mut player: Player = store.read_player();
             player.assert_exists();
 
@@ -66,25 +69,47 @@ pub mod game {
 
             // Calculate experience based on points and coins
             let exp_from_points: u16 = (points.saturating_mul(1) / 100).try_into().unwrap();
-            let exp_from_coins:u16 = (coins_collected.saturating_mul(1) / 10).try_into().unwrap();
-    
+            let exp_from_coins: u16 = (coins_collected.saturating_mul(1) / 10).try_into().unwrap();
+
             // Use saturating_add for the final sum, ensuring it does not exceed the u16 limit
             let exp_earned: u16 = exp_from_points.saturating_add(exp_from_coins);
-    
+
             // Add experience to the player
             player.add_experience(exp_earned);
-    
+
             // Save the player state
             store.write_player(@player);
         }
-        
+
+        // Method to update the ranking of the player
+        fn update_player_ranking(ref self: ContractState, world_id: u256, points: u64) {
+            let mut world = self.world(@"golem_runner");
+            let store = StoreTrait::new(world);
+
+            let player_address = get_caller_address();
+
+            // Read the ranking of the player
+            let mut ranking = store.read_ranking(world_id);
+
+            // If it's a new ranking (points = 0) or if the score is better
+            if ranking.points == 0 {
+                let new_ranking = RankingTrait::new(world_id, player_address, points);
+                store.write_ranking(@new_ranking);
+            } else if points > ranking.points {
+                // Update the ranking
+                if ranking.update_ranking(points) {
+                    store.write_ranking(@ranking);
+                }
+            }
+        }
+
         // --------- Unlock Player Items ---------
-        
+
         // Method to unlock a golem (buy)
         fn unlock_golem_store(ref self: ContractState, golem_id: u256) -> bool {
             let mut world = self.world(@"golem_runner");
             let store = StoreTrait::new(world);
-            
+
             store.unlock_golem(golem_id)
         }
 
@@ -92,7 +117,7 @@ pub mod game {
         fn unlock_world_store(ref self: ContractState, world_id: u256) -> bool {
             let mut world = self.world(@"golem_runner");
             let store = StoreTrait::new(world);
-            
+
             store.unlock_world(world_id)
         }
     }
