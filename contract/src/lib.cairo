@@ -1,5 +1,4 @@
 pub mod systems {
-    pub mod player;
     pub mod game;
 }
 
@@ -21,11 +20,12 @@ pub mod types {
     pub mod world;
 }
 
+#[cfg(test)]
 pub mod tests {
-    mod test_player;
+    mod utils;
     mod test_golem;
     mod test_world;
-    mod test_player_item;
+    mod test_player;
 }
 
 pub mod constants;
