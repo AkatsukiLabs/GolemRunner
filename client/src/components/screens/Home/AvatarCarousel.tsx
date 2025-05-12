@@ -17,7 +17,7 @@ interface AvatarCarouselProps {
   onSelect: (character: Character) => void
 }
 
-export function AvatarCarouselMobile({
+export function AvatarCarouselFixed({
   characters,
   selectedCharacter,
   onSelect,
@@ -34,19 +34,19 @@ export function AvatarCarouselMobile({
     // Determinar la posición relativa al elemento activo
     const relativeIndex = ((index - active) % total + total) % total
     
-    // Posiciones para centro y lados
+    // Posiciones para centro y lados - valores ajustados para mejor alineación
     const positions = {
       // Elemento central (seleccionado) - más grande y destacado
-      0: { x: 0, scale: 1.25, opacity: 1, zIndex: 3 },
-      // Elementos laterales - más pequeños y semitransparentes
-      1: { x: 140, scale: 0.6, opacity: 0.3, zIndex: 2 },
-      [total - 1]: { x: -140, scale: 0.6, opacity: 0.3, zIndex: 2 },
+      0: { x: 0, scale: 1.3, opacity: 1, zIndex: 3 },
+      // Elementos laterales - más pequeños, simétricos y semitransparentes
+      1: { x: 120, scale: 0.5, opacity: 0.3, zIndex: 2 },
+      [total - 1]: { x: -120, scale: 0.5, opacity: 0.3, zIndex: 2 },
     }
     
     // Posiciones para los elementos más alejados (muy poco visibles o invisibles)
     for (let i = 2; i < Math.floor(total / 2) + 1; i++) {
-      positions[i] = { x: 200, scale: 0.4, opacity: 0.1, zIndex: 1 }
-      positions[total - i] = { x: -200, scale: 0.4, opacity: 0.1, zIndex: 1 }
+      positions[i] = { x: 180, scale: 0.3, opacity: 0.1, zIndex: 1 }
+      positions[total - i] = { x: -180, scale: 0.3, opacity: 0.1, zIndex: 1 }
     }
     
     // Si es un elemento que no está en posiciones especiales, ponerlo fuera de la vista
@@ -112,13 +112,10 @@ export function AvatarCarouselMobile({
   }
 
   return (
-    <div className="relative w-full h-52 overflow-hidden" {...bind()}>
-      {/* Fondo con área de interacción */}
-      <div className="absolute inset-0 bg-blue-900/20" />
-      
+    <div className="relative w-full h-48 md:h-64 overflow-visible flex items-center justify-center" {...bind()}>
       {/* Flechas de navegación */}
       <button 
-        className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-surface/15 backdrop-blur-sm rounded-full z-20 text-surface"
+        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-surface/15 backdrop-blur-sm rounded-full z-20 text-surface"
         onClick={goToPrev}
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
@@ -127,7 +124,7 @@ export function AvatarCarouselMobile({
       </button>
       
       <button 
-        className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-surface/15 backdrop-blur-sm rounded-full z-20 text-surface"
+        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-surface/15 backdrop-blur-sm rounded-full z-20 text-surface"
         onClick={goToNext}
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
@@ -135,12 +132,12 @@ export function AvatarCarouselMobile({
         </svg>
       </button>
       
-      {/* Contenedor para los personajes */}
+      {/* Contenedor para los personajes - SIN FONDO AZUL */}
       <div className="relative w-full h-full flex items-center justify-center">
         {springs.map((props, index) => (
           <animated.div
             key={characters[index].id}
-            className="absolute top-1/2 left-1/2 -translate-y-1/2 flex flex-col items-center justify-center w-44 cursor-pointer"
+            className="absolute top-1/2 left-1/2 flex flex-col items-center justify-center cursor-pointer"
             style={{
               x: props.x,
               y: props.y,
@@ -157,7 +154,7 @@ export function AvatarCarouselMobile({
             }}
           >
             {/* Contenedor del personaje */}
-            <div className="relative w-full">
+            <div className="relative">
               {/* Efecto de brillo para el personaje seleccionado */}
               {index === activeIndex && (
                 <motion.div
@@ -181,20 +178,11 @@ export function AvatarCarouselMobile({
               <img
                 src={characters[index].image}
                 alt={characters[index].name}
-                className="w-full h-auto object-contain z-10 relative"
-              />
-            </div>
-
-            {/* Plataforma */}
-            <div className="relative w-32 h-8 -mt-1">
-              {/* Sombra de la plataforma */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-24 h-4 bg-black/30 blur-md rounded-full -z-10"></div>
-              
-              {/* Imagen de la plataforma */}
-              <img
-                src="/stone-platform.png"
-                alt="Platform"
-                className="w-full h-full object-contain"
+                className="w-48 h-48 object-contain z-10 relative transform translate-x-4"
+                style={{ 
+                  filter: index !== activeIndex ? 'grayscale(30%)' : 'none',
+                  maxWidth: 'none' 
+                }}
               />
             </div>
           </animated.div>
@@ -202,7 +190,7 @@ export function AvatarCarouselMobile({
       </div>
       
       {/* Indicadores de posición */}
-      <div className="absolute bottom-1 w-full flex justify-center gap-1.5 py-1">
+      <div className="absolute bottom-0 w-full flex justify-center gap-1.5 py-1">
         {characters.map((_, index) => (
           <button
             key={index}

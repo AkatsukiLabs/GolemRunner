@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Coins } from "lucide-react"
-import { AvatarCarouselMobile } from "./AvatarCarousel"
+import { AvatarCarouselFixed } from "./AvatarCarousel"
 import { CharacterCard } from "./CharacterCard"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
 import { NavBar } from "../../layout/NavBar"
@@ -28,7 +28,7 @@ export function HomeScreen({ onPlayClick, onMarketClick, coins, level, onNavigat
   }
 
   return (
-    <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik">
+    <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik flex flex-col">
       <BackgroundParticles />
 
       {/* Top Bar */}
@@ -63,14 +63,14 @@ export function HomeScreen({ onPlayClick, onMarketClick, coins, level, onNavigat
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center h-[calc(100%-8rem)] px-0 mx-auto max-w-sm">
+      <div className="z-10 flex-1 flex flex-col items-center justify-center px-4 space-y-20 pb-20 w-full">
         <motion.div
-          className="w-full mb-3" 
+          className="w-full" 
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <AvatarCarouselMobile
+          <AvatarCarouselFixed
             characters={characters}
             selectedCharacter={selectedCharacter}
             onSelect={handleCharacterSelect}
@@ -78,7 +78,7 @@ export function HomeScreen({ onPlayClick, onMarketClick, coins, level, onNavigat
         </motion.div>
 
         <motion.div
-          className="w-full max-w-xs px-4"
+          className="w-full max-w-xs"
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5 }}
