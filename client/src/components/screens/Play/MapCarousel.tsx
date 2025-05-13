@@ -7,10 +7,10 @@ interface MapCarouselProps {
   maps: Map[]
   coins: number
   onUnlock: (mapId: number, price: number) => void
-  onPlay: (mapId: number) => void
+  onSelect: (mapId: number) => void
 }
 
-export function MapCarousel({ maps, coins, onUnlock, onPlay }: MapCarouselProps) {
+export function MapCarousel({ maps, coins, onUnlock, onSelect }: MapCarouselProps) {
   const [activeSlide, setActiveSlide] = useState(0)
 
   // Custom dot component for the carousel
@@ -58,7 +58,7 @@ export function MapCarousel({ maps, coins, onUnlock, onPlay }: MapCarouselProps)
               map={map}
               coins={coins}
               onUnlock={() => map.price !== undefined && onUnlock(map.id, map.price)}
-              onPlay={() => onPlay(map.id)}
+              onSelect={() => onSelect(map.id)}
             />
           </div>
         ))}

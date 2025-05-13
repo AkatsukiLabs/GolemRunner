@@ -65,7 +65,7 @@ export function PlayScreen({ onClose, coins, onSpendCoins, onNavigation }: PlayS
         >
           <h2 className="font-luckiest text-xl text-primary mb-4 text-center">Maps</h2>
 
-          <MapCarousel maps={defaultMaps} coins={coins} onUnlock={handleUnlockMap} onPlay={handlePlayMap} />
+          <MapCarousel maps={defaultMaps} coins={coins} onUnlock={handleUnlockMap} onSelect={handlePlayMap} />
         </motion.div>
       </div>
     </div>
