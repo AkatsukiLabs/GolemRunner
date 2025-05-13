@@ -27,30 +27,33 @@ export function MapCarousel({ maps, coins, onUnlock, onPlay }: MapCarouselProps)
   }
 
   const settings = {
-    dots: true,
+    dots: false,
     infinite: true,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
     centerMode: true,
-    centerPadding: "40px",
+    centerPadding: "80px",
     beforeChange: (_: number, next: number) => setActiveSlide(next),
     customPaging: (i: number) => <CustomDot active={i === activeSlide} />,
     responsive: [
       {
         breakpoint: 640,
         settings: {
-          centerPadding: "20px",
+          centerPadding: "40px",
         },
       },
     ],
   }
 
   return (
-    <div className="w-full overflow-hidden relative">
+    <div className="w-full overflow-hidden relative h-[60vh]">
       <Slider {...settings}>
         {maps.map((map) => (
-          <div key={map.id} className="px-2 outline-none">
+            <div
+            key={map.id}
+            className="px-4 outline-none h-full flex items-center justify-center"
+            >
             <MapCard
               map={map}
               coins={coins}

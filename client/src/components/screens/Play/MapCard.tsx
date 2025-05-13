@@ -14,7 +14,9 @@ export function MapCard({ map, coins, onUnlock, onPlay }: MapCardProps) {
 
   return (
     <motion.div
-      className="bg-surface rounded-xl shadow-md flex-shrink-0 w-full mx-auto p-4 flex flex-col items-center border-2 border-primary/20"
+    className="bg-surface rounded-xl shadow-md flex-shrink-0 w-full h-full mx-auto p-4
+                    flex flex-col justify-between items-center
+                    border-2 border-primary/20"
       whileHover={{ y: -5 }}
       transition={{ type: "spring", stiffness: 300 }}
     >
