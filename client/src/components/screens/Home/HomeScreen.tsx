@@ -5,7 +5,6 @@ import levelIcon from "../../../assets/icons/levelicon2.png";
 import { AvatarCarouselFixed } from "./AvatarCarousel"
 import { CharacterCard } from "./CharacterCard"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
-import { NavBar } from "../../layout/NavBar"
 import { characters } from "../../../constants/characters"
 
 interface HomeScreenProps {
@@ -102,9 +101,6 @@ export function HomeScreen({ onPlayClick, onMarketClick, coins, level, onNavigat
           <CharacterCard character={selectedCharacter} onSelect={handlePlay} />
         </motion.div>
       </div>
-
-      {/* Navigation Bar */}
-      <NavBar activeTab="home" onNavigation={onNavigation} />
     </div>
   )
 }

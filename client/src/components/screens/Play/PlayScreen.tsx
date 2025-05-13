@@ -1,7 +1,6 @@
 import { X } from "lucide-react"
 import { motion } from "framer-motion"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
-import { NavBar } from "../../layout/NavBar"
 import { MapCarousel } from "./MapCarousel"
 import { defaultMaps } from "../../../constants/maps"
 
@@ -69,9 +68,6 @@ export function PlayScreen({ onClose, coins, onSpendCoins, onNavigation }: PlayS
           <MapCarousel maps={defaultMaps} coins={coins} onUnlock={handleUnlockMap} onPlay={handlePlayMap} />
         </motion.div>
       </div>
-
-      {/* Navigation Bar */}
-      <NavBar activeTab="play" onNavigation={onNavigation} />
     </div>
   )
 }

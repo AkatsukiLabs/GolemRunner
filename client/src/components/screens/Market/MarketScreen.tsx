@@ -2,7 +2,6 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Coins } from "lucide-react"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
-import { NavBar } from "../../layout/NavBar"
 import { GolemGrid } from "./GolemGrid"
 import { PurchaseAnimation } from "./PurchaseAnimation"
 import type { Golem } from "../../types/golem"
@@ -86,9 +85,6 @@ export function MarketScreen({ coins, level, onPurchase, onAddGolem, onNavigatio
       <AnimatePresence>
         {showPurchaseAnimation && purchasedGolem && <PurchaseAnimation golem={purchasedGolem} />}
       </AnimatePresence>
-
-      {/* Navigation Bar */}
-      <NavBar activeTab="market" onNavigation={onNavigation} />
     </div>
   )
 }
