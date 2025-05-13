@@ -47,7 +47,7 @@ export function MapCarousel({ maps, coins, onUnlock, onSelect }: MapCarouselProp
   }
 
   return (
-    <div className="w-full overflow-hidden relative h-[60vh]">
+    <div className="w-full overflow-hidden relative h-[70vh]">
       <Slider {...settings}>
         {maps.map((map) => (
             <div
