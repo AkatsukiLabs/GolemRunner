@@ -21,13 +21,9 @@ export function MapCard({ map, coins, onUnlock, onPlay }: MapCardProps) {
       {/* Imagen del mapa */}
       <div className="relative w-full h-36 rounded-lg overflow-hidden mb-3">
         <img
-          src={map.image || "/placeholder.svg"}
+          src={map.image}
           alt={`${map.name} map`}
           className="w-full h-full object-cover"
-          onError={(e) => {
-            const img = e.currentTarget as HTMLImageElement
-            img.src = "/placeholder.svg?height=144&width=256"
-          }}
         />
       </div>
 
