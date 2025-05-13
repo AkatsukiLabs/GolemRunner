@@ -14,11 +14,15 @@ export function MapCard({ map, coins, onUnlock, onSelect }: MapCardProps) {
 
   return (
     <motion.div
-      className="bg-surface rounded-xl shadow-md flex-shrink-0 w-full h-full mx-auto p-4
-                    flex flex-col justify-between items-center
-                    border-2 border-primary/20"
+    className="bg-surface rounded-xl shadow-md flex-shrink-0 w-full mx-auto p-4
+    flex flex-col justify-between items-center
+    border-2 border-primary/20 z-10"
       whileHover={{ y: -5 }}
       transition={{ type: "spring", stiffness: 300 }}
+      style={{ 
+        marginTop: '10px', 
+        marginBottom: '10px' 
+      }}
     >
       {/* Imagen del mapa */}
       <div className="relative w-full h-36 rounded-lg overflow-hidden mb-3">

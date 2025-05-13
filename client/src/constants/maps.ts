@@ -18,7 +18,7 @@ export const defaultMaps: Map[] = [
     id: 2,
     name: "Volcano",
     image: VolcanoMap,
-    unlocked: true,
+    unlocked: false,
     price: 25,
     description: "Race lava flows and leap over erupting molten ground!",
     highScore: 8750,
