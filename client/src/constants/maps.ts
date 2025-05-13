@@ -1,32 +1,35 @@
 import type { Map } from "../components/types/map"
 
-// Sample maps data
+import ForestMap   from "../assets/Maps/Forest/ForestMap.png"
+import IceMap from "../assets/Maps/Ice/IceMap.png"
+import VolcanoMap  from "../assets/Maps/Volcano/VolcanoMap.png"
+
 export const defaultMaps: Map[] = [
   {
     id: 1,
-    name: "Forest",
-    image: "/forest-map.png",
+    name: "Ice",
+    image: IceMap,
     unlocked: true,
     price: 0,
-    description: "A peaceful forest with hidden treasures.",
+    description: "Dash through icy ruins, dodging crystals and frozen traps!",
     highScore: 12500,
   },
   {
     id: 2,
-    name: "Desert",
-    image: "/desert-map.png",
+    name: "Volcano",
+    image: VolcanoMap,
     unlocked: true,
-    price: 5,
-    description: "Vast dunes hide ancient ruins and dangers.",
+    price: 25,
+    description: "Race lava flows and leap over erupting molten ground!",
     highScore: 8750,
   },
   {
     id: 3,
-    name: "Volcano",
-    image: "/volcano-map.png",
+    name: "Forest",
+    image: ForestMap,
     unlocked: false,
-    price: 10,
-    description: "Treacherous paths through molten lava.",
+    price: 50,
+    description: "Charge through rocky woods, weaving past roots and boulders!",
     highScore: 0,
   },
 ]
