@@ -2,7 +2,6 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Coins } from "lucide-react"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
-import { NavBar } from "../../layout/NavBar"
 import { GolemCarouselProfile } from "./GolemCarouselProfile"
 import { MapCarouselProfile } from "./MapCarouselProfile"
 import { GolemDetailModal } from "./GolemDetailModal"
@@ -160,9 +159,6 @@ export function ProfileScreen({
       <AnimatePresence>
         {selectedGolem && <GolemDetailModal golem={selectedGolem} onClose={handleCloseModal} />}
       </AnimatePresence>
-
-      {/* Navigation Bar */}
-      <NavBar activeTab="profile" onNavigation={onNavigation} />
     </div>
   )
 }

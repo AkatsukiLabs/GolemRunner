@@ -1,7 +1,6 @@
 import { motion } from "framer-motion"
 import { Coins } from "lucide-react"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
-import { NavBar } from "../../layout/NavBar"
 import { RankingTable } from "./RankingTable"
 
 interface RankingScreenProps {
@@ -82,9 +81,6 @@ export function RankingScreen({
 
         <RankingTable currentUser={currentUser} />
       </div>
-
-      {/* Navigation Bar */}
-      <NavBar activeTab="ranking" onNavigation={onNavigation} />
     </div>
   )
 }

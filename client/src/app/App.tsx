@@ -5,6 +5,7 @@ import { PlayScreen } from "../components/screens/Play/PlayScreen";
 import { MarketScreen } from "../components/screens/Market/MarketScreen";
 import { ProfileScreen } from "../components/screens/Profile/ProfileScreen";
 import { RankingScreen } from "../components/screens/Ranking/RankingScreen";
+import { NavBar } from "../components/layout/NavBar"
 import type { Golem } from "../components/types/golem";
 import type { Map } from "../components/types/map";
 import { defaultGolems } from "../constants/golems";
@@ -52,7 +53,8 @@ export default function App() {
     );
 
   return (
-    <>
+    <div className="relative min-h-screen pb-16">
+
       {currentScreen === "cover" && (
         <CoverScreen onLoadingComplete={handleLoadingComplete} />
       )}
@@ -108,6 +110,14 @@ export default function App() {
           onNavigation={handleNavigation}
         />
       )}
-    </>
+
+      {/* NavBar*/}
+      {currentScreen !== "cover" && (
+       <NavBar
+         activeTab={currentScreen as "market"|"home"|"ranking"|"profile"}
+         onNavigation={handleNavigation}
+       />
+     )}
+    </div>
   );
 }
