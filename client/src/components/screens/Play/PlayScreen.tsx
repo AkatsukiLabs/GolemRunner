@@ -1,4 +1,4 @@
-import { X } from "lucide-react"
+import CloseIcon from "../../../assets/icons/CloseIcon.png"
 import { motion } from "framer-motion"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
 import { MapCarousel } from "./MapCarousel"
@@ -41,12 +41,16 @@ export function PlayScreen({ onClose, coins, onSpendCoins, onNavigation }: PlayS
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
           aria-label="Close"
-        >
-          <X className="h-5 w-5" />
+        > 
+          <img
+            src={CloseIcon}
+            alt="Close"
+            className="h-8 w-8"
+          />
         </motion.button>
 
         <motion.h1
-          className="font-bangers text-2xl text-surface absolute left-1/2 transform -translate-x-1/2"
+          className="font-bangers text-5xl text-surface absolute left-1/2 transform -translate-x-1/2"
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
