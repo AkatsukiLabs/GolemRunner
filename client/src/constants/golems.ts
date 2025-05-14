@@ -12,8 +12,8 @@ export const defaultGolems: Golem[] = [
     rarity: "Epic",
     description: "A frosty brute with a heart of ice.",
     image: IceIdle0,
-    price: 1000,
-    owned: true,
+    price: 250,
+    owned: false,
   },
   {
     id: 2,
@@ -21,8 +21,8 @@ export const defaultGolems: Golem[] = [
     rarity: "Rare",
     description: "Overgrown with ancient moss.",
     image: MossyIdle0,
-    price: 500,
-    owned: true,
+    price: 100,
+    owned: false,
   },
   {
     id: 3,
@@ -30,7 +30,7 @@ export const defaultGolems: Golem[] = [
     rarity: "Epic",
     description: "Forged from the depths of a volcano.",
     image: LavaIdle0,
-    price: 1000,
+    price: 500,
     owned: false,
   },
   {
@@ -39,7 +39,7 @@ export const defaultGolems: Golem[] = [
     rarity: "Common",
     description: "Sturdy and reliable, the backbone of any team.",
     image: LavaIdle0,
-    price: 250,
-    owned: false,
+    price: 100,
+    owned: true,
   },
 ]

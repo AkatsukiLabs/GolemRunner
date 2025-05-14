@@ -50,9 +50,9 @@ export function MarketScreen({ coins, level, onPurchase, onAddGolem, onNavigatio
       <TopBar coins={coins} level={level} title="MARKET" screen="market" />
 
       {/* Clash Royale style banner */}
-      <div className="relative mt-4 mb-2">
+      <div className="relative mt-12 mb-3">
         {/* Golem Seller - positioned above the banner */}
-        <div className="absolute -top-10 left-3 z-10 w-20 h-20">
+        <div className="absolute -top-11 left-3 z-10 w-40 h-40">
           <img 
             src={golemSellerIcon} 
             alt="Golem Seller" 
@@ -65,15 +65,12 @@ export function MarketScreen({ coins, level, onPurchase, onAddGolem, onNavigatio
         </div>
         
         {/* Banner */}
-        <div className="bg-primary py-3 px-4 relative rounded-md mx-4 shadow-md">
+        <div className="bg-golem-gradient py-3 px-4 pl-40 relative rounded-[10px] mx-4 shadow-md">
           <div className="flex flex-col sm:flex-row items-center justify-between">
-            <div className="w-20 sm:block hidden">
-              {/* Spacing for seller on mobile */}
-            </div>
-            <h2 className="font-luckiest text-cream text-xl tracking-wide">
+            <h2 className="font-luckiest text-cream text-xl drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">
               Available Cards
             </h2>
-            <p className="font-rubik text-cream text-sm opacity-80 mt-1 sm:mt-0">
+            <p className="font-luckiest text-dark text-sm opacity-90 mt-1 sm:mt-0">
               What do you want to buy today?
             </p>
           </div>
