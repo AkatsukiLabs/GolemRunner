@@ -2,8 +2,8 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { TopBar } from "../../layout/TopBar"
 import { ProfileGolemCard } from "./ProfileGolemCard";
+import { ProfileMapGrid } from "./MapProfileCard";
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
-import { MapCarouselProfile } from "./MapCarouselProfile"
 import { GolemDetailModal } from "./GolemDetailModal"
 import type { Golem } from "../../types/golem"
 import type { Map } from "../../types/map"
@@ -118,9 +118,11 @@ export function ProfileScreen({
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <h2 className="font-luckiest text-xl text-surface mb-3">Your Maps Collection:</h2>
+              <h2 className="font-luckiest text-xl text-surface mb-3">
+                Your Maps Collection:
+              </h2>
               {unlockedMaps.length > 0 ? (
-                <MapCarouselProfile maps={unlockedMaps} />
+                <ProfileMapGrid maps={unlockedMaps} />
               ) : (
                 <div className="bg-surface/80 p-6 rounded-lg text-center">
                   <p className="text-text-primary">You don't have any maps yet.</p>
@@ -128,7 +130,7 @@ export function ProfileScreen({
                     className="mt-3 bg-primary text-surface px-4 py-2 rounded-lg font-medium"
                     onClick={() => onNavigation("play")}
                   >
-                    Visit Maps
+                    Play a Map
                   </button>
                 </div>
               )}
