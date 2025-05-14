@@ -74,7 +74,7 @@ export function RankingScreen({
       >
         {/* Ranking Golem animado */}
         <motion.div
-          className="absolute -top-11 left-3 z-10 w-40 h-40"
+          className="absolute -top-7 left-3 z-10 w-40 h-40"
           variants={sellerVariant}
           transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
         >
