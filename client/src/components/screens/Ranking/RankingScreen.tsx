@@ -1,3 +1,4 @@
+import { useRef, useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { TopBar } from "../../layout/TopBar"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
@@ -21,7 +22,6 @@ export function RankingScreen({
   coins,
   level,
   currentUser,
-  onNavigation,
 }: RankingScreenProps) {
   
   const bannerVariant = {
@@ -32,6 +32,30 @@ export function RankingScreen({
     hidden: { opacity: 0, scale: 0.5 },
     visible: { opacity: 1, scale: 1 }
   }
+
+  // Carousel state
+  const carouselRef = useRef<HTMLDivElement>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  // Update active index on scroll
+  useEffect(() => {
+    const el = carouselRef.current
+    if (!el) return
+    const onScroll = () => {
+      const index = Math.round(el.scrollLeft / el.clientWidth)
+      setActiveIndex(index)
+    }
+    el.addEventListener("scroll", onScroll)
+    return () => el.removeEventListener("scroll", onScroll)
+  }, [])
+
+  // Determine dynamic title and subtitle
+  const isGlobal = activeIndex === 0
+  const map = defaultMaps[activeIndex - 1]
+  const title = isGlobal ? "Global Ranking" : `${map.name} Ranking`
+  const subtitle = isGlobal
+    ? "Top runners worldwide. Can you reach the #1 spot?"
+    : `Top runners on the ${map.name} map. Can you reach the #1 spot?`
 
   return (
     <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik">
@@ -69,10 +93,10 @@ export function RankingScreen({
         <div className="bg-golem-gradient py-3 px-4 pl-40 relative rounded-[10px] mx-4 shadow-md">
           <div className="flex flex-col sm:flex-row items-center justify-between">
             <h2 className="font-luckiest text-cream text-xl drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">
-              Global Ranking
+            {title}
             </h2>
             <p className="font-luckiest text-dark text-sm opacity-90 mt-1 sm:mt-0">
-              Can you reach the #1 spot?
+            {subtitle}
             </p>
           </div>
         </div>
@@ -81,16 +105,19 @@ export function RankingScreen({
       {/* Main Content */}
       {/* Carousel for Rankings */}
       <div className="relative z-10 pt-4 h-[calc(100%-8rem)] pb-4">
-        <div className="flex overflow-x-auto snap-x snap-mandatory">
+        <div
+          ref={carouselRef}
+          className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth"
+        >
           {/* General Ranking */}
           <div className="snap-center flex-shrink-0 w-full px-4">
             <RankingTable currentUser={currentUser} />
           </div>
 
           {/* Map-specific Rankings */}
-          {defaultMaps.map((map) => (
-            <div key={map.id} className="snap-center flex-shrink-0 w-full px-4">
-              <RankingTable currentUser={currentUser} mapId={map.id} />
+          {defaultMaps.map((m) => (
+            <div key={m.id} className="snap-center flex-shrink-0 w-full px-4">
+              <RankingTable currentUser={currentUser} mapId={m.id} />
             </div>
           ))}
         </div>
