@@ -21,7 +21,7 @@ export default function App() {
   const [nextLevelExperience, setNextLevelExperience] = useState(100);
   const [ownedGolems, setOwnedGolems] = useState<Golem[]>([
     defaultGolems[0],
-    defaultGolems[1],
+    defaultGolems[2],
   ]);
   const [unlockedMaps, setUnlockedMaps] = useState<Map[]>([
     defaultMaps[0],
@@ -104,8 +104,6 @@ export default function App() {
         <RankingScreen
           coins={coins}
           level={level}
-          experience={experience}
-          nextLevelExperience={nextLevelExperience}
           currentUser={currentUser}
           onNavigation={handleNavigation}
         />

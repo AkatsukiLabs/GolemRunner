@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { X } from "lucide-react"
+import { motion } from "framer-motion"
+import CloseIcon from "../../../assets/icons/CloseIcon.png"
 import type { Golem } from "../../types/golem"
 
 interface GolemDetailModalProps {
@@ -10,16 +10,16 @@ interface GolemDetailModalProps {
 
 export function GolemDetailModal({ golem, onClose }: GolemDetailModalProps) {
   const [frameIndex, setFrameIndex] = useState(0)
+  const spriteFrames = golem.animations.run
 
-  // Construye las rutas de los frames basados en el nombre de la imagen
-  const spriteFrames = [
-    golem.image.replace(".png", "") + "_frame1.png",
-    golem.image.replace(".png", "") + "_frame2.png",
-    golem.image.replace(".png", "") + "_frame3.png",
-    golem.image.replace(".png", "") + "_frame4.png",
-  ]
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFrameIndex((i) => (i + 1) % spriteFrames.length)
+    }, 100) // slightly faster speed
+    return () => clearInterval(interval)
+  }, [spriteFrames.length])
 
-  // Ciclo de animación de sprites
+  // Sprite animation cycle
   useEffect(() => {
     const interval = setInterval(() => {
       setFrameIndex((prev) => (prev + 1) % spriteFrames.length)
@@ -34,14 +34,6 @@ export function GolemDetailModal({ golem, onClose }: GolemDetailModalProps) {
     Legendary: "bg-yellow-500",
   }
   const rarityColor = rarityColors[golem.rarity] || "bg-gray-500"
-
-  // Genera stats de ejemplo
-  const stats = {
-    strength: Math.floor(Math.random() * 100) + 1,
-    speed: Math.floor(Math.random() * 100) + 1,
-    defense: Math.floor(Math.random() * 100) + 1,
-    special: Math.floor(Math.random() * 100) + 1,
-  }
 
   return (
     <motion.div
@@ -63,78 +55,41 @@ export function GolemDetailModal({ golem, onClose }: GolemDetailModalProps) {
           <h2 className="font-luckiest text-2xl text-primary">{golem.name}</h2>
           <button
             onClick={onClose}
-            className="bg-screen/10 hover:bg-screen/20 rounded-full p-1 transition-colors"
+            className="rounded-full p-1 transition-colors"
             aria-label="Close"
           >
-            <X className="h-5 w-5 text-text-primary" />
+            <img
+              src={CloseIcon}
+              alt="Close"
+              className="h-9 w-9"
+            />
           </button>
         </div>
 
-        {/* Animación de sprite */}
+        {/* Sprite animation */}
         <div className="flex justify-center mb-4">
-          <div className="relative w-40 h-40">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={frameIndex}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.1 }}
-                className="absolute inset-0"
-              >
-                <img
-                  src={spriteFrames[frameIndex] || golem.image || "/placeholder.svg"}
-                  alt={`${golem.name} frame ${frameIndex + 1}`}
-                  className="w-full h-full object-contain"
-                  onError={(e) => {
-                    const img = e.currentTarget as HTMLImageElement
-                    img.src = golem.image || "/placeholder.svg?height=160&width=160"
-                  }}
-                />
-              </motion.div>
-            </AnimatePresence>
+          <div className="relative w-64 h-64">
+            <img
+              src={spriteFrames[frameIndex]}
+              alt={`${golem.name} frame ${frameIndex}`}
+              className="w-full h-full object-contain"
+            />
           </div>
         </div>
 
-        {/* Rareza */}
+        {/* Rarity */}
         <div className="flex justify-center mb-3">
-          <span className={`inline-block ${rarityColor} text-surface rounded-full px-3 py-1 text-sm`}>
+          <span className={`inline-block ${rarityColor} text-surface font-luckiest rounded-full px-3 py-1 text-sm`}>
             {golem.rarity}
           </span>
         </div>
 
-        {/* Descripción */}
-        <p className="font-rubik text-text-primary text-center mb-4">
+        {/* Description */}
+        <p className="text-text-primary font-luckiest text-center mb-4">
           {golem.description}
         </p>
 
-        {/* Stats */}
-        <div className="bg-screen/10 rounded-lg p-3 mb-4">
-          <h3 className="font-bangers text-lg text-primary mb-2 text-center">Stats</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {Object.entries(stats).map(([key, value]) => (
-              <div key={key}>
-                <p className="text-sm text-text-secondary capitalize">{key}</p>
-                <div className="h-2 bg-surface/50 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full ${
-                      key === "special"
-                        ? "bg-accent-glow"
-                        : key === "speed"
-                        ? "bg-secondary"
-                        : key === "defense"
-                        ? "bg-text-secondary"
-                        : "bg-primary"
-                    }`}
-                    style={{ width: `${value}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Cerrar */}
+        {/* Close */}
         <button
           onClick={onClose}
           className="w-full py-2 rounded-lg font-medium text-surface bg-primary hover:bg-primary-hover active:bg-primary-active transition-colors"
