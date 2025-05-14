@@ -60,11 +60,11 @@ export function RankingTable({ currentUser, mapId }: RankingTableProps) {
 
   return (
     <motion.div
-      className="bg-surface rounded-xl shadow-md overflow-hidden"
+      className="bg-surface rounded-xl shadow-md overflow-hidden mb-12" 
       variants={containerVariants}
       initial="hidden"
       animate={isLoading ? "hidden" : "visible"}
-    >
+    > {/* Remove mb-12 if PWA is not needed */}
       {/* Table Header */}
       <div className="flex justify-between items-center p-3 bg-golem-gradient border-b border-primary/30">
         <div className="font-bangers text-xl text-cream w-16 text-center drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">Rank</div>
@@ -77,10 +77,7 @@ export function RankingTable({ currentUser, mapId }: RankingTableProps) {
         {displayPlayers.map((player, idx) => {
           const isCurrent = player.id === currentUser.id
           return (
-            <div
-              key={player.id}
-              className={isCurrent ? "opacity-70 bg-secondary/10" : ""}
-            >
+            <div key={player.id}>
               <RankingRow
                 rank={player.rank}
                 name={player.name}

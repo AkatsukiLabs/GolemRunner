@@ -12,7 +12,14 @@ interface RankingRowProps {
   index: number
 }
 
-export function RankingRow({ rank, name, score, isTop3, isCurrentUser, index }: RankingRowProps) {
+export function RankingRow({
+  rank,
+  name,
+  score,
+  isTop3,
+  isCurrentUser,
+  index,
+}: RankingRowProps) {
   const rowVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -27,6 +34,9 @@ export function RankingRow({ rank, name, score, isTop3, isCurrentUser, index }: 
     if (isTop3)       return "bg-primary/10 font-bold border-primary/20"
     return "border-surface-dark/10"
   }
+
+  const gradientText = "bg-clip-text text-transparent bg-golem-gradient"
+  const defaultText = "text-text-primary"
 
   const renderTrophy = () => {
     switch (rank) {
@@ -46,15 +56,19 @@ export function RankingRow({ rank, name, score, isTop3, isCurrentUser, index }: 
       className={`flex justify-between items-center p-3 border-b ${getRowClasses()}`}
       variants={rowVariants}
     >
+      {/* Rank / Trophy */}
       <div className="font-luckiest text-xl w-16 flex items-center justify-center">
-        {isTop3 ? renderTrophy() : (
-          <span className={isCurrentUser ? "text-secondary" : "text-text-primary"}>
+        {isTop3 ? (
+          renderTrophy()
+        ) : (
+          <span className={isCurrentUser ? gradientText : defaultText}>
             {rank}
           </span>
         )}
       </div>
 
-      <div className={`font-rubik text-base flex-1 ${isCurrentUser ? "text-secondary" : "text-text-primary"}`}>
+      {/* Name */}
+      <div className={`font-rubik text-base flex-1 ${isCurrentUser ? gradientText : defaultText}`}>
         {name}
         {isCurrentUser && (
           <span className="ml-2 text-xs bg-secondary text-surface px-1 py-0.5 rounded">
@@ -63,7 +77,8 @@ export function RankingRow({ rank, name, score, isTop3, isCurrentUser, index }: 
         )}
       </div>
 
-      <div className={`font-rubik text-base w-24 text-right ${isCurrentUser ? "text-secondary" : "text-text-primary"}`}>
+      {/* Score */}
+      <div className={`font-rubik text-base w-24 text-right ${isCurrentUser ? gradientText : defaultText}`}>
         {score.toLocaleString()}
       </div>
     </motion.div>

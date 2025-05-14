@@ -28,9 +28,14 @@ export function RankingScreen({
     hidden: { opacity: 0, y: -30 },
     visible: { opacity: 1, y: 0 }
   }
-  const sellerVariant = {
+  const golemVariant = {
     hidden: { opacity: 0, scale: 0.5 },
     visible: { opacity: 1, scale: 1 }
+  }
+
+  const textVariant = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
   }
 
   // Carousel state
@@ -54,8 +59,8 @@ export function RankingScreen({
   const map = defaultMaps[activeIndex - 1]
   const title = isGlobal ? "Global Ranking" : `${map.name} Ranking`
   const subtitle = isGlobal
-    ? "Top runners worldwide. Can you reach the #1 spot?"
-    : `Top runners on the ${map.name} map. Can you reach the #1 spot?`
+    ? "Top runners worldwide."
+    : `Top runners on the ${map.name} map.`
 
   return (
     <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik">
@@ -72,10 +77,10 @@ export function RankingScreen({
         variants={bannerVariant}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        {/* Ranking Golem animado */}
+        {/* Ranking Golem */}
         <motion.div
-          className="absolute -top-7 left-3 z-10 w-40 h-40"
-          variants={sellerVariant}
+          className="absolute -top-11 left-3 z-10 w-40 h-40"
+          variants={golemVariant}
           transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
         >
           <img
@@ -90,33 +95,48 @@ export function RankingScreen({
         </motion.div>
 
         {/* Banner */}
-        <div className="bg-golem-gradient py-3 px-4 pl-40 relative rounded-[10px] mx-4 shadow-md">
+        <div
+          className="bg-golem-gradient py-3 px-4 pl-40 relative rounded-[10px] mx-4 shadow-md"
+          style={{ height: '96px' }}
+        >
           <div className="flex flex-col sm:flex-row items-center justify-between">
-            <h2 className="font-luckiest text-cream text-xl drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">
-            {title}
-            </h2>
-            <p className="font-luckiest text-dark text-sm opacity-90 mt-1 sm:mt-0">
-            {subtitle}
-            </p>
+            <motion.h2
+              className="font-luckiest text-cream text-xl drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide"
+              variants={textVariant}
+              initial="hidden"
+              animate="visible"
+              transition={{ delay: 0.5, duration: 0.4 }}
+            >
+              {title}
+            </motion.h2>
+            <motion.p
+              className="font-luckiest text-dark text-sm opacity-90 mt-1 sm:mt-0"
+              variants={textVariant}
+              initial="hidden"
+              animate="visible"
+              transition={{ delay: 0.7, duration: 0.4 }}
+            >
+              {subtitle}
+            </motion.p>
           </div>
         </div>
       </motion.div>
 
       {/* Main Content */}
       {/* Carousel for Rankings */}
-      <div className="relative z-10 pt-4 h-[calc(100%-8rem)] pb-4">
+      <div className="relative z-10 pt-4 h-[calc(100%-16rem)] pb-16">
         <div
           ref={carouselRef}
-          className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth"
+          className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth h-full"
         >
           {/* General Ranking */}
-          <div className="snap-center flex-shrink-0 w-full px-4">
+          <div className="snap-center flex-shrink-0 w-full px-4 h-full overflow-y-auto">
             <RankingTable currentUser={currentUser} />
           </div>
 
           {/* Map-specific Rankings */}
           {defaultMaps.map((m) => (
-            <div key={m.id} className="snap-center flex-shrink-0 w-full px-4">
+            <div key={m.id} className="snap-center flex-shrink-0 w-full px-4 h-full overflow-y-auto">
               <RankingTable currentUser={currentUser} mapId={m.id} />
             </div>
           ))}
