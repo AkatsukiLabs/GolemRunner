@@ -6,5 +6,7 @@ export interface Golem {
     image: string
     price: number
     owned: boolean
+    animations: {
+      run: string[] 
+    }
   }
-  
