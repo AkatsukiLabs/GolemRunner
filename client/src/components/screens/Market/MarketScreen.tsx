@@ -1,9 +1,11 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Coins } from "lucide-react"
+import { TopBar } from "../../layout/TopBar"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
 import { GolemGrid } from "./GolemGrid"
 import { PurchaseAnimation } from "./PurchaseAnimation"
+import { InsufficientBalanceAnimation } from "./InsufficientBalanceAnimation" // Nuevo componente
+import golemSellerIcon from "../../../assets/icons/GolemSellerV2.png" 
 import type { Golem } from "../../types/golem"
 import { defaultGolems } from "../../../constants/golems"
 
@@ -18,72 +20,118 @@ interface MarketScreenProps {
 export function MarketScreen({ coins, level, onPurchase, onAddGolem, onNavigation }: MarketScreenProps) {
   const [showPurchaseAnimation, setShowPurchaseAnimation] = useState(false)
   const [purchasedGolem, setPurchasedGolem] = useState<Golem | null>(null)
+  // Nuevo estado para el modal de saldo insuficiente
+  const [showInsufficientBalance, setShowInsufficientBalance] = useState(false)
+  const [selectedGolem, setSelectedGolem] = useState<Golem | null>(null)
 
   const handlePurchase = (golem: Golem) => {
-    // Attempt to purchase the golem
-    const success = onPurchase(golem.price)
+    // Guardar el golem seleccionado
+    setSelectedGolem(golem)
+    
+    // Verificar si el usuario puede pagar el golem
+    if (coins >= golem.price) {
+      // Attempt to purchase the golem
+      const success = onPurchase(golem.price)
 
-    if (success) {
-      // Show purchase animation
-      setPurchasedGolem(golem)
-      setShowPurchaseAnimation(true)
+      if (success) {
+        // Show purchase animation
+        setPurchasedGolem(golem)
+        setShowPurchaseAnimation(true)
 
-      // Add golem to collection
-      onAddGolem(golem)
+        // Add golem to collection
+        onAddGolem(golem)
 
-      // Hide animation after a delay
-      setTimeout(() => {
-        setShowPurchaseAnimation(false)
-      }, 3000)
+        // Hide animation after a delay
+        setTimeout(() => {
+          setShowPurchaseAnimation(false)
+        }, 3000)
+      }
     } else {
-      // Could show an error message here
-      console.log("Not enough coins to purchase this golem!")
+      // Mostrar el modal de saldo insuficiente
+      setShowInsufficientBalance(true)
+      
+      // Ocultar después de un tiempo
+      setTimeout(() => {
+        setShowInsufficientBalance(false)
+      }, 3000)
     }
   }
+
+  const bannerVariant = {
+    hidden: { opacity: 0, y: -30 },
+    visible: { opacity: 1, y: 0 }
+  };
+  const sellerVariant = {
+    hidden: { opacity: 0, scale: 0.5 },
+    visible: { opacity: 1, scale: 1 }
+  };
 
   return (
     <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik">
       <BackgroundParticles />
 
       {/* Top Bar */}
-      <div className="relative z-10 w-full px-4 py-3 flex items-center justify-between">
-        <motion.div
-          className="flex items-center bg-screen/80 backdrop-blur-sm px-3 py-1 rounded-full border border-surface/30"
-          initial={{ x: -50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Coins className="text-primary mr-1 h-5 w-5" />
-          <span className="text-surface font-bold">{coins}</span>
-        </motion.div>
+      <TopBar coins={coins} level={level} title="MARKET" screen="market" />
 
-        <motion.h1
-          className="font-bangers text-2xl text-surface"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          Market
-        </motion.h1>
-
+      {/* Clash Royale style banner animado */}
+      <motion.div
+        className="relative mt-12 mb-3"
+        initial="hidden"
+        animate="visible"
+        variants={bannerVariant}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        {/* Golem Seller animado */}
         <motion.div
-          className="flex items-center justify-center bg-secondary w-8 h-8 rounded-full text-surface font-bold"
-          initial={{ x: 50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          className="absolute -top-11 left-3 z-10 w-40 h-40"
+          variants={sellerVariant}
+          transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
         >
-          {level}
+          <img 
+            src={golemSellerIcon} 
+            alt="Golem Seller" 
+            className="object-contain"
+            onError={(e) => {
+              const img = e.currentTarget as HTMLImageElement
+              img.src = "/placeholder.svg?height=80&width=80"
+            }}
+          />
         </motion.div>
-      </div>
+        
+        {/* Banner */}
+        <div className="bg-golem-gradient py-3 px-4 pl-40 relative rounded-[10px] mx-4 shadow-md">
+          <div className="flex flex-col sm:flex-row items-center justify-between">
+            <h2 className="font-luckiest text-cream text-xl drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">
+              Available Cards
+            </h2>
+            <p className="font-luckiest text-dark text-sm opacity-90 mt-1 sm:mt-0">
+              What do you want to buy today?
+            </p>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Main Content */}
-      <div className="relative z-10 h-[calc(100%-8rem)] overflow-y-auto pb-4">
-        <GolemGrid golems={defaultGolems} coins={coins} onPurchase={handlePurchase} />
+      <div className="relative z-10 h-[calc(100%-16rem)] overflow-y-auto pb-16">
+        <div className="px-4 py-2">
+          <GolemGrid 
+            golems={defaultGolems} 
+            coins={coins} 
+            onPurchase={handlePurchase} 
+          />
+        </div>
       </div>
 
       {/* Purchase Animation */}
       <AnimatePresence>
         {showPurchaseAnimation && purchasedGolem && <PurchaseAnimation golem={purchasedGolem} />}
+      </AnimatePresence>
+
+      {/* Insufficient Balance Animation */}
+      <AnimatePresence>
+        {showInsufficientBalance && selectedGolem && (
+          <InsufficientBalanceAnimation golem={selectedGolem} currentBalance={coins} />
+        )}
       </AnimatePresence>
     </div>
   )

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import { Coins } from "lucide-react"
+import coinIcon from "../../../assets/icons/CoinIcon.png";
 import type { Golem } from "../../types/golem"
 
 interface GolemCardProps {
@@ -29,17 +29,19 @@ export function GolemCard({ golem, canAfford, onPurchase }: GolemCardProps) {
       whileHover={{ y: -5 }}
       transition={{ type: "spring", stiffness: 300 }}
     >
-      {/* Imagen del golem */}
-      <div className="relative w-full h-32 rounded-lg overflow-hidden mb-2">
-        <img
-          src={golem.image || "/placeholder.svg"}
-          alt={golem.name}
-          className="w-full h-full object-contain"
-          onError={(e) => {
-            const img = e.currentTarget as HTMLImageElement
-            img.src = "/placeholder.svg?height=128&width=128"
-          }}
-        />
+      {/* Imagen del golem - Usando transform scale para hacerla más grande */}
+      <div className="h-32 flex items-center justify-center mb-2 overflow-visible">
+        <div className="transform scale-150">
+          <img
+            src={golem.image || "/placeholder.svg"}
+            alt={golem.name}
+            className="w-32 h-32 object-contain"
+            onError={(e) => {
+              const img = e.currentTarget as HTMLImageElement
+              img.src = "/placeholder.svg?height=128&width=128"
+            }}
+          />
+        </div>
       </div>
 
       {/* Nombre */}
@@ -49,37 +51,30 @@ export function GolemCard({ golem, canAfford, onPurchase }: GolemCardProps) {
 
       {/* Rareza */}
       <span
-        className={`inline-block ${rarityColor} text-surface rounded-full px-2 py-0.5 text-sm mb-2`}
+        className={`inline-block ${rarityColor} text-cream font-luckiest tracking-wide
+          rounded-full px-2 py-0.5 text-sm mb-2`}
       >
         {golem.rarity}
       </span>
 
       {/* Descripción */}
-      <p className="font-rubik text-sm text-text-primary mb-3 text-center h-12 overflow-hidden">
+      <p className="font-luckiest text-sm text-text-primary mb-3 text-center h-12 overflow-hidden">
         {golem.description}
       </p>
 
       {/* Botón o estado Owned */}
       {golem.owned ? (
-        <div className="w-full py-2 rounded-lg font-medium text-surface bg-gray-500 text-center">
+        <div className="btn-cr-yellow w-full flex items-center justify-center opacity-50 cursor-not-allowed">
           Owned
         </div>
       ) : (
         <motion.button
           onClick={onPurchase}
-          disabled={!canAfford}
-          className={`
-            w-full py-2 rounded-lg font-medium text-surface
-            flex items-center justify-center gap-2
-            transition-colors
-            ${canAfford
-              ? "bg-primary hover:bg-primary-hover active:bg-primary-active"
-              : "bg-gray-500 cursor-not-allowed"}
-          `}
-          whileTap={canAfford ? { scale: 0.95 } : {}}
+          className="btn-cr-yellow w-full flex items-center justify-center gap-2"
+          whileTap={{ scale: 0.95 }}
         >
-          <span>Buy for</span>
-          <Coins className="h-4 w-4" />
+          <span>Buy</span>
+          <img src={coinIcon} alt="Coin" className="h-5 w-5" />
           <span>{golem.price}</span>
         </motion.button>
       )}

@@ -141,17 +141,17 @@ export function PurchaseAnimation({ golem }: PurchaseAnimationProps): JSX.Elemen
         </h2>
 
         <span
-          className={`inline-block ${rarityClass} text-surface rounded-full px-3 py-1 text-sm mb-3`}
+          className={`inline-block ${rarityClass} font-luckiest text-surface rounded-full px-3 py-1 text-sm mb-3`}
         >
           {golem.rarity}
         </span>
 
-        <p className="text-text-primary text-center mb-4">
+        <p className="text-text-primary font-luckiest text-center mb-4">
           {golem.description}
         </p>
 
         <motion.p
-          className="text-secondary font-bold"
+          className="text-secondary font-bold font-luckiest"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
