@@ -9,76 +9,48 @@ interface Player {
   rank: number
 }
 
-interface RankingTableProps {
+export interface RankingTableProps {
   currentUser: Player
+  mapId?: number
 }
 
-export function RankingTable({ currentUser }: RankingTableProps) {
+export function RankingTable({ currentUser, mapId }: RankingTableProps) {
   const [isLoading, setIsLoading] = useState(true)
 
   // Simulate loading data
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 500)
-
+    const timer = setTimeout(() => setIsLoading(false), 500)
     return () => clearTimeout(timer)
   }, [])
 
-  // Generate placeholder data for top 20 players
+  // Generate placeholder data for top 20 players, adjusted per map
   const generatePlaceholderData = (): Player[] => {
     const names = [
-      "StoneBreaker",
-      "LavaLord",
-      "IceMaster",
-      "MossyKing",
-      "GolemHunter",
-      "RunnerPro",
-      "MagicStone",
-      "CrystalRunner",
-      "EarthShaker",
-      "FireWalker",
-      "ShadowGolem",
-      "RockSmasher",
-      "GemCollector",
-      "SpeedDemon",
-      "MountainKing",
-      "ValleyRunner",
-      "DesertStrider",
-      "ForestJumper",
-      "CaveExplorer",
-      "RuinRaider",
+      "StoneBreaker", "LavaLord", "IceMaster", "MossyKing", "GolemHunter",
+      "RunnerPro", "MagicStone", "CrystalRunner", "EarthShaker", "FireWalker",
+      "ShadowGolem", "RockSmasher", "GemCollector", "SpeedDemon", "MountainKing",
+      "ValleyRunner", "DesertStrider", "ForestJumper", "CaveExplorer", "RuinRaider",
     ]
+    // Base score modified by mapId (global = 0)
+    const base = mapId ? 100000 - (mapId - 1) * 20000 : 120000
 
-    // Create top 20 players with descending scores
-    return names.map((name, index) => ({
-      id: `player-${index + 1}`,
+    return names.map((name, idx) => ({
+      id: `player-${mapId ?? 0}-${idx + 1}`,
       name,
-      score: 100000 - index * 4250 + Math.floor(Math.random() * 1000),
-      rank: index + 1,
+      score: base - idx * 3000 + Math.floor(Math.random() * 1000),
+      rank: idx + 1,
     }))
   }
 
+  // Prepare data
   const topPlayers = generatePlaceholderData()
+  const isUserInTop = topPlayers.some(p => p.id === currentUser.id)
+  const displayPlayers = isUserInTop ? topPlayers : [...topPlayers, { ...currentUser, rank: topPlayers.length + 1 }]
 
-  // Check if current user is in top 20
-  const isCurrentUserInTop20 = topPlayers.some((player) => player.id === currentUser.id)
-
-  // If not in top 20, prepare to append current user at bottom
-  const displayPlayers = [...topPlayers]
-  if (!isCurrentUserInTop20) {
-    displayPlayers.push(currentUser)
-  }
-
-  // Container animation
+  // Animation container
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
   }
 
   return (
@@ -97,7 +69,7 @@ export function RankingTable({ currentUser }: RankingTableProps) {
 
       {/* Table Rows */}
       <div className="flex flex-col">
-        {displayPlayers.map((player, index) => (
+        {displayPlayers.map((player, idx) => (
           <RankingRow
             key={player.id}
             rank={player.rank}
@@ -105,7 +77,7 @@ export function RankingTable({ currentUser }: RankingTableProps) {
             score={player.score}
             isTop3={player.rank <= 3}
             isCurrentUser={player.id === currentUser.id}
-            index={index}
+            index={idx}
           />
         ))}
       </div>

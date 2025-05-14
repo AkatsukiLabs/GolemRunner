@@ -3,13 +3,11 @@ import { TopBar } from "../../layout/TopBar"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
 import { RankingTable } from "./RankingTable"
 import rankingGolemIcon from "../../../assets/icons/RankingGolem.png"
+import { defaultMaps } from "../../../constants/maps"
 
 interface RankingScreenProps {
   coins: number
   level: number
-  // Optional: include if needed
-  experience?: number
-  nextLevelExperience?: number
   currentUser: {
     id: string
     name: string
@@ -81,8 +79,21 @@ export function RankingScreen({
       </motion.div>
 
       {/* Main Content */}
-      <div className="relative z-10 px-4 pt-4 h-[calc(100%-8rem)] overflow-y-auto pb-4">
-        <RankingTable currentUser={currentUser} />
+      {/* Carousel for Rankings */}
+      <div className="relative z-10 pt-4 h-[calc(100%-8rem)] pb-4">
+        <div className="flex overflow-x-auto snap-x snap-mandatory">
+          {/* General Ranking */}
+          <div className="snap-center flex-shrink-0 w-full px-4">
+            <RankingTable currentUser={currentUser} />
+          </div>
+
+          {/* Map-specific Rankings */}
+          {defaultMaps.map((map) => (
+            <div key={map.id} className="snap-center flex-shrink-0 w-full px-4">
+              <RankingTable currentUser={currentUser} mapId={map.id} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
