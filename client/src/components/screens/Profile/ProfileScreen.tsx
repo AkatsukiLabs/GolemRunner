@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { TopBar } from "../../layout/TopBar"
+import { ProfileGolemCard } from "./ProfileGolemCard";
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
-import { GolemCarouselProfile } from "./GolemCarouselProfile"
 import { MapCarouselProfile } from "./MapCarouselProfile"
 import { GolemDetailModal } from "./GolemDetailModal"
 import type { Golem } from "../../types/golem"
@@ -76,9 +76,28 @@ export function ProfileScreen({
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3 }}
             >
-              <h2 className="font-luckiest text-xl text-surface mb-3">Your Golems Collection:</h2>
+              <h2 className="font-luckiest text-xl text-surface mb-3">
+                Your Golems Collection:
+              </h2>
               {ownedGolems.length > 0 ? (
-                <GolemCarouselProfile golems={ownedGolems} onGolemClick={handleGolemClick} />
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0 },
+                    show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+                  }}
+                  initial="hidden"
+                  animate="show"
+                >
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {ownedGolems.map((golem) => (
+                      <ProfileGolemCard
+                        key={golem.id}
+                        golem={golem}
+                        onView={() => handleGolemClick(golem)}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
               ) : (
                 <div className="bg-surface/80 p-6 rounded-lg text-center">
                   <p className="text-text-primary">You don't have any golems yet.</p>
