@@ -15,11 +15,11 @@ export function GolemDetailModal({ golem, onClose }: GolemDetailModalProps) {
   useEffect(() => {
     const interval = setInterval(() => {
       setFrameIndex((i) => (i + 1) % spriteFrames.length)
-    }, 100)     // velocidad un poco más rápida
+    }, 100) // slightly faster speed
     return () => clearInterval(interval)
   }, [spriteFrames.length])
 
-  // Ciclo de animación de sprites
+  // Sprite animation cycle
   useEffect(() => {
     const interval = setInterval(() => {
       setFrameIndex((prev) => (prev + 1) % spriteFrames.length)
@@ -59,16 +59,16 @@ export function GolemDetailModal({ golem, onClose }: GolemDetailModalProps) {
             aria-label="Close"
           >
             <img
-            src={CloseIcon}
-            alt="Close"
-            className="h-9 w-9"
+              src={CloseIcon}
+              alt="Close"
+              className="h-9 w-9"
             />
           </button>
         </div>
 
-        {/* Animación de sprite */}
+        {/* Sprite animation */}
         <div className="flex justify-center mb-4">
-        <div className="relative w-64 h-64">
+          <div className="relative w-64 h-64">
             <img
               src={spriteFrames[frameIndex]}
               alt={`${golem.name} frame ${frameIndex}`}
@@ -77,19 +77,19 @@ export function GolemDetailModal({ golem, onClose }: GolemDetailModalProps) {
           </div>
         </div>
 
-        {/* Rareza */}
+        {/* Rarity */}
         <div className="flex justify-center mb-3">
           <span className={`inline-block ${rarityColor} text-surface font-luckiest rounded-full px-3 py-1 text-sm`}>
             {golem.rarity}
           </span>
         </div>
 
-        {/* Descripción */}
+        {/* Description */}
         <p className="text-text-primary font-luckiest text-center mb-4">
           {golem.description}
         </p>
 
-        {/* Cerrar */}
+        {/* Close */}
         <button
           onClick={onClose}
           className="w-full py-2 rounded-lg font-medium text-surface bg-primary hover:bg-primary-hover active:bg-primary-active transition-colors"
