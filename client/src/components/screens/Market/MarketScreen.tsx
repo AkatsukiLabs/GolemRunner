@@ -1,10 +1,10 @@
 import { useState } from "react"
-import { AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { TopBar } from "../../layout/TopBar"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
 import { GolemGrid } from "./GolemGrid"
 import { PurchaseAnimation } from "./PurchaseAnimation"
-import { InsufficientBalanceAnimation } from "./InsufficientBalanceAnimation"
+import { InsufficientBalanceAnimation } from "./InsufficientBalanceAnimation" // Nuevo componente
 import golemSellerIcon from "../../../assets/icons/GolemSelller.png" 
 import type { Golem } from "../../types/golem"
 import { defaultGolems } from "../../../constants/golems"
