@@ -1,13 +1,14 @@
+import { useRef, useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Coins } from "lucide-react"
+import { TopBar } from "../../layout/TopBar"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
 import { RankingTable } from "./RankingTable"
+import rankingGolemIcon from "../../../assets/icons/RankingGolem.png"
+import { defaultMaps } from "../../../constants/maps"
 
 interface RankingScreenProps {
   coins: number
   level: number
-  experience: number
-  nextLevelExperience: number
   currentUser: {
     id: string
     name: string
@@ -20,66 +21,126 @@ interface RankingScreenProps {
 export function RankingScreen({
   coins,
   level,
-  experience,
-  nextLevelExperience,
   currentUser,
-  onNavigation,
 }: RankingScreenProps) {
-  const progressPercentage = (experience / nextLevelExperience) * 100
+  
+  const bannerVariant = {
+    hidden: { opacity: 0, y: -30 },
+    visible: { opacity: 1, y: 0 }
+  }
+  const golemVariant = {
+    hidden: { opacity: 0, scale: 0.5 },
+    visible: { opacity: 1, scale: 1 }
+  }
+
+  const textVariant = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
+  }
+
+  // Carousel state
+  const carouselRef = useRef<HTMLDivElement>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  // Update active index on scroll
+  useEffect(() => {
+    const el = carouselRef.current
+    if (!el) return
+    const onScroll = () => {
+      const index = Math.round(el.scrollLeft / el.clientWidth)
+      setActiveIndex(index)
+    }
+    el.addEventListener("scroll", onScroll)
+    return () => el.removeEventListener("scroll", onScroll)
+  }, [])
+
+  // Determine dynamic title and subtitle
+  const isGlobal = activeIndex === 0
+  const map = defaultMaps[activeIndex - 1]
+  const title = isGlobal ? "Global Ranking" : `${map.name} Ranking`
+  const subtitle = isGlobal
+    ? "Top runners worldwide."
+    : `Top runners on the ${map.name} map.`
 
   return (
     <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik">
       <BackgroundParticles />
 
       {/* Top Bar */}
-      <div className="relative z-10 w-full px-4 py-3 flex items-center justify-between">
+      <TopBar coins={coins} level={level} title="RANKING" screen="ranking" />
+
+      {/* Clash Royale style banner animado */}
+      <motion.div
+        className="relative mt-12 mb-3"
+        initial="hidden"
+        animate="visible"
+        variants={bannerVariant}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        {/* Ranking Golem */}
         <motion.div
-          className="flex items-center bg-screen/80 backdrop-blur-sm px-3 py-1 rounded-full border border-surface/30"
-          initial={{ x: -50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          className="absolute -top-11 left-3 z-10 w-40 h-40"
+          variants={golemVariant}
+          transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
         >
-          <Coins className="text-primary mr-1 h-5 w-5" />
-          <span className="text-surface font-bold">{coins}</span>
+          <img
+            src={rankingGolemIcon}
+            alt="Ranking Golem"
+            className="object-contain"
+            onError={(e) => {
+              const img = e.currentTarget as HTMLImageElement
+              img.src = "/placeholder.svg?height=80&width=80"
+            }}
+          />
         </motion.div>
 
-        <motion.h1
-          className="font-bangers text-2xl text-surface"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
+        {/* Banner */}
+        <div
+          className="bg-golem-gradient py-3 px-4 pl-40 relative rounded-[10px] mx-4 shadow-md"
+          style={{ height: '96px' }}
         >
-          Ranking
-        </motion.h1>
-
-        <motion.div
-          className="flex items-center justify-center"
-          initial={{ x: 50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <div className="relative w-16 h-4 bg-surface/30 rounded-full overflow-hidden">
-            <div
-              className="absolute top-0 left-0 h-full bg-secondary"
-              style={{ width: `${progressPercentage}%` }}
-            ></div>
+          <div className="flex flex-col sm:flex-row items-center justify-between">
+            <motion.h2
+              className="font-luckiest text-cream text-xl drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide"
+              variants={textVariant}
+              initial="hidden"
+              animate="visible"
+              transition={{ delay: 0.5, duration: 0.4 }}
+            >
+              {title}
+            </motion.h2>
+            <motion.p
+              className="font-luckiest text-dark text-sm opacity-90 mt-1 sm:mt-0"
+              variants={textVariant}
+              initial="hidden"
+              animate="visible"
+              transition={{ delay: 0.7, duration: 0.4 }}
+            >
+              {subtitle}
+            </motion.p>
           </div>
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
 
-      {/* Content */}
-      <div className="relative z-10 px-4 pt-4 h-[calc(100%-8rem)] overflow-y-auto pb-4">
-        <motion.div
-          className="mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+      {/* Main Content */}
+      {/* Carousel for Rankings */}
+      <div className="relative z-10 pt-4 h-[calc(100%-16rem)] pb-16">
+        <div
+          ref={carouselRef}
+          className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth h-full"
         >
-          <h2 className="font-luckiest text-xl text-surface mb-2">Global Leaderboard</h2>
-          <p className="text-surface/80 text-sm">Top runners from around the world. Can you reach the #1 spot?</p>
-        </motion.div>
+          {/* General Ranking */}
+          <div className="snap-center flex-shrink-0 w-full px-4 h-full overflow-y-auto">
+            <RankingTable currentUser={currentUser} />
+          </div>
 
-        <RankingTable currentUser={currentUser} />
+          {/* Map-specific Rankings */}
+          {defaultMaps.map((m) => (
+            <div key={m.id} className="snap-center flex-shrink-0 w-full px-4 h-full overflow-y-auto">
+              <RankingTable currentUser={currentUser} mapId={m.id} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

@@ -21,7 +21,7 @@ export function GolemGrid({ golems, coins, onPurchase }: GolemGridProps) {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-12">  {/* Remove mb-12 if PWA is not needed */}
         {golems.map((golem) => (
           <GolemCard
             key={golem.id}
