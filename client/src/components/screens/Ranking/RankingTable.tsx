@@ -42,12 +42,17 @@ export function RankingTable({ currentUser, mapId }: RankingTableProps) {
     }))
   }
 
-  // Prepare data
+  
+  // Prepare data: show top 10, plus current user if not in top 10
   const topPlayers = generatePlaceholderData()
-  const isUserInTop = topPlayers.some(p => p.id === currentUser.id)
-  const displayPlayers = isUserInTop ? topPlayers : [...topPlayers, { ...currentUser, rank: topPlayers.length + 1 }]
+  const MAX_TOP = 10
+  const topTen = topPlayers.slice(0, MAX_TOP)
+  const isUserInTop = topTen.some(p => p.id === currentUser.id)
+  const displayPlayers: Player[] = isUserInTop
+    ? topTen
+    : [...topTen, { ...currentUser }]
 
-  // Animation container
+  // Animation container variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
@@ -69,17 +74,24 @@ export function RankingTable({ currentUser, mapId }: RankingTableProps) {
 
       {/* Table Rows */}
       <div className="flex flex-col">
-        {displayPlayers.map((player, idx) => (
-          <RankingRow
-            key={player.id}
-            rank={player.rank}
-            name={player.name}
-            score={player.score}
-            isTop3={player.rank <= 3}
-            isCurrentUser={player.id === currentUser.id}
-            index={idx}
-          />
-        ))}
+        {displayPlayers.map((player, idx) => {
+          const isCurrent = player.id === currentUser.id
+          return (
+            <div
+              key={player.id}
+              className={isCurrent ? "opacity-70 bg-secondary/10" : ""}
+            >
+              <RankingRow
+                rank={player.rank}
+                name={player.name}
+                score={player.score}
+                isTop3={player.rank <= 3}
+                isCurrentUser={isCurrent}
+                index={idx}
+              />
+            </div>
+          )
+        })}
       </div>
     </motion.div>
   )
