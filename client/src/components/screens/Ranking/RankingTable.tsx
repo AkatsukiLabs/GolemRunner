@@ -89,10 +89,10 @@ export function RankingTable({ currentUser }: RankingTableProps) {
       animate={isLoading ? "hidden" : "visible"}
     >
       {/* Table Header */}
-      <div className="flex justify-between items-center p-3 bg-primary/20 border-b border-primary/30">
-        <div className="font-bangers text-lg text-primary w-16 text-center">Rank</div>
-        <div className="font-bangers text-lg text-primary flex-1">Player</div>
-        <div className="font-bangers text-lg text-primary w-24 text-right">Score</div>
+      <div className="flex justify-between items-center p-3 bg-golem-gradient border-b border-primary/30">
+        <div className="font-bangers text-xl text-cream w-16 text-center drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">Rank</div>
+        <div className="font-bangers text-xl text-cream flex-1 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">Player</div>
+        <div className="font-bangers text-xl text-cream w-24 text-right drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] tracking-wide">Score</div>
       </div>
 
       {/* Table Rows */}
