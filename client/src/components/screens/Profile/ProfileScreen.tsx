@@ -37,7 +37,7 @@ export function ProfileScreen({
   }
 
   return (
-    <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik">
+    <div className="relative h-screen w-full bg-screen overflow-hidden">
       <BackgroundParticles />
 
       {/* Top Bar */}
@@ -45,18 +45,18 @@ export function ProfileScreen({
 
       {/* Tab Filter */}
       <div className="relative z-10 px-4 mt-2">
-        <div className="flex bg-surface rounded-lg shadow-md overflow-hidden">
+        <div className="flex bg-golem-gradient rounded-[10px] overflow-hidden">
           <button
-            className={`flex-1 py-2 text-center font-bangers text-lg transition-colors ${
-              activeTab === "golems" ? "bg-primary text-surface" : "bg-surface/60 text-secondary"
+            className={`flex-1 py-2 text-center text-2xl font-luckiest text-cream drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] transition-colors ${
+              activeTab === "golems" ? "text-dark" : "opacity-80 hover:opacity-100"
             }`}
             onClick={() => setActiveTab("golems")}
           >
             Golems
           </button>
           <button
-            className={`flex-1 py-2 text-center font-bangers text-lg transition-colors ${
-              activeTab === "maps" ? "bg-primary text-surface" : "bg-surface/60 text-secondary"
+            className={`flex-1 py-2 text-center text-2xl font-luckiest text-cream drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] transition-colors ${
+              activeTab === "maps" ? "text-dark" : "opacity-80 hover:opacity-100"
             }`}
             onClick={() => setActiveTab("maps")}
           >
