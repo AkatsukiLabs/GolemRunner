@@ -31,7 +31,7 @@ export function GolemCard({ golem, canAfford, onPurchase }: GolemCardProps) {
     >
       {/* Imagen del golem - Usando transform scale para hacerla más grande */}
       <div className="h-32 flex items-center justify-center mb-2 overflow-visible">
-        <div className="transform scale-150"> {/* Escala la imagen al 150% */}
+        <div className="transform scale-150">
           <img
             src={golem.image || "/placeholder.svg"}
             alt={golem.name}
@@ -62,7 +62,7 @@ export function GolemCard({ golem, canAfford, onPurchase }: GolemCardProps) {
         {golem.description}
       </p>
 
-      {/* Botón o estado Owned - Ahora ambos usan btn-cr-yellow */}
+      {/* Botón o estado Owned */}
       {golem.owned ? (
         <div className="btn-cr-yellow w-full flex items-center justify-center opacity-50 cursor-not-allowed">
           Owned
@@ -70,13 +70,8 @@ export function GolemCard({ golem, canAfford, onPurchase }: GolemCardProps) {
       ) : (
         <motion.button
           onClick={onPurchase}
-          disabled={!canAfford}
-          className={`
-            btn-cr-yellow w-full
-            flex items-center justify-center gap-2
-            ${!canAfford ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}
-          `}
-          whileTap={canAfford ? { scale: 0.95 } : {}}
+          className="btn-cr-yellow w-full flex items-center justify-center gap-2"
+          whileTap={{ scale: 0.95 }}
         >
           <span>Buy</span>
           <img src={coinIcon} alt="Coin" className="h-5 w-5" />

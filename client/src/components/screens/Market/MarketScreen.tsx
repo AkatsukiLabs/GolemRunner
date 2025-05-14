@@ -1,9 +1,10 @@
 import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence } from "framer-motion"
 import { TopBar } from "../../layout/TopBar"
 import { BackgroundParticles } from "../../shared/BackgroundParticles"
 import { GolemGrid } from "./GolemGrid"
 import { PurchaseAnimation } from "./PurchaseAnimation"
+import { InsufficientBalanceAnimation } from "./InsufficientBalanceAnimation"
 import golemSellerIcon from "../../../assets/icons/GolemSelller.png" 
 import type { Golem } from "../../types/golem"
 import { defaultGolems } from "../../../constants/golems"
@@ -19,26 +20,40 @@ interface MarketScreenProps {
 export function MarketScreen({ coins, level, onPurchase, onAddGolem, onNavigation }: MarketScreenProps) {
   const [showPurchaseAnimation, setShowPurchaseAnimation] = useState(false)
   const [purchasedGolem, setPurchasedGolem] = useState<Golem | null>(null)
+  // Nuevo estado para el modal de saldo insuficiente
+  const [showInsufficientBalance, setShowInsufficientBalance] = useState(false)
+  const [selectedGolem, setSelectedGolem] = useState<Golem | null>(null)
 
   const handlePurchase = (golem: Golem) => {
-    // Attempt to purchase the golem
-    const success = onPurchase(golem.price)
+    // Guardar el golem seleccionado
+    setSelectedGolem(golem)
+    
+    // Verificar si el usuario puede pagar el golem
+    if (coins >= golem.price) {
+      // Attempt to purchase the golem
+      const success = onPurchase(golem.price)
 
-    if (success) {
-      // Show purchase animation
-      setPurchasedGolem(golem)
-      setShowPurchaseAnimation(true)
+      if (success) {
+        // Show purchase animation
+        setPurchasedGolem(golem)
+        setShowPurchaseAnimation(true)
 
-      // Add golem to collection
-      onAddGolem(golem)
+        // Add golem to collection
+        onAddGolem(golem)
 
-      // Hide animation after a delay
-      setTimeout(() => {
-        setShowPurchaseAnimation(false)
-      }, 3000)
+        // Hide animation after a delay
+        setTimeout(() => {
+          setShowPurchaseAnimation(false)
+        }, 3000)
+      }
     } else {
-      // Could show an error message here
-      console.log("Not enough coins to purchase this golem!")
+      // Mostrar el modal de saldo insuficiente
+      setShowInsufficientBalance(true)
+      
+      // Ocultar después de un tiempo
+      setTimeout(() => {
+        setShowInsufficientBalance(false)
+      }, 3000)
     }
   }
 
@@ -91,6 +106,13 @@ export function MarketScreen({ coins, level, onPurchase, onAddGolem, onNavigatio
       {/* Purchase Animation */}
       <AnimatePresence>
         {showPurchaseAnimation && purchasedGolem && <PurchaseAnimation golem={purchasedGolem} />}
+      </AnimatePresence>
+
+      {/* Insufficient Balance Animation */}
+      <AnimatePresence>
+        {showInsufficientBalance && selectedGolem && (
+          <InsufficientBalanceAnimation golem={selectedGolem} currentBalance={coins} />
+        )}
       </AnimatePresence>
     </div>
   )
