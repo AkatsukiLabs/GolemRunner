@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import type { Golem } from "../../types/golem";
-import { Eye } from "lucide-react";
+import EyeIcon from "../../../assets/icons/EyeIcon.png";
 
 interface ProfileGolemCardProps {
   golem: Golem;
@@ -46,10 +46,10 @@ export function ProfileGolemCard({ golem, onView }: ProfileGolemCardProps) {
 
       <motion.button
         onClick={onView}
-        className="btn-cr-yellow w-full flex items-center justify-center gap-2"
-        whileTap={{ scale: 0.95 }}
+        className="btn-cr-yellow w-full flex items-center justify-center"
+        whileTap={{ scale: 1 }}
       >
-        <Eye className="h-5 w-5" />
+        <img src={EyeIcon} alt="Coin" className="h-8 w-8"/>
         <span>View</span>
       </motion.button>
     </motion.div>
