@@ -5,7 +5,7 @@ import { BackgroundParticles } from "../../shared/BackgroundParticles"
 import { GolemGrid } from "./GolemGrid"
 import { PurchaseAnimation } from "./PurchaseAnimation"
 import { InsufficientBalanceAnimation } from "./InsufficientBalanceAnimation" // Nuevo componente
-import golemSellerIcon from "../../../assets/icons/GolemSelller.png" 
+import golemSellerIcon from "../../../assets/icons/GolemSellerV2.png" 
 import type { Golem } from "../../types/golem"
 import { defaultGolems } from "../../../constants/golems"
 
@@ -57,6 +57,15 @@ export function MarketScreen({ coins, level, onPurchase, onAddGolem, onNavigatio
     }
   }
 
+  const bannerVariant = {
+    hidden: { opacity: 0, y: -30 },
+    visible: { opacity: 1, y: 0 }
+  };
+  const sellerVariant = {
+    hidden: { opacity: 0, scale: 0.5 },
+    visible: { opacity: 1, scale: 1 }
+  };
+
   return (
     <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik">
       <BackgroundParticles />
@@ -64,10 +73,20 @@ export function MarketScreen({ coins, level, onPurchase, onAddGolem, onNavigatio
       {/* Top Bar */}
       <TopBar coins={coins} level={level} title="MARKET" screen="market" />
 
-      {/* Clash Royale style banner */}
-      <div className="relative mt-12 mb-3">
-        {/* Golem Seller - positioned above the banner */}
-        <div className="absolute -top-11 left-3 z-10 w-40 h-40">
+      {/* Clash Royale style banner animado */}
+      <motion.div
+        className="relative mt-12 mb-3"
+        initial="hidden"
+        animate="visible"
+        variants={bannerVariant}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        {/* Golem Seller animado */}
+        <motion.div
+          className="absolute -top-11 left-3 z-10 w-40 h-40"
+          variants={sellerVariant}
+          transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
+        >
           <img 
             src={golemSellerIcon} 
             alt="Golem Seller" 
@@ -77,7 +96,7 @@ export function MarketScreen({ coins, level, onPurchase, onAddGolem, onNavigatio
               img.src = "/placeholder.svg?height=80&width=80"
             }}
           />
-        </div>
+        </motion.div>
         
         {/* Banner */}
         <div className="bg-golem-gradient py-3 px-4 pl-40 relative rounded-[10px] mx-4 shadow-md">
@@ -90,10 +109,10 @@ export function MarketScreen({ coins, level, onPurchase, onAddGolem, onNavigatio
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Content */}
-      <div className="relative z-10 h-[calc(100%-12rem)] overflow-y-auto pb-4">
+      <div className="relative z-10 h-[calc(100%-16rem)] overflow-y-auto pb-16">
         <div className="px-4 py-2">
           <GolemGrid 
             golems={defaultGolems} 
