@@ -158,9 +158,8 @@ pub mod game {
             }
 
             // Emit events for achievements progression
-            let mut achievement_id = constants::ACHIEVEMENTS_INITIAL_ID;
-            let counter = constants::ACHIEVEMENTS_COUNT;
-            let stop = counter + achievement_id;
+            let mut achievement_id = constants::ACHIEVEMENTS_INITIAL_ID; // 1
+            let stop = constants::ACHIEVEMENTS_COUNT; // 5
 
             let player = store.read_player();
             player.assert_exists();

@@ -218,7 +218,7 @@ pub impl StoreImpl of StoreTrait {
         let mut golem = self.read_golem(golem_id);
         
         // Verify that the golem exists
-        if golem.is_zero() {
+        if golem.name == '' {
             return false; // Golem does not exist
         }
         
@@ -250,7 +250,7 @@ pub impl StoreImpl of StoreTrait {
         let mut world = self.read_world(world_id);
         
         // Verify that the world exists
-        if world.is_zero() {
+        if world.name == '' {
             return false; // World does not exist
         }
         

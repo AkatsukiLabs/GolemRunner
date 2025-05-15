@@ -31,6 +31,7 @@ pub mod tests {
     mod test_golem;
     mod test_world;
     mod test_player;
+    mod test_ranking;
 }
 
 pub mod constants;
