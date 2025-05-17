@@ -2,37 +2,56 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import {
   GameState,
-  GameAssets,
+  GameThemeAssets, // Using the updated type for assets configuration
   GamePhysics,
-  GameDifficulty,
+  GameDifficultyConfig,
   PlayerState,
-  ObstacleState,
-  ObstacleVariant,
-  MapTheme
+  ObstacleInstance, // Using the updated type for obstacle instances
+  MapTheme,
 } from '../../types/game';
 import audioManager from './AudioManager';
+import ScoreDisplay from './ScoreDisplay';
 
 interface GameCanvasProps {
-  assets: GameAssets;
-  physics: GamePhysics;
-  difficulty: GameDifficulty;
+  assetsConfig: GameThemeAssets; // Receives config with imported image source strings
+  physicsConfig: GamePhysics;
+  difficultyConfig: GameDifficultyConfig;
   theme: MapTheme;
   onGameOver: (score: number) => void;
   initialHighScore: number;
-  canvasWidth: number; // Ancho del canvas (e.g., window.innerWidth)
-  canvasHeight: number; // Alto del canvas (e.g., window.innerHeight)
+  canvasWidth: number;
+  canvasHeight: number;
 }
 
-// Constantes del juego (algunas podrían venir de props o ser ajustadas)
-const PLAYER_ANIMATION_FRAME_TIME = 80; // ms por frame de animación del jugador (1000ms / 12fps ~ 83ms)
-const PLAYER_BASE_WIDTH = 50; // Ancho base del jugador, se puede escalar
-const PLAYER_BASE_HEIGHT = 70; // Alto base del jugador, se puede escalar
-const GROUND_HEIGHT_RATIO = 0.15; // Proporción de la altura del canvas para el suelo (invisible)
+const PLAYER_ANIMATION_FRAME_TIME = 80; // ms per frame
+const PLAYER_BASE_WIDTH = 60; // Adjust to your Golem sprite art
+const PLAYER_BASE_HEIGHT = 80; // Adjust to your Golem sprite art
+const GROUND_HEIGHT_RATIO = 0.15;
+
+// Helper to load an image from an imported source string
+const loadImageElement = (src: string): Promise<HTMLImageElement> => {
+  return new Promise((resolve, reject) => {
+    if (!src || src.trim() === "") {
+        const placeholderImg = new Image(1,1); // 1x1 transparent pixel
+        placeholderImg.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+        placeholderImg.onload = () => resolve(placeholderImg); // Resolve with placeholder
+        placeholderImg.onerror = () => reject(new Error('Failed to load placeholder 1x1 image src')); // Should not happen for dataURL
+        return;
+    }
+    const img = new Image();
+    img.src = src; // src is now the result of an import statement (a path string)
+    img.onload = () => resolve(img);
+    img.onerror = (errEvent) => {
+      console.error(`GameCanvas: Failed to load image from src: ${src}`, errEvent);
+      reject(new Error(`Failed to load image: ${src}`));
+    };
+  });
+};
 
 const GameCanvas: React.FC<GameCanvasProps> = ({
-  assets,
-  physics,
-  difficulty,
+  assetsConfig,
+  physicsConfig,
+  difficultyConfig,
   theme,
   onGameOver,
   initialHighScore,
@@ -42,79 +61,74 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<GameState>('idle');
   const [score, setScore] = useState(0);
-  const [currentSpeed, setCurrentSpeed] = useState(physics.initialSpeed);
+  const [currentSpeed, setCurrentSpeed] = useState(physicsConfig.initialSpeed);
 
-  // Refs para estados mutables que no disparan re-renderizado en el bucle
   const playerStateRef = useRef<PlayerState | null>(null);
-  const obstaclesRef = useRef<ObstacleState[]>([]);
-  const gameTimeRef = useRef(0); // Tiempo total del juego
+  const obstaclesRef = useRef<ObstacleInstance[]>([]); // Array of ObstacleInstance
+  const gameTimeRef = useRef(0);
   const lastObstacleTimeRef = useRef(0);
   const nextObstacleIntervalRef = useRef(0);
   const backgroundXRef = useRef(0);
 
-  // Refs para imágenes precargadas
-  const playerRunImagesRef = useRef<HTMLImageElement[]>([]);
-  const playerJumpImagesRef = useRef<HTMLImageElement[]>([]);
-  const backgroundImageRef = useRef<HTMLImageElement | null>(null);
-  const obstacleImagesRef = useRef<Record<ObstacleVariant, HTMLImageElement>>({} as Record<ObstacleVariant, HTMLImageElement>);
+  // Store loaded HTMLImageElement instances
+  const loadedRunFramesRef = useRef<HTMLImageElement[]>([]);
+  const loadedJumpFramesRef = useRef<HTMLImageElement[]>([]);
+  const loadedBackgroundImgRef = useRef<HTMLImageElement | null>(null);
+  // Store loaded obstacle images, mapped by their original source string for lookup
+  const loadedObstacleImageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  const [assetsCurrentlyLoaded, setAssetsCurrentlyLoaded] = useState(false);
 
-  const groundY = canvasHeight * (1 - GROUND_HEIGHT_RATIO) - (physics.playerGroundOffset || 0);
-  const playerWidth = PLAYER_BASE_WIDTH; // Ajustar si es necesario escalado
+  const groundY = canvasHeight * (1 - GROUND_HEIGHT_RATIO) - (physicsConfig.playerGroundOffset || 0);
+  const playerWidth = PLAYER_BASE_WIDTH;
   const playerHeight = PLAYER_BASE_HEIGHT;
 
-
-  // --- Pre-carga de Assets ---
   useEffect(() => {
     let mounted = true;
-    const loadImage = (src: string): Promise<HTMLImageElement> =>
-      new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = src;
-        img.onload = () => resolve(img);
-        img.onerror = (err) => reject(`Failed to load image: ${src} - ${err}`);
-      });
+    setAssetsCurrentlyLoaded(false);
 
-    const loadAllAssets = async () => {
+    const loadAllGameAssets = async () => {
       try {
-        // Player run frames
-        const runFrames = await Promise.all(assets.playerRunFrames.map(loadImage));
-        if (mounted) playerRunImagesRef.current = runFrames;
-
-        // Player jump frames
-        const jumpFrames = await Promise.all(assets.playerJumpFrames.map(loadImage));
-        if (mounted) playerJumpImagesRef.current = jumpFrames;
+        // Load player frames
+        const runFrames = await Promise.all(assetsConfig.playerRunFrames.map(src => loadImageElement(src)));
+        const jumpFrames = await Promise.all(assetsConfig.playerJumpFrames.map(src => loadImageElement(src)));
         
-        // Background
-        const bgImg = await loadImage(assets.background);
-        if (mounted) backgroundImageRef.current = bgImg;
+        // Load background
+        const bgImg = await loadImageElement(assetsConfig.background);
+        
+        // Load all unique obstacle images specified in assetsConfig.obstacles (which is string[])
+        const uniqueObstacleSrcs = Array.from(new Set(assetsConfig.obstacles));
+        const obstacleImagePromises = uniqueObstacleSrcs.map(src => loadImageElement(src));
+        const loadedObstacles = await Promise.all(obstacleImagePromises);
 
-        // Obstacles
-        const loadedObstacleImages: Record<ObstacleVariant, HTMLImageElement> = {} as Record<ObstacleVariant, HTMLImageElement>;
-        for (const key of Object.keys(assets.obstacles) as ObstacleVariant[]) {
-          const assetInfo = assets.obstacles[key];
-          if (assetInfo) { // Chequeo extra
-             loadedObstacleImages[key] = await loadImage(assetInfo.src);
+        const newObstacleCache = new Map<string, HTMLImageElement>();
+        uniqueObstacleSrcs.forEach((src, index) => {
+          newObstacleCache.set(src, loadedObstacles[index]);
+        });
+
+        if (mounted) {
+          loadedRunFramesRef.current = runFrames.filter(img => img.naturalHeight !== 0); // Filter out failed placeholders
+          loadedJumpFramesRef.current = jumpFrames.filter(img => img.naturalHeight !== 0);
+          loadedBackgroundImgRef.current = bgImg.naturalHeight !== 0 ? bgImg : null;
+          loadedObstacleImageCacheRef.current = newObstacleCache;
+          
+          if (loadedRunFramesRef.current.length === 0 && assetsConfig.playerRunFrames.length > 0) {
+            console.error("GameCanvas: Failed to load ANY player run frames.");
           }
+          setAssetsCurrentlyLoaded(true);
         }
-        if (mounted) obstacleImagesRef.current = loadedObstacleImages;
-        
-        console.log('All assets loaded');
-        if (mounted) resetGame(); // Resetear el juego una vez que los assets estén listos
-
       } catch (error) {
-        console.error("Error loading assets:", error);
-        // Podrías manejar un estado de error aquí
+        console.error("GameCanvas: Critical error loading visual assets:", error);
+        if (mounted) setAssetsCurrentlyLoaded(false);
       }
     };
 
-    loadAllAssets();
+    loadAllGameAssets();
     return () => { mounted = false; };
-  }, [assets, canvasWidth, canvasHeight]); // Recargar si cambian los assets o dimensiones
+  }, [assetsConfig]); // Reload assets if config changes
 
-  // --- Lógica de Reseteo del Juego ---
   const resetGame = useCallback(() => {
-    console.log("Resetting game state");
-    // Posición inicial del jugador
+    if (!assetsCurrentlyLoaded) return;
+
     playerStateRef.current = {
       x: canvasWidth * 0.15,
       y: groundY - playerHeight,
@@ -123,312 +137,229 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       velocityY: 0,
       isJumping: false,
       currentFrame: 0,
-      frameCount: assets.playerRunFrames.length,
+      frameCount: loadedRunFramesRef.current.length || 1, // Avoid division by zero if no frames
       frameTime: PLAYER_ANIMATION_FRAME_TIME,
       currentFrameTime: 0,
     };
     obstaclesRef.current = [];
     setScore(0);
-    setCurrentSpeed(physics.initialSpeed);
+    setCurrentSpeed(physicsConfig.initialSpeed);
     gameTimeRef.current = 0;
     lastObstacleTimeRef.current = 0;
-    nextObstacleIntervalRef.current = 
-        Math.random() * (difficulty.obstacleFrequencyMax - difficulty.obstacleFrequencyMin) + difficulty.obstacleFrequencyMin;
+    nextObstacleIntervalRef.current =
+      Math.random() * (difficultyConfig.initialMaxSpawnIntervalMs - difficultyConfig.initialMinSpawnIntervalMs) +
+      difficultyConfig.initialMinSpawnIntervalMs;
     backgroundXRef.current = 0;
-    setGameState('idle'); // Espera a que el usuario inicie
+    setGameState('idle');
     audioManager.stopBackgroundMusic();
-  }, [canvasWidth, groundY, playerHeight, playerWidth, physics, difficulty, assets.playerRunFrames.length]);
+  }, [assetsCurrentlyLoaded, canvasWidth, groundY, playerHeight, playerWidth, physicsConfig, difficultyConfig]);
 
   useEffect(() => {
-    // Llama a resetGame cuando el componente se monta o las dependencias clave cambian.
-    // Esto es importante si, por ejemplo, el canvasWidth/Height cambia y el juego necesita recalcular posiciones.
-    if (playerRunImagesRef.current.length > 0) { // Asegúrate que los assets básicos estén listos
-        resetGame();
-    }
-  }, [resetGame, canvasWidth, canvasHeight]); // Dependencias de resetGame ya están incluidas en su useCallback
+    if (assetsCurrentlyLoaded) resetGame();
+  }, [assetsCurrentlyLoaded, resetGame]);
 
-  // --- Manejo de Input ---
   const handleInteraction = useCallback(() => {
+    if (!assetsCurrentlyLoaded) return;
     if (gameState === 'idle') {
       setGameState('playing');
       audioManager.playBackgroundMusic();
-      return;
-    }
-
-    if (gameState === 'playing' && playerStateRef.current && !playerStateRef.current.isJumping) {
+    } else if (gameState === 'playing' && playerStateRef.current && !playerStateRef.current.isJumping) {
       playerStateRef.current.isJumping = true;
-      playerStateRef.current.velocityY = -physics.jumpForce;
-      playerStateRef.current.currentFrame = 0; // Reiniciar animación de salto
+      playerStateRef.current.velocityY = -physicsConfig.jumpForce;
+      playerStateRef.current.currentFrame = 0;
       playerStateRef.current.currentFrameTime = 0;
-      playerStateRef.current.frameCount = assets.playerJumpFrames.length;
+      playerStateRef.current.frameCount = loadedJumpFramesRef.current.length || 1;
       audioManager.playJumpSound();
     }
-  }, [gameState, physics.jumpForce, assets.playerJumpFrames.length]);
+  }, [gameState, assetsCurrentlyLoaded, physicsConfig.jumpForce]);
 
   useEffect(() => {
-    // Listeners para touch y click
     const canvasElement = canvasRef.current;
-    if (!canvasElement) return;
-
-    canvasElement.addEventListener('touchstart', handleInteraction, { passive: false }); // passive false para prevenir scroll
+    if (!canvasElement || !assetsCurrentlyLoaded) return;
+    canvasElement.addEventListener('touchstart', handleInteraction, { passive: true });
     canvasElement.addEventListener('mousedown', handleInteraction);
-    
-    // Opcional: Salto con barra espaciadora para debugging en escritorio
-    const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.code === 'Space') {
-            e.preventDefault(); // Prevenir scroll de página si el canvas es enfocable
-            handleInteraction();
-        }
-    };
+    const handleKeyDown = (e: KeyboardEvent) => { if (e.code === 'Space') { e.preventDefault(); handleInteraction(); }};
     window.addEventListener('keydown', handleKeyDown);
-
-
     return () => {
       canvasElement.removeEventListener('touchstart', handleInteraction);
       canvasElement.removeEventListener('mousedown', handleInteraction);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleInteraction]);
+  }, [handleInteraction, assetsCurrentlyLoaded]);
 
-
-  // --- Bucle Principal del Juego ---
   useEffect(() => {
-    if (!canvasRef.current || playerRunImagesRef.current.length === 0 || !backgroundImageRef.current || Object.keys(obstacleImagesRef.current).length === 0) {
-      console.log("Canvas or assets not ready for game loop.");
-      return; // No iniciar el bucle si el canvas o los assets no están listos
-    }
-
+    if (!assetsCurrentlyLoaded || !canvasRef.current) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let animationFrameId: number;
     let lastTime = performance.now();
-
     const gameLoop = (currentTime: number) => {
-      const deltaTime = currentTime - lastTime;
+      const deltaTimeMs = currentTime - lastTime;
       lastTime = currentTime;
-
-      if (gameState === 'playing') {
-        updateGame(deltaTime / 1000, ctx); // deltaTime en segundos
-      }
-      
+      if (gameState === 'playing') updateGame(deltaTimeMs / 1000, ctx); // dt in seconds
       drawGame(ctx);
-
-      if (gameState !== 'gameOver') { // Continuar el bucle si no es game over
-        animationFrameId = requestAnimationFrame(gameLoop);
-      }
+      if (gameState !== 'gameOver') animationFrameId = requestAnimationFrame(gameLoop);
     };
-    
-    // Iniciar el bucle solo si no estamos ya en game over (ej. después de un reinicio)
-    if (gameState === 'playing' || gameState === 'idle') {
-        animationFrameId = requestAnimationFrame(gameLoop);
-    }
+    if (gameState === 'playing' || gameState === 'idle') animationFrameId = requestAnimationFrame(gameLoop);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [gameState, assetsCurrentlyLoaded, canvasWidth, canvasHeight, difficultyConfig, physicsConfig]);
 
 
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [gameState, assets, physics, difficulty, canvasWidth, canvasHeight]); // Reiniciar bucle si el estado o config cambia
-
-  // --- Lógica de Actualización del Juego ---
-  const updateGame = (dt: number, ctx: CanvasRenderingContext2D) => { // dt en segundos
+  const updateGame = (dt: number, ctx: CanvasRenderingContext2D) => { // dt is in seconds
     if (!playerStateRef.current) return;
-
     gameTimeRef.current += dt;
-
-    // Actualizar Puntuación
-    setScore((prevScore) => prevScore + currentSpeed * dt * 0.1); // Ajustar multiplicador de score
-
-    // Actualizar Velocidad (Dificultad Progresiva)
+    setScore((prevScore) => prevScore + currentSpeed * dt * 0.1);
     setCurrentSpeed((prevSpeed) => {
-        const maxSpeed = difficulty.maxSpeed || Infinity;
-        return Math.min(maxSpeed, prevSpeed + difficulty.speedIncrement * dt);
+      const maxSpeed = difficultyConfig.maxSpeed ?? Infinity;
+      return Math.min(maxSpeed, prevSpeed + difficultyConfig.speedIncrement * dt);
     });
-    
-    // Mover fondo
-    backgroundXRef.current -= currentSpeed * dt;
-    if (backgroundImageRef.current && backgroundXRef.current <= -backgroundImageRef.current.width) {
-        backgroundXRef.current = 0;
+
+    if (loadedBackgroundImgRef.current) {
+        const bgImg = loadedBackgroundImgRef.current;
+        const bgDisplayHeight = canvasHeight;
+        const bgDisplayWidth = (bgImg.width / bgImg.height) * bgDisplayHeight;
+        backgroundXRef.current -= currentSpeed * dt;
+        if (backgroundXRef.current <= -bgDisplayWidth) {
+            backgroundXRef.current += bgDisplayWidth;
+        }
     }
 
 
-    // Actualizar Jugador
     const player = playerStateRef.current;
-    player.currentFrameTime += dt * 1000; // frameTime está en ms
-
-    if (player.currentFrameTime >= player.frameTime) {
-      player.currentFrame = (player.currentFrame + 1) % player.frameCount;
-      player.currentFrameTime = 0;
+    if (player.frameCount > 0) { // Only animate if there are frames
+        player.currentFrameTime += dt * 1000; // dt to ms
+        if (player.currentFrameTime >= player.frameTime) {
+        player.currentFrame = (player.currentFrame + 1) % player.frameCount;
+        player.currentFrameTime = 0;
+        }
     }
+
 
     if (player.isJumping) {
-      player.y += player.velocityY * dt * 100; // Escalar velocidad de salto si es necesario
-      player.velocityY += physics.gravity * dt * 10; // Escalar gravedad si es necesario
-
+      player.y += player.velocityY * dt;
+      player.velocityY += physicsConfig.gravity * dt;
       if (player.y >= groundY - player.height) {
         player.y = groundY - player.height;
         player.isJumping = false;
         player.velocityY = 0;
-        player.currentFrame = 0; // Volver a animación de correr
+        player.currentFrame = 0;
         player.currentFrameTime = 0;
-        player.frameCount = assets.playerRunFrames.length;
+        player.frameCount = loadedRunFramesRef.current.length || 1;
       }
     }
 
-    // Actualizar Obstáculos
-    obstaclesRef.current = obstaclesRef.current.filter(obs => obs.x + obs.width > 0); // Eliminar los que salen de pantalla
-    obstaclesRef.current.forEach(obs => {
-      obs.x -= currentSpeed * dt;
-    });
+    obstaclesRef.current = obstaclesRef.current.filter(obs => obs.x + obs.width > 0);
+    obstaclesRef.current.forEach(obs => { obs.x -= currentSpeed * dt; });
 
-    // Generar Nuevos Obstáculos
-    lastObstacleTimeRef.current += dt * 1000; // en ms
+    lastObstacleTimeRef.current += dt * 1000; // dt to ms
     if (lastObstacleTimeRef.current >= nextObstacleIntervalRef.current) {
       createObstacle();
       lastObstacleTimeRef.current = 0;
-      // Ajustar frecuencia basada en velocidad/score si es necesario
-      const baseIntervalMin = difficulty.obstacleFrequencyMin;
-      const baseIntervalMax = difficulty.obstacleFrequencyMax;
-      // Ejemplo: reducir intervalo a medida que aumenta la velocidad, hasta un límite
-      const speedFactor = Math.max(0.5, 1 - (currentSpeed - physics.initialSpeed) / ((difficulty.maxSpeed || currentSpeed * 2) - physics.initialSpeed)); 
-      const currentIntervalMin = baseIntervalMin * speedFactor;
-      const currentIntervalMax = baseIntervalMax * speedFactor;
-
-      nextObstacleIntervalRef.current = Math.random() * (currentIntervalMax - currentIntervalMin) + currentIntervalMin;
+      const speedFactor = currentSpeed / (difficultyConfig.maxSpeed || (physicsConfig.initialSpeed * 2.5)); // Normalized speed factor (0 to 1)
+      const reductionFactor = difficultyConfig.obstacleIntervalSpeedFactor; // How much speed reduces interval
+      const minSpawn = difficultyConfig.initialMinSpawnIntervalMs * (1 - speedFactor * reductionFactor);
+      const maxSpawn = difficultyConfig.initialMaxSpawnIntervalMs * (1 - speedFactor * reductionFactor);
+      nextObstacleIntervalRef.current = Math.random() * (Math.max(difficultyConfig.minOverallSpawnIntervalMs, maxSpawn) - Math.max(difficultyConfig.minOverallSpawnIntervalMs, minSpawn)) + Math.max(difficultyConfig.minOverallSpawnIntervalMs, minSpawn);
     }
-    
-    // Detección de Colisiones
     checkCollisions();
   };
-  
+
   const createObstacle = () => {
-    if (Object.keys(obstacleImagesRef.current).length === 0) return;
+    if (assetsConfig.obstacles.length === 0) return;
+    const randomObstacleSrc = assetsConfig.obstacles[Math.floor(Math.random() * assetsConfig.obstacles.length)];
+    const obstacleImage = loadedObstacleImageCacheRef.current.get(randomObstacleSrc);
 
-    const obstacleVariants = Object.keys(assets.obstacles) as ObstacleVariant[];
-    const variant = obstacleVariants[Math.floor(Math.random() * obstacleVariants.length)];
-    const assetInfo = assets.obstacles[variant];
-    if (!assetInfo) return;
-
-    const obstacleImage = obstacleImagesRef.current[variant];
-    if(!obstacleImage) return;
-
-    // Escalar obstáculos si es necesario, por ahora usamos su tamaño intrínseco
-    const obsWidth = assetInfo.width; 
-    const obsHeight = assetInfo.height;
-
-    obstaclesRef.current.push({
-      id: `obs-${Date.now()}-${Math.random()}`,
-      variant,
-      x: canvasWidth,
-      y: groundY - obsHeight, // Asume que todos los obstáculos están en el suelo
-      width: obsWidth,
-      height: obsHeight,
-    });
+    if (obstacleImage && obstacleImage.naturalHeight !== 0) { // Image is loaded and valid
+      obstaclesRef.current.push({
+        id: `obs-${Date.now()}-${Math.random()}`,
+        imageSrc: randomObstacleSrc,
+        x: canvasWidth,
+        y: groundY - obstacleImage.naturalHeight, // Use natural height for y-pos
+        width: obstacleImage.naturalWidth,       // Use natural width
+        height: obstacleImage.naturalHeight,     // Use natural height
+      });
+    } else {
+        console.warn("Attempted to create obstacle with unloaded or invalid image:", randomObstacleSrc);
+    }
   };
 
   const checkCollisions = () => {
     if (!playerStateRef.current) return;
     const player = playerStateRef.current;
-    const playerRect = {
-      x: player.x + player.width * 0.1, // Ajustar bounding box (ej. 80% del tamaño)
-      y: player.y + player.height * 0.1,
-      width: player.width * 0.8,
-      height: player.height * 0.8,
-    };
-
+    const playerRect = { x: player.x + player.width * 0.15, y: player.y + player.height * 0.1, width: player.width * 0.7, height: player.height * 0.8 };
     for (const obs of obstaclesRef.current) {
-      const obsRect = {
-        x: obs.x + obs.width * 0.1,
-        y: obs.y + obs.height * 0.1,
-        width: obs.width * 0.8,
-        height: obs.height * 0.8,
-      };
-
-      // Simple AABB collision detection
-      if (
-        playerRect.x < obsRect.x + obsRect.width &&
-        playerRect.x + playerRect.width > obsRect.x &&
-        playerRect.y < obsRect.y + obsRect.height &&
-        playerRect.y + playerRect.height > obsRect.y
-      ) {
+      const obsRect = { x: obs.x + obs.width * 0.1, y: obs.y + obs.height * 0.1, width: obs.width * 0.8, height: obs.height * 0.8 };
+      if (playerRect.x < obsRect.x + obsRect.width && playerRect.x + playerRect.width > obsRect.x && playerRect.y < obsRect.y + obsRect.height && playerRect.y + playerRect.height > obsRect.y) {
         setGameState('gameOver');
         audioManager.stopBackgroundMusic();
         audioManager.playGameOverSound();
-        onGameOver(score); // Notificar al componente padre
+        onGameOver(score);
         return;
       }
     }
   };
 
-  // --- Lógica de Dibujo ---
   const drawGame = (ctx: CanvasRenderingContext2D) => {
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight); // Limpiar canvas
-
-    // Dibujar Fondo (con tile loop)
-    if (backgroundImageRef.current) {
-      const bg = backgroundImageRef.current;
-      const bgRatio = bg.height / bg.width;
-      const bgHeight = canvasHeight; // Hacer que el fondo ocupe toda la altura
-      const bgWidth = bgHeight / bgRatio;
-
-
-      let currentX = backgroundXRef.current;
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    if (loadedBackgroundImgRef.current) {
+      const bg = loadedBackgroundImgRef.current;
+      const bgDisplayHeight = canvasHeight;
+      const bgDisplayWidth = (bg.width / bg.height) * bgDisplayHeight;
+      let currentX = backgroundXRef.current % bgDisplayWidth;
+      if (currentX > 0) currentX -= bgDisplayWidth;
       while (currentX < canvasWidth) {
-        ctx.drawImage(bg, currentX, 0, bgWidth, bgHeight);
-        currentX += bgWidth;
+        ctx.drawImage(bg, currentX, 0, bgDisplayWidth, bgDisplayHeight);
+        currentX += bgDisplayWidth;
       }
-       // Dibuja una segunda imagen para el bucle si es necesario
-      if (backgroundXRef.current < 0 && backgroundXRef.current + bgWidth < canvasWidth) {
-        ctx.drawImage(bg, backgroundXRef.current + bgWidth, 0, bgWidth, bgHeight);
-      }
-    } else { // Fondo de color si la imagen no carga
-        ctx.fillStyle = theme === 'ice' ? '#ADD8E6' : theme === 'volcano' ? '#A52A2A' : '#228B22';
+    } else {
+        ctx.fillStyle = theme === 'ice' ? '#87CEEB' : theme === 'volcano' ? '#B22222' : '#3B8E59'; // Brighter defaults
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     }
 
-
-    // Dibujar Jugador
-    if (playerStateRef.current && playerRunImagesRef.current.length > 0 && playerJumpImagesRef.current.length > 0) {
+    if (playerStateRef.current) {
       const player = playerStateRef.current;
-      const framesToUse = player.isJumping ? playerJumpImagesRef.current : playerRunImagesRef.current;
-      const currentFrameImage = framesToUse[player.currentFrame];
-      if (currentFrameImage) {
-        ctx.drawImage(currentFrameImage, player.x, player.y, player.width, player.height);
+      const framesToUse = player.isJumping ? loadedJumpFramesRef.current : loadedRunFramesRef.current;
+      if (framesToUse.length > 0 && player.frameCount > 0) {
+        const currentFrameImage = framesToUse[player.currentFrame % framesToUse.length];
+        if (currentFrameImage && currentFrameImage.complete && currentFrameImage.naturalHeight !== 0) {
+          ctx.drawImage(currentFrameImage, player.x, player.y, player.width, player.height);
+        }
       }
     }
     
-    // Dibujar Obstáculos
     obstaclesRef.current.forEach(obs => {
-      const obstacleImage = obstacleImagesRef.current[obs.variant];
-      if (obstacleImage) {
+      const obstacleImage = loadedObstacleImageCacheRef.current.get(obs.imageSrc);
+      if (obstacleImage && obstacleImage.complete && obstacleImage.naturalHeight !== 0) {
         ctx.drawImage(obstacleImage, obs.x, obs.y, obs.width, obs.height);
       }
     });
 
-    // Dibujar UI (Score, etc.) - Se hace con componentes DOM encima del canvas (ScoreDisplay)
-    // Si estamos en idle y hay assets, dibujar "Tap to start"
-    if (gameState === 'idle' && backgroundImageRef.current) {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-        ctx.fillRect(0, canvasHeight / 2 - 30, canvasWidth, 60);
-        ctx.font = "bold 30px 'Luckiest Guy', cursive"; // Asegúrate que la fuente esté cargada
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
-        ctx.fillText("Tap to Start", canvasWidth / 2, canvasHeight / 2 + 10);
+    if (gameState === 'idle' && assetsCurrentlyLoaded) {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+      ctx.fillRect(canvasWidth * 0.5 - 150, canvasHeight * 0.5 - 40, 300, 80);
+      ctx.font = "bold 32px 'Luckiest Guy', cursive";
+      ctx.fillStyle = "white";
+      ctx.textAlign = "center";
+      ctx.fillText("Tap to Start", canvasWidth * 0.5, canvasHeight * 0.5 + 10);
     }
   };
 
+  if (!assetsCurrentlyLoaded) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-screen text-cream font-luckiest text-2xl p-4 text-center">
+        Loading Game Assets... <br/> Make sure all images are in your /public folder or handled by your bundler.
+      </div>
+    );
+  }
 
   return (
-    <div className="relative w-full h-full" style={{ width: canvasWidth, height: canvasHeight }}>
-      <canvas
-        ref={canvasRef}
-        width={canvasWidth}
-        height={canvasHeight}
-        className="block"
-        // El evento onClick/onTouch es manejado por los listeners globales para 'idle' state
-      />
-      {/* El ScoreDisplay y GameOverModal se renderizarán encima por el componente Map */}
+    <div className="relative" style={{ width: canvasWidth, height: canvasHeight }}>
+      <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className="block" />
+      {(gameState === 'playing' || gameState === 'gameOver' || (gameState === 'idle' && score > 0)) && (
+        <ScoreDisplay score={score} highScore={initialHighScore} />
+      )}
     </div>
   );
 };

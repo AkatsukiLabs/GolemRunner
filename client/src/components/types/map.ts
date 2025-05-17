@@ -1,3 +1,5 @@
+import { MapTheme } from "./game"
+
 export interface Map {
     id: number
     name: string
@@ -6,5 +8,6 @@ export interface Map {
     price?: number
     description?: string
     highScore?: number
+    theme?: MapTheme;
   }
   

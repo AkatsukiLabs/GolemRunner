@@ -13,6 +13,7 @@ export const defaultMaps: Map[] = [
     price: 0,
     description: "Dash through icy ruins, dodging crystals and frozen traps!",
     highScore: 12500,
+    theme: "ice"
   },
   {
     id: 2,
@@ -22,6 +23,7 @@ export const defaultMaps: Map[] = [
     price: 25,
     description: "Race lava flows and leap over erupting molten ground!",
     highScore: 8750,
+    theme: "volcano"
   },
   {
     id: 3,
@@ -31,5 +33,6 @@ export const defaultMaps: Map[] = [
     price: 50,
     description: "Charge through rocky woods, weaving past roots and boulders!",
     highScore: 0,
+    theme: "forest"
   },
 ]

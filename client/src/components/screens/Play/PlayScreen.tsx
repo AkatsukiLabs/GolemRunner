@@ -36,28 +36,24 @@ export function PlayScreen({
 
   // Obtener los frames de animación del Golem seleccionado
   // Esto es un ejemplo, idealmente el objeto Golem completo o sus assets se pasarían como prop
-  const [playerRunFrames, setPlayerRunFrames] = useState<string[]>([]);
-  const [playerJumpFrames, setPlayerJumpFrames] = useState<string[]>([]);
+  const [playerRunFrames, setCurrentPlayerRunFrames] = useState<string[]>([]);
+  const [playerJumpFrames, setCurrentPlayerJumpFrames] = useState<string[]>([]);
 
   useEffect(() => {
     const golemData = defaultGolems.find(g => g.id === selectedGolemId);
-    if (golemData) {
-      setPlayerRunFrames(golemData.animations.run);
-      // Asumiendo que tienes frames de salto (necesitas añadir esto a tu golem.ts o definirlo aquí)
-      // Por ahora, creo placeholders basados en los de correr. Reemplaza con tus assets reales.
-      const jumpFramePlaceholders = golemData.animations.run.map(frameSrc => 
-        frameSrc.replace('/Run/', '/Jump/').replace('Running', 'Jumping')
-      );
-      setPlayerJumpFrames(jumpFramePlaceholders);
+    if (golemData && golemData.animations?.run && golemData.animations?.jump) {
+      setCurrentPlayerRunFrames(golemData.animations.run);
+      setCurrentPlayerJumpFrames(golemData.animations.jump);
     } else {
-      // Fallback a Ice Golem si no se encuentra (o manejar error)
-      const iceGolem = defaultGolems.find(g => g.name === "Ice Golem");
-      if (iceGolem) {
-        setPlayerRunFrames(iceGolem.animations.run);
-        const jumpFramePlaceholders = iceGolem.animations.run.map(frameSrc => 
-            frameSrc.replace('/Run/', '/Jump/').replace('Running', 'Jumping')
-        );
-        setPlayerJumpFrames(jumpFramePlaceholders);
+      // Fallback si el golem no se encuentra o no tiene frames (IMPORTANTE)
+      console.warn(`Selected Golem (ID: ${selectedGolemId}) not found or missing animations. Using first Golem as fallback.`);
+      const fallbackGolem = defaultGolems[0];
+      if (fallbackGolem?.animations?.run && fallbackGolem?.animations?.jump) {
+          setCurrentPlayerRunFrames(fallbackGolem.animations.run);
+          setCurrentPlayerJumpFrames(fallbackGolem.animations.jump);
+      } else { // Si ni el fallback funciona
+          setCurrentPlayerRunFrames([]); // Enviar arrays vacíos, GameCanvas debe manejarlo
+          setCurrentPlayerJumpFrames([]);
       }
     }
   }, [selectedGolemId]);
@@ -77,7 +73,7 @@ export function PlayScreen({
 
   const handlePlayMap = (mapData: MapDataType) => {
     if (mapData.unlocked) {
-      const theme = mapData.theme as MapTheme; // Asegúrate que 'theme' exista y sea del tipo correcto
+      const theme = mapData.theme; // Asegúrate que 'theme' exista y sea del tipo correcto
       if (theme && (playerRunFrames.length > 0 || playerJumpFrames.length > 0)) {
         setSelectedMapTheme(theme);
         setShowGame(true);

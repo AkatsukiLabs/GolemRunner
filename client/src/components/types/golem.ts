@@ -7,6 +7,7 @@ export interface Golem {
     price: number
     owned: boolean
     animations: {
-      run: string[] 
+      run: string[],
+      jump: string[]
     }
   }

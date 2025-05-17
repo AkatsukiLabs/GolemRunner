@@ -63,7 +63,8 @@ export const defaultGolems: Golem[] = [
         IceRun0, IceRun1, IceRun2, IceRun3,
         IceRun4, IceRun5, IceRun6, IceRun7,
         IceRun8, IceRun9, IceRun10, IceRun11
-      ]
+      ],
+      jump: [IceRun0,IceRun1, IceRun2]
     }
   },
   {
@@ -79,7 +80,8 @@ export const defaultGolems: Golem[] = [
         MossyRun0, MossyRun1, MossyRun2, MossyRun3,
         MossyRun4, MossyRun5, MossyRun6, MossyRun7,
         MossyRun8, MossyRun9, MossyRun10, MossyRun11
-      ]
+      ],
+      jump: [MossyRun0,MossyRun1, MossyRun2]
     }
   },
   {
@@ -95,7 +97,8 @@ export const defaultGolems: Golem[] = [
         LavaRun0, LavaRun1, LavaRun2, LavaRun3,
         LavaRun4, LavaRun5, LavaRun6, LavaRun7,
         LavaRun8, LavaRun9, LavaRun10, LavaRun11
-      ]
+      ],
+      jump: [LavaRun0,LavaRun1, LavaRun2]
     }
   },
   {
@@ -107,7 +110,8 @@ export const defaultGolems: Golem[] = [
     price: 100,
     owned: true,
     animations: {
-      run: []
+      run: [],
+      jump: []
     }
   }
 ]
