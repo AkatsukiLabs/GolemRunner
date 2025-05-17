@@ -16,14 +16,14 @@ type Screen = "cover" | "home" | "play" | "market" | "ranking" | "profile";
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("cover");
   const [coins, setCoins] = useState(385);
-  const [level, setLevel] = useState(3);
-  const [experience, setExperience] = useState(75);
-  const [nextLevelExperience, setNextLevelExperience] = useState(100);
+  const [level] = useState(3);
+  const [experience] = useState(75);
+  const [nextLevelExperience] = useState(100);
   const [ownedGolems, setOwnedGolems] = useState<Golem[]>([
     defaultGolems[0],
     defaultGolems[2],
   ]);
-  const [unlockedMaps, setUnlockedMaps] = useState<Map[]>([
+  const [unlockedMaps] = useState<Map[]>([
     defaultMaps[0],
     defaultMaps[1],
   ]);

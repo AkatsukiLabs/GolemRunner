@@ -18,10 +18,8 @@ import { GolemTalkModal } from "./GolemTalkModal"
 
  export function HomeScreen({
    onPlayClick,
-   onMarketClick,
    coins,
    level,
-   onNavigation,
  }: HomeScreenProps) {
    const [selectedCharacter, setSelectedCharacter] = useState(characters[0])
    const [showTalkModal, setShowTalkModal] = useState(false)

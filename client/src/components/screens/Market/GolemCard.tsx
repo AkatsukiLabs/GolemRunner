@@ -8,7 +8,7 @@ interface GolemCardProps {
   onPurchase: () => void
 }
 
-export function GolemCard({ golem, canAfford, onPurchase }: GolemCardProps) {
+export function GolemCard({ golem, onPurchase }: GolemCardProps) {
   const rarityColors = {
     Common: "bg-gray-500",
     Rare: "bg-blue-500",
