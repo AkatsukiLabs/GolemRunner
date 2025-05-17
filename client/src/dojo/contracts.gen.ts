@@ -1,6 +1,5 @@
 import { DojoProvider, DojoCall } from "@dojoengine/core";
-import { Account, AccountInterface, BigNumberish, CairoOption, CairoCustomEnum, ByteArray } from "starknet";
-import * as models from "./bindings";
+import { Account, AccountInterface, BigNumberish } from "starknet";
 
 export function setupWorld(provider: DojoProvider) {
 
@@ -15,7 +14,7 @@ export function setupWorld(provider: DojoProvider) {
 	const game_rewardPlayer = async (snAccount: Account | AccountInterface, points: BigNumberish, coinsCollected: BigNumberish) => {
 		try {
 			return await provider.execute(
-				snAccount,
+				snAccount as any,
 				build_game_rewardPlayer_calldata(points, coinsCollected),
 				"golem_runner",
 			);
@@ -36,7 +35,7 @@ export function setupWorld(provider: DojoProvider) {
 	const game_spawnPlayer = async (snAccount: Account | AccountInterface) => {
 		try {
 			return await provider.execute(
-				snAccount,
+				snAccount as any,
 				build_game_spawnPlayer_calldata(),
 				"golem_runner",
 			);
@@ -57,7 +56,7 @@ export function setupWorld(provider: DojoProvider) {
 	const game_unlockGolemStore = async (snAccount: Account | AccountInterface, golemId: BigNumberish) => {
 		try {
 			return await provider.execute(
-				snAccount,
+				snAccount as any,
 				build_game_unlockGolemStore_calldata(golemId),
 				"golem_runner",
 			);
@@ -78,7 +77,7 @@ export function setupWorld(provider: DojoProvider) {
 	const game_unlockWorldStore = async (snAccount: Account | AccountInterface, worldId: BigNumberish) => {
 		try {
 			return await provider.execute(
-				snAccount,
+				snAccount as any,
 				build_game_unlockWorldStore_calldata(worldId),
 				"golem_runner",
 			);
@@ -99,7 +98,7 @@ export function setupWorld(provider: DojoProvider) {
 	const game_updatePlayerRanking = async (snAccount: Account | AccountInterface, worldId: BigNumberish, points: BigNumberish) => {
 		try {
 			return await provider.execute(
-				snAccount,
+				snAccount as any,
 				build_game_updatePlayerRanking_calldata(worldId, points),
 				"golem_runner",
 			);

@@ -11,7 +11,7 @@ interface PlayScreenProps {
   onNavigation?: (screen: "home" | "play" | "market" | "profile" | "ranking") => void
 }
 
-export function PlayScreen({ onClose, coins, onSpendCoins, onNavigation }: PlayScreenProps) {
+export function PlayScreen({ onClose, coins, onSpendCoins }: PlayScreenProps) {
   const handleUnlockMap = (mapId: number, price: number) => {
     if (coins >= price) {
       onSpendCoins(price)
