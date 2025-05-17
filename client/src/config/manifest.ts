@@ -1,4 +1,4 @@
-import sepolia from "../../../contract/manifest_sepolia.json";
+import sepolia from "../config/manifest_sepolia.json";
 
 // Define valid deploy types
 type DeployType = keyof typeof manifests;
