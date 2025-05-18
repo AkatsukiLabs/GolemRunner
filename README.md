@@ -26,6 +26,6 @@ Players can:
 
 - **Backend**: [Dojo Engine](https://dojoengine.org), Cairo, Starknet
 - **Frontend**: React
-- **Mobile**: Android (APK)
+- **Mobile**: PWA
 - **Wallet**: [Cartridge Controller](https://cartridge.gg)
 - **Network**: Sepolia testnet

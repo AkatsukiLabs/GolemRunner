@@ -17,7 +17,7 @@ interface MarketScreenProps {
   onNavigation?: (screen: "home" | "play" | "market" | "profile" | "ranking") => void
 }
 
-export function MarketScreen({ coins, level, onPurchase, onAddGolem, onNavigation }: MarketScreenProps) {
+export function MarketScreen({ coins, level, onPurchase, onAddGolem }: MarketScreenProps) {
   const [showPurchaseAnimation, setShowPurchaseAnimation] = useState(false)
   const [purchasedGolem, setPurchasedGolem] = useState<Golem | null>(null)
   // Nuevo estado para el modal de saldo insuficiente
