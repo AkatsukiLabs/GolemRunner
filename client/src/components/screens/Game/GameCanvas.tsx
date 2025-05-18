@@ -8,7 +8,9 @@ import {
   PlayerState,
   ObstacleInstance,
   MapTheme,
-  ObstacleConfig, // Incluido por si acaso, aunque ObstacleInstance ya lo usa
+  ObstacleConfig,
+  SingleObstacleConfig,
+  ObstacleGroupConfig, // Incluido por si acaso, aunque ObstacleInstance ya lo usa
 } from '../../types/game'; // Ajusta la ruta si es necesario
 import audioManager from './AudioManager'; // Ajusta la ruta si es necesario
 import ScoreDisplay from './ScoreDisplay'; // Ajusta la ruta si es necesario
@@ -92,7 +94,19 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         const jumpFrames = await Promise.all(assetsConfig.playerJumpFrames.map(src => loadImageElement(src)));
         const bgImg = await loadImageElement(assetsConfig.background);
         
-        const uniqueObstacleSrcStrings = Array.from(new Set(assetsConfig.obstacles.map(config => config.src)));
+        const allIndividualObstacleSrcs: string[] = [];
+        assetsConfig.obstacles.forEach(config => {
+          if (config.type === 'single') {
+            allIndividualObstacleSrcs.push(config.src);
+          } else if (config.type === 'group') {
+            config.members.forEach(memberConfig => {
+              allIndividualObstacleSrcs.push(memberConfig.src);
+            });
+          }
+        });
+        
+        const uniqueObstacleSrcStrings = Array.from(new Set(allIndividualObstacleSrcs));
+        
         const obstacleImagePromises = uniqueObstacleSrcStrings.map(srcString => loadImageElement(srcString));
         const loadedImageElements = await Promise.all(obstacleImagePromises);
 
@@ -300,23 +314,67 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const createObstacle = useCallback(() => {
     if (assetsConfig.obstacles.length === 0 || !assetsCurrentlyLoaded) return;
 
-    const randomObstacleCfg = assetsConfig.obstacles[Math.floor(Math.random() * assetsConfig.obstacles.length)];
-    const obstacleImageElement = loadedObstacleImageCacheRef.current.get(randomObstacleCfg.src);
+    // Elige una ObstacleConfig (puede ser Single u Group) al azar
+    const randomObstacleOrGroupCfg = assetsConfig.obstacles[Math.floor(Math.random() * assetsConfig.obstacles.length)];
+    
+    let currentX = canvasWidth; // Posición X inicial para el primer obstáculo (o el único)
 
-    if (obstacleImageElement && obstacleImageElement.naturalHeight !== 0) {
-      obstaclesRef.current.push({
-        id: `obs-${Date.now()}-${Math.random()}`,
-        config: randomObstacleCfg,
-        imageElement: obstacleImageElement,
-        x: canvasWidth,
-        y: groundY - randomObstacleCfg.height,
-        width: randomObstacleCfg.width,
-        height: randomObstacleCfg.height,
-      });
-    } else {
-      console.warn("Attempted to create obstacle, but its image was not found in cache or is invalid:", randomObstacleCfg.src);
+    if (randomObstacleOrGroupCfg.type === 'single') {
+      // Es un solo obstáculo
+      const obstacleCfg = randomObstacleOrGroupCfg as SingleObstacleConfig; // Type assertion
+      const obstacleImageElement = loadedObstacleImageCacheRef.current.get(obstacleCfg.src);
+
+      if (obstacleImageElement && obstacleImageElement.naturalHeight !== 0) {
+        obstaclesRef.current.push({
+          id: `obs-${Date.now()}-${Math.random()}`,
+          baseConfig: obstacleCfg, // Guardamos la config base del obstáculo
+          imageElement: obstacleImageElement,
+          x: currentX,
+          y: groundY - obstacleCfg.height,
+          width: obstacleCfg.width,
+          height: obstacleCfg.height,
+        });
+      } else {
+        console.warn("Attempted to create single obstacle, but its image was not found or is invalid:", obstacleCfg.src);
+      }
+    } else if (randomObstacleOrGroupCfg.type === 'group') {
+      // Es un grupo de obstáculos
+      const groupCfg = randomObstacleOrGroupCfg as ObstacleGroupConfig; // Type assertion
+      
+      for (let i = 0; i < groupCfg.members.length; i++) {
+        const memberCfg = groupCfg.members[i];
+        const obstacleImageElement = loadedObstacleImageCacheRef.current.get(memberCfg.src);
+
+        if (obstacleImageElement && obstacleImageElement.naturalHeight !== 0) {
+          obstaclesRef.current.push({
+            id: `obs-${Date.now()}-${Math.random()}-${i}`, // ID único para cada miembro
+            baseConfig: memberCfg, // Guardamos la config base del miembro
+            imageElement: obstacleImageElement,
+            x: currentX,
+            y: groundY - memberCfg.height, // La altura puede variar por miembro
+            width: memberCfg.width,
+            height: memberCfg.height,
+          });
+          // Avanzar currentX para el siguiente obstáculo del grupo
+          currentX += memberCfg.width + (memberCfg.spacingAfter ?? 0); 
+        } else {
+          console.warn("Attempted to create group member obstacle, but its image was not found or is invalid:", memberCfg.src);
+        }
+      }
     }
-  }, [assetsConfig.obstacles, assetsCurrentlyLoaded, canvasWidth, groundY /* ... loadedObstacleImageCacheRef ... */]);
+  }, [
+    assetsConfig.obstacles, 
+    assetsCurrentlyLoaded, 
+    canvasWidth, 
+    groundY, 
+    // loadedObstacleImageCacheRef.current no es una dependencia estable para useCallback,
+    // pero la función createObstacle depende de su contenido.
+    // Esto es un compromiso común con refs que contienen datos dinámicos.
+    // Si loadedObstacleImageCacheRef se reconstruyera, este callback no se actualizaría
+    // a menos que assetsCurrentlyLoaded o assetsConfig.obstacles cambien.
+    // Podrías pasar loadedObstacleImageCacheRef.current como dependencia si cambia de forma controlada,
+    // o aceptar que createObstacle siempre usa la versión más reciente de la ref.
+  ]);
 
   const checkCollisions = useCallback(() => {
     if (!playerStateRef.current) return;

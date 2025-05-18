@@ -29,8 +29,23 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
     assets: {
       background: forestBG,
       obstacles: [
-        { src: forestStumpAsset, width: 70, height: 45 },
-        { src: forestRockAsset, width: 90, height: 60 },
+        { type: 'single', src: forestStumpAsset, width: 70, height: 45 },
+        { type: 'single', src: forestRockAsset, width: 90, height: 60 },
+        { 
+          type: 'group', 
+          members: [
+            { src: forestStumpAsset, width: 40, height: 30, spacingAfter: 20 }, // Roca pequeña, luego 20px de espacio
+            { src: forestRockAsset, width: 70, height: 45 },                         // Tocón
+          ]
+        },
+        {
+          type: 'group',
+          members: [
+            { src: forestStumpAsset, width: 40, height: 30, spacingAfter: 10 },
+            { src: forestStumpAsset, width: 60, height: 50, spacingAfter: 10 }, // Roca mediana un poco más alta
+            { src: forestRockAsset, width: 40, height: 30 },
+          ]
+        },
       ],
     },
     physics: {
@@ -51,8 +66,23 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
     assets: {
       background: iceBG,
       obstacles: [
-        { src: iceCrystalAsset, width: 50, height: 80 },
-        { src: iceSpikeAsset, width: 40, height: 90 },
+        { type: 'single', src: iceCrystalAsset, width: 70, height: 45 },
+        { type: 'single', src: iceSpikeAsset, width: 90, height: 60 },
+        { 
+          type: 'group', 
+          members: [
+            { src: iceSpikeAsset, width: 40, height: 30, spacingAfter: 20 }, // Roca pequeña, luego 20px de espacio
+            { src: iceCrystalAsset, width: 70, height: 45 },                         // Tocón
+          ]
+        },
+        {
+          type: 'group',
+          members: [
+            { src: iceCrystalAsset, width: 40, height: 30, spacingAfter: 10 },
+            { src: iceSpikeAsset, width: 60, height: 50, spacingAfter: 10 }, // Roca mediana un poco más alta
+            { src: iceCrystalAsset, width: 40, height: 30 },
+          ]
+        },
       ],
     },
     physics: {
@@ -73,8 +103,23 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
     assets: {
       background: volcanoBG,
       obstacles: [
-        { src: volcanoRockAsset, width: 80, height: 75 },
-        { src: lavaPuddleAsset, width: 120, height: 30 },
+        { type: 'single', src: volcanoRockAsset, width: 70, height: 45 },
+        { type: 'single', src: lavaPuddleAsset, width: 90, height: 60 },
+        { 
+          type: 'group', 
+          members: [
+            { src: volcanoRockAsset, width: 40, height: 30, spacingAfter: 20 }, // Roca pequeña, luego 20px de espacio
+            { src: lavaPuddleAsset, width: 70, height: 45 },                         // Tocón
+          ]
+        },
+        {
+          type: 'group',
+          members: [
+            { src: volcanoRockAsset, width: 40, height: 30, spacingAfter: 10 },
+            { src: lavaPuddleAsset, width: 60, height: 50, spacingAfter: 10 }, // Roca mediana un poco más alta
+            { src: lavaPuddleAsset, width: 40, height: 30 },
+          ]
+        },
       ],
     },
     physics: {

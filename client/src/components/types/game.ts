@@ -2,26 +2,46 @@
 export type GameState = 'idle' | 'playing' | 'gameOver';
 export type MapTheme = 'forest' | 'ice' | 'volcano';
 
-// This type is for the actual instances of obstacles in the game state
-export interface ObstacleConfig { // Nuevo tipo para configuración de obstáculos
+export interface ObstacleBaseConfig { // Configuración base de un obstáculo visual
   src: string;
-  width: number;  // Ancho deseado en el juego
-  height: number; // Alto deseado en el juego
-  colliderOffsetX?: number; // Opcional: ajuste para el collider
+  width: number;
+  height: number;
+  colliderOffsetX?: number;
   colliderOffsetY?: number;
   colliderWidth?: number;
   colliderHeight?: number;
 }
 
+// Configuración para un solo obstáculo
+export interface SingleObstacleConfig extends ObstacleBaseConfig {
+  type: 'single';
+}
+
+// Configuración para un obstáculo que es parte de un grupo (con espaciado relativo)
+export interface GroupMemberObstacleConfig extends ObstacleBaseConfig {
+  spacingAfter?: number; // Espacio horizontal después de este obstáculo antes del siguiente en el grupo (en píxeles)
+}
+
+// Configuración para un grupo de obstáculos
+export interface ObstacleGroupConfig {
+  type: 'group';
+  members: GroupMemberObstacleConfig[]; // Los obstáculos que componen el grupo
+}
+
+// ObstacleConfig ahora puede ser uno de estos dos
+export type ObstacleConfig = SingleObstacleConfig | ObstacleGroupConfig;
+
+
 // Representa un obstáculo activo EN EL JUEGO DENTRO DE GameCanvas
-export interface ObstacleInstance { // <<< AÑADE Y EXPORTA ESTE TIPO
+export interface ObstacleInstance {
   id: string;
-  config: ObstacleConfig; // Referencia a su configuración original (src, width, height definidos)
-  imageElement: HTMLImageElement; // La imagen HTML precargada
+  // 'config' podría referirse a ObstacleBaseConfig si normalizamos al crear la instancia
+  baseConfig: ObstacleBaseConfig; // La configuración visual del obstáculo individual
+  imageElement: HTMLImageElement;
   x: number;
   y: number;
-  width: number;  // Ancho actual en el juego (tomado de config.width)
-  height: number; // Alto actual en el juego (tomado de config.height)
+  width: number;
+  height: number;
 }
 
 // Defines the structure for assets in THEME_CONFIGS and passed to GameCanvas
