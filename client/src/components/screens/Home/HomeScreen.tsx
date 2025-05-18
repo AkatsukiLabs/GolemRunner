@@ -66,9 +66,9 @@ import { GameMenu } from "./DropDownMenu";
 
           {/* DropDown Menu*/}
           <motion.div
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.6, type: "spring", stiffness: 300 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 }}
           >
             <GameMenu />
           </motion.div>
