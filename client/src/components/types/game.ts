@@ -35,18 +35,18 @@ export interface GameThemeAssets {
 export interface GamePhysics {
   gravity: number;
   jumpForce: number;
-  initialSpeed: number;
+  baseSpeed: number;
   playerGroundOffset?: number;
 }
 
 // Matches the GameDifficultyConfig from your example Map.tsx
 export interface GameDifficultyConfig {
-  speedIncrement: number;
+  speedScaleIncrementPerSecond: number;
   initialMinSpawnIntervalMs: number;
   initialMaxSpawnIntervalMs: number;
   minOverallSpawnIntervalMs: number;
   obstacleIntervalSpeedFactor: number;
-  maxSpeed?: number;
+  maxSpeedScale?: number;
 }
 
 export interface PlayerState {

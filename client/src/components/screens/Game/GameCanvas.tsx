@@ -206,6 +206,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     return () => cancelAnimationFrame(animationFrameId);
   }, [gameState, assetsCurrentlyLoaded, canvasWidth, canvasHeight, difficultyConfig, physicsConfig]);
 
+  useEffect(() => {
+    if (gameState === 'playing') { // Solo loguea la velocidad cuando el juego está activo
+      console.log(`[GameCanvas] currentSpeed state updated to: ${currentSpeed.toFixed(2)}`);
+    }
+  }, [currentSpeed, gameState]);
 
   const updateGame = (dt: number, ctx: CanvasRenderingContext2D) => { // dt is in seconds
     if (!playerStateRef.current) return;
@@ -261,7 +266,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       const reductionFactor = difficultyConfig.obstacleIntervalSpeedFactor; // How much speed reduces interval
       const minSpawn = difficultyConfig.initialMinSpawnIntervalMs * (1 - speedFactor * reductionFactor);
       const maxSpawn = difficultyConfig.initialMaxSpawnIntervalMs * (1 - speedFactor * reductionFactor);
-      nextObstacleIntervalRef.current = Math.random() * (Math.max(difficultyConfig.minOverallSpawnIntervalMs, maxSpawn) - Math.max(difficultyConfig.minOverallSpawnIntervalMs, minSpawn)) + Math.max(difficultyConfig.minOverallSpawnIntervalMs, minSpawn);
+      const newInterval = Math.random() * (Math.max(difficultyConfig.minOverallSpawnIntervalMs, maxSpawn) - Math.max(difficultyConfig.minOverallSpawnIntervalMs, minSpawn)) + Math.max(difficultyConfig.minOverallSpawnIntervalMs, minSpawn);
+      console.log(`[GameCanvas] New obstacle interval: ${newInterval.toFixed(0)}ms (currentSpeed: ${currentSpeed.toFixed(2)}, speedFactor: ${speedFactor.toFixed(2)})`);
+      nextObstacleIntervalRef.current = newInterval;
     }
     checkCollisions();
   };

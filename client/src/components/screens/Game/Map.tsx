@@ -36,16 +36,15 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
     physics: {
       gravity: 2300,
       jumpForce: 880,
-      initialSpeed: 280,
+      baseSpeed: 280,
       playerGroundOffset: 15,
     },
     difficulty: {
-      speedIncrement: 12,
+      speedScaleIncrementPerSecond: 12,
       initialMinSpawnIntervalMs: 2000,
       initialMaxSpawnIntervalMs: 3800,
       minOverallSpawnIntervalMs: 600,
       obstacleIntervalSpeedFactor: 0.04,
-      maxSpeed: 800,
     },
   },
   ice: {
@@ -58,17 +57,16 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
     },
     physics: {
       gravity: 2200,
-      jumpForce: 900,
-      initialSpeed: 270,
+      jumpForce: 800,
+      baseSpeed: 270,
       playerGroundOffset: 15,
     },
     difficulty: {
-      speedIncrement: 11,
-      initialMinSpawnIntervalMs: 2200,
-      initialMaxSpawnIntervalMs: 4000,
-      minOverallSpawnIntervalMs: 650,
-      obstacleIntervalSpeedFactor: 0.035,
-      maxSpeed: 750,
+      speedScaleIncrementPerSecond: 500,
+      initialMinSpawnIntervalMs: 1800,
+      initialMaxSpawnIntervalMs: 3500,
+      minOverallSpawnIntervalMs: 400,
+      obstacleIntervalSpeedFactor: 0.08,
     },
   },
   volcano: {
@@ -82,16 +80,15 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
     physics: {
       gravity: 2400,
       jumpForce: 850,
-      initialSpeed: 300,
+      baseSpeed: 300,
       playerGroundOffset: 15,
     },
     difficulty: {
-      speedIncrement: 14,
+      speedScaleIncrementPerSecond: 14,
       initialMinSpawnIntervalMs: 1800,
       initialMaxSpawnIntervalMs: 3500,
       minOverallSpawnIntervalMs: 500,
       obstacleIntervalSpeedFactor: 0.05,
-      maxSpeed: 850,
     },
   },
 };
