@@ -8,9 +8,8 @@ import { TopBar } from "../../layout/TopBar"
 import TalkIconButton from "../../../assets/icons/TalkIconButton.png"
 import { GolemTalkModal } from "./GolemTalkModal"
 
-const playerAddress = "0x1234567890abcdef1234567890abcdef12345678" // Placeholder for player's address
-
  interface HomeScreenProps {
+   playerAddress: string
    onPlayClick: (character: typeof characters[0]) => void
    onMarketClick: () => void
    coins: number
@@ -19,6 +18,7 @@ const playerAddress = "0x1234567890abcdef1234567890abcdef12345678" // Placeholde
  }
 
  export function HomeScreen({
+   playerAddress,
    onPlayClick,
    coins,
    level,

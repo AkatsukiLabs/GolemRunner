@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { CoverScreen } from "../components/screens/Cover/cover-screen";
 import { HomeScreen } from "../components/screens/Home/HomeScreen";
 import { PlayScreen } from "../components/screens/Play/PlayScreen";
 import { MarketScreen } from "../components/screens/Market/MarketScreen";
 import { ProfileScreen } from "../components/screens/Profile/ProfileScreen";
 import { RankingScreen } from "../components/screens/Ranking/RankingScreen";
+import { ConnectController } from "../components/screens/ConnectController/ControllerScreen"
 import { NavBar } from "../components/layout/NavBar"
 import type { Golem } from "../components/types/golem";
 import type { Map } from "../components/types/map";
@@ -15,6 +16,7 @@ type Screen = "cover" | "home" | "play" | "market" | "ranking" | "profile";
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("cover");
+  const [showConnectOverlay, setShowConnectOverlay] = useState(false);
   const [coins, setCoins] = useState(385);
   const [level] = useState(3);
   const [experience] = useState(75);
@@ -38,7 +40,6 @@ export default function App() {
   };
 
   // Handlers
-  const handleLoadingComplete = () => setCurrentScreen("home");
   const handleNavigation = (screen: Screen) => setCurrentScreen(screen);
   const handleSpendCoins = (amount: number) => {
     if (coins >= amount) {
@@ -54,11 +55,24 @@ export default function App() {
         : [...prev, { ...golem, owned: true }]
     );
 
+    const handleLoadingComplete = useCallback(
+      () => setShowConnectOverlay(true),
+      []
+    );
+
   return (
     <div className="relative min-h-screen pb-16">
 
       {currentScreen === "cover" && (
         <CoverScreen onLoadingComplete={handleLoadingComplete} />
+      )}
+      {showConnectOverlay && (
+        <ConnectController
+          onConnect={() => {
+            setShowConnectOverlay(false);
+            setCurrentScreen("home");
+          }}
+        />
       )}
 
       {currentScreen === "home" && (
