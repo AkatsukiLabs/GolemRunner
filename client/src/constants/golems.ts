@@ -48,6 +48,11 @@ import LavaRun9  from "../assets/LavaGolem/Run/0_Golem_Running_009.png"
 import LavaRun10 from "../assets/LavaGolem/Run/0_Golem_Running_010.png"
 import LavaRun11 from "../assets/LavaGolem/Run/0_Golem_Running_011.png"
 
+//jump animations
+import IceJump0  from "../assets/IceGolem/Jump/0_Golem_Jump Loop_000.png"
+import MossyJump0 from "../assets/MossyGolem/Jump/0_Golem_Jump Loop_000.png"
+import LavaJump0 from "../assets/LavaGolem/Jump/0_Golem_Jump Loop_000.png"
+
 // Default golems data
 export const defaultGolems: Golem[] = [
   {
@@ -64,7 +69,7 @@ export const defaultGolems: Golem[] = [
         IceRun4, IceRun5, IceRun6, IceRun7,
         IceRun8, IceRun9, IceRun10, IceRun11
       ],
-      jump: [IceRun0,IceRun1, IceRun2]
+      jump: [IceJump0]
     }
   },
   {
@@ -81,7 +86,7 @@ export const defaultGolems: Golem[] = [
         MossyRun4, MossyRun5, MossyRun6, MossyRun7,
         MossyRun8, MossyRun9, MossyRun10, MossyRun11
       ],
-      jump: [MossyRun0,MossyRun1, MossyRun2]
+      jump: [MossyJump0]
     }
   },
   {
@@ -98,7 +103,7 @@ export const defaultGolems: Golem[] = [
         LavaRun4, LavaRun5, LavaRun6, LavaRun7,
         LavaRun8, LavaRun9, LavaRun10, LavaRun11
       ],
-      jump: [LavaRun0,LavaRun1, LavaRun2]
+      jump: [LavaJump0]
     }
   },
   {
