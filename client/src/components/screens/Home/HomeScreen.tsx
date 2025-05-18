@@ -7,6 +7,7 @@ import { characters } from "../../../constants/characters"
 import { TopBar } from "../../layout/TopBar"
 import TalkIconButton from "../../../assets/icons/TalkIconButton.png"
 import { GolemTalkModal } from "./GolemTalkModal"
+import { GameMenu } from "./DropDownMenu";
 
  interface HomeScreenProps {
    playerAddress: string
@@ -42,31 +43,36 @@ import { GolemTalkModal } from "./GolemTalkModal"
     <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik flex flex-col">
       <BackgroundParticles />
   
-      {/* Main layout content */}
+      {/* Top bar + buttons */}
       <div className="relative z-10 flex flex-col flex-1">
-        {/* Top Bar with Lord Golem */}
-        <TopBar 
-          coins={coins} 
-          level={level} 
-          title="GOLEM RUNNER" 
-          screen="home" 
-        />
-  
-        {/* Talk Button */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4 }}
-          className="w-full max-w-xs flex justify-start ml-6 mt-6"
-        >
-          <button onClick={openTalk} title="Talk to Lord Golem">
-            <img
-              src={TalkIconButton}
-              alt="Talk to Golem"
-              className="w-12 h-12 hover:scale-110 transition-transform duration-200"
-            />
-          </button>
-        </motion.div>
+        <TopBar coins={coins} level={level} title="GOLEM RUNNER" screen="home" />
+
+        {/* TALK + MENU */}
+        <div className="w-full flex justify-between items-center px-6 mt-6">
+          {/* Talk */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <button onClick={openTalk} title="Talk to Lord Golem">
+              <img
+                src={TalkIconButton}
+                alt="Talk to Golem"
+                className="w-12 h-12 hover:scale-110 transition-transform duration-200"
+              />
+            </button>
+          </motion.div>
+
+          {/* DropDown Menu*/}
+          <motion.div
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.6, type: "spring", stiffness: 300 }}
+          >
+            <GameMenu />
+          </motion.div>
+        </div>
   
         {/* Main Content */}
         <div className="flex-1 flex flex-col items-center justify-center px-4 space-y-8 pb-20 w-full">
