@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import GolemTalkIcon from "../../../assets/icons/GolemTalkIcon.png"
 import { AIAgentService } from "../../../services/aiAgent"
 
@@ -13,39 +13,33 @@ interface GolemTalkModalProps {
 export function GolemTalkModal({ playerAddress, onClose }: GolemTalkModalProps) {
   const [missionText, setMissionText] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
-  const [isMounted, setIsMounted] = useState(false)
+  const isMounted = useRef(true)
 
   useEffect(() => {
-    // Set mounted flag
-    setIsMounted(true)
-
+    isMounted.current = true
+  
     const fetchMission = async () => {
       try {
         const mission = await AIAgentService.getDailyMission(playerAddress)
-        // Only update state if component is still mounted
-        if (isMounted) {
+        if (isMounted.current) {
           setMissionText(mission)
           setIsLoading(false)
         }
       } catch (error) {
         console.error("Error fetching mission:", error)
-        if (isMounted) {
+        if (isMounted.current) {
           setMissionText("I'm having trouble remembering your mission. Please try again later!")
           setIsLoading(false)
         }
       }
     }
-
-    // Only fetch if component is mounted
-    if (isMounted) {
-      fetchMission()
-    }
-
-    // Cleanup function
+  
+    fetchMission()
+  
     return () => {
-      setIsMounted(false)
+      isMounted.current = false
     }
-  }, [playerAddress, isMounted]) // Added isMounted to dependencies
+  }, [playerAddress])
 
   return (
     <motion.div
@@ -62,7 +56,7 @@ export function GolemTalkModal({ playerAddress, onClose }: GolemTalkModalProps) 
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.8, opacity: 0 }}
         transition={{ delay: 0.1 }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e: { stopPropagation: () => any }) => e.stopPropagation()}
       >
         {/* Image of the golem above the card */}
         <img
