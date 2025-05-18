@@ -1,5 +1,4 @@
 import type { Map } from "../components/types/map"
-
 import ForestMap   from "../assets/Maps/Forest/ForestMap.png"
 import IceMap from "../assets/Maps/Ice/IceMap.png"
 import VolcanoMap  from "../assets/Maps/Volcano/VolcanoMap.png"
@@ -19,7 +18,7 @@ export const defaultMaps: Map[] = [
     id: 2,
     name: "Volcano",
     image: VolcanoMap,
-    unlocked: false,
+    unlocked: true,
     price: 25,
     description: "Race lava flows and leap over erupting molten ground!",
     highScore: 8750,
@@ -29,7 +28,7 @@ export const defaultMaps: Map[] = [
     id: 3,
     name: "Forest",
     image: ForestMap,
-    unlocked: false,
+    unlocked: true,
     price: 50,
     description: "Charge through rocky woods, weaving past roots and boulders!",
     highScore: 0,

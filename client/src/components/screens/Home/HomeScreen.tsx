@@ -9,7 +9,7 @@ import TalkIconButton from "../../../assets/icons/TalkIconButton.png"
 import { GolemTalkModal } from "./GolemTalkModal"
 
  interface HomeScreenProps {
-   onPlayClick: () => void
+   onPlayClick: (character: typeof characters[0]) => void
    onMarketClick: () => void
    coins: number
    level: number
@@ -18,10 +18,8 @@ import { GolemTalkModal } from "./GolemTalkModal"
 
  export function HomeScreen({
    onPlayClick,
-   onMarketClick,
    coins,
    level,
-   onNavigation,
  }: HomeScreenProps) {
    const [selectedCharacter, setSelectedCharacter] = useState(characters[0])
    const [showTalkModal, setShowTalkModal] = useState(false)
@@ -31,8 +29,8 @@ import { GolemTalkModal } from "./GolemTalkModal"
    }
 
    const handlePlay = () => {
-     console.log(`Starting game with ${selectedCharacter.name}`)
-     onPlayClick()
+     console.log("Play clicked with character:", selectedCharacter)
+     onPlayClick(selectedCharacter)
    }
 
    const openTalk = () => setShowTalkModal(true)

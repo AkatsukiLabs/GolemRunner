@@ -12,16 +12,16 @@ export const characters = [
   },
   {
     id: 2,
-    name: "Fire Golem",
+    name: "Mossy Golem",
     rarity: "Rare",
-    description: "Forged in flames, this golem burns with fury.",
-    image: FireIdle0,
+    description: "Overgrown with ancient moss",
+    image: StoneIdle0,
   },
   {
     id: 3,
-    name: "Stone Golem",
+    name: "Lava Golem",
     rarity: "Common",
-    description: "Sturdy and reliable, the backbone of any team.",
-    image: StoneIdle0,
+    description: "Born in the molten core",
+    image: FireIdle0,
   },
 ]

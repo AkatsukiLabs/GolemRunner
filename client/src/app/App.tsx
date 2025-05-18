@@ -27,6 +27,7 @@ export default function App() {
     defaultMaps[0],
     defaultMaps[1],
   ]);
+  const [selectedGolemId, setSelectedGolemId] = useState<number | null>(null)
 
   const currentUser = {
     id: "current-user",
@@ -61,7 +62,9 @@ export default function App() {
 
       {currentScreen === "home" && (
         <HomeScreen
-          onPlayClick={() => handleNavigation("play")}
+        onPlayClick={(golem) => {
+          setSelectedGolemId(golem.id);
+          handleNavigation("play");}}
           onMarketClick={() => handleNavigation("market")}
           coins={coins}
           level={level}
@@ -69,8 +72,9 @@ export default function App() {
         />
       )}
 
-      {currentScreen === "play" && (
+      {currentScreen === "play" && selectedGolemId != null && (
         <PlayScreen
+          selectedGolemId={selectedGolemId}
           onClose={() => handleNavigation("home")}
           coins={coins}
           onSpendCoins={handleSpendCoins}

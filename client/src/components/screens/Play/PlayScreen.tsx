@@ -1,14 +1,12 @@
-// src/screens/PlayScreen/PlayScreen.tsx (o la ruta donde lo tengas)
-// Asegúrate que las importaciones sean correctas.
-import React, { useState, useEffect } from 'react';
-import CloseIcon from "../../../assets/icons/CloseIcon.png"; // Ajusta ruta
+import { useState, useEffect } from 'react';
+import CloseIcon from "../../../assets/icons/CloseIcon.png"; 
 import { motion } from "framer-motion";
-import { BackgroundParticles } from "../../shared/BackgroundParticles"; // Ajusta ruta
-import { MapCarousel } from "./MapCarousel"; // Ajusta ruta
-import { defaultMaps } from "../../../constants/maps"; // Ajusta ruta
-import type { Map as MapDataType } from '../../types/map'; // Asumiendo que tu tipo Map es MapDataType
-import MapComponent from '../Game/Map'; // NUEVA IMPORTACIÓN
-import { MapTheme } from '../../types/game'; // NUEVA IMPORTACIÓN
+import { BackgroundParticles } from "../../shared/BackgroundParticles"; 
+import { MapCarousel } from "./MapCarousel"; 
+import { defaultMaps } from "../../../constants/maps"; 
+import type { Map as MapDataType } from '../../types/map'; 
+import MapComponent from '../Game/Map'; 
+import { MapTheme } from '../../types/game'; 
 
 // Asumiendo que tienes acceso a los datos de golems (ej. de golems.ts)
 // Deberías tener un Golem seleccionado de HomeScreen.
@@ -28,7 +26,6 @@ export function PlayScreen({
     onClose, 
     coins, 
     onSpendCoins, 
-    onNavigation,
     selectedGolemId = 1 // Default a Ice Golem (ID 1 en tu defaultGolems)
 }: PlayScreenProps) {
   const [showGame, setShowGame] = useState(false);
@@ -61,15 +58,14 @@ export function PlayScreen({
 
   const handleUnlockMap = (mapId: number, price: number) => {
     if (coins >= price) {
-      onSpendCoins(price);
-      console.log(`Unlocked map ${mapId} for ${price} coins`);
-      // Aquí deberías actualizar el estado de `defaultMaps` o donde sea que gestiones
-      // el estado de desbloqueo de los mapas (ej. con un estado local o un contexto).
-      // Por simplicidad, no se implementa aquí la persistencia del desbloqueo.
+      onSpendCoins(price)
+      // In a real app, you would update the map's unlocked status in your state management
+      console.log(`Unlocked map ${mapId} for ${price} coins`)
     } else {
-      console.log("Not enough coins!");
+      console.log("Not enough coins!")
+      // You could show a notification here
     }
-  };
+  }
 
   const handlePlayMap = (mapData: MapDataType) => {
     if (mapData.unlocked) {
@@ -113,7 +109,7 @@ export function PlayScreen({
       <div className="relative z-10 w-full px-4 py-3 flex items-center justify-between">
         <motion.button
           className="bg-surface border-2 border-primary rounded-full p-2 text-primary hover:bg-surface/90 active:bg-surface/80 transition-colors"
-          onClick={onClose} // onClose te lleva de vuelta a HomeScreen
+          onClick={onClose}
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -129,14 +125,14 @@ export function PlayScreen({
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          Select Map
+          Play
         </motion.h1>
       </div>
 
       {/* Main Content */}
       <div className="relative z-10 flex flex-col items-center justify-center py-8 px-4">
         <motion.div
-          className="w-full max-w-md bg-surface rounded-xl p-6 shadow-lg" // Tailwind: surface, primary etc vienen de tu config
+          className="w-full max-w-md bg-surface rounded-xl p-6 shadow-lg"
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.4 }}
@@ -145,12 +141,7 @@ export function PlayScreen({
           <MapCarousel
             maps={defaultMaps} // Asume que defaultMaps tiene la info de 'unlocked' actualizada
             coins={coins}
-            onUnlock={(mapId, price) => {
-                const mapToUnlock = defaultMaps.find(m => m.id === mapId);
-                if(mapToUnlock && mapToUnlock.price !== undefined) { // Chequeo de precio
-                    handleUnlockMap(mapId, mapToUnlock.price);
-                }
-            }}
+            onUnlock={handleUnlockMap}
             onSelect={(mapId) => {
                 const mapToPlay = defaultMaps.find(m => m.id === mapId);
                 if (mapToPlay) {
