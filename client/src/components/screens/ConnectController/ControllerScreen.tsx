@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useConnect, useAccount } from "@starknet-react/core";
 import GolemHelloImg from '../../../assets/icons/GolemHello.png'
 
 interface ConnectControllerProps {
@@ -6,6 +7,21 @@ interface ConnectControllerProps {
 }
 
 export function ConnectController({ onConnect }: ConnectControllerProps) {
+const { connect, connectors } = useConnect();
+  const { status } = useAccount();
+
+  const handleConnect = async () => {
+    // asume que quieres usar siempre el primer connector disponible
+    const connector = connectors[0];
+    if (!connector) return;
+
+    await connect({ connector });
+    // si la conexión fue exitosa, status cambiará a "connected"
+    if (status === "connected") {
+      onConnect();
+    }
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center p-4 bg-black bg-opacity-30 backdrop-blur-sm z-50">
       <motion.div
@@ -20,7 +36,7 @@ export function ConnectController({ onConnect }: ConnectControllerProps) {
           className="w-48 h-48 mb-4"
         />
         <button
-          onClick={onConnect}
+          onClick={handleConnect}
           className="btn-cr-yellow text-xl px-6 py-4 font-bold tracking-wide rounded-[10px]"
         >
           CONNECT
