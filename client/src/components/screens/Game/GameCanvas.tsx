@@ -28,6 +28,7 @@ interface GameCanvasProps {
 }
 
 const PLAYER_ANIMATION_FRAME_TIME = 80; // ms per frame
+const VISUAL_GROUND_DRAW_HEIGHT = 190; 
 const PLAYER_BASE_WIDTH = 150;
 const PLAYER_BASE_HEIGHT = 170;
 const GROUND_HEIGHT_RATIO = 0.15;
@@ -76,7 +77,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const lastObstacleTimeRef = useRef(0);
   const nextObstacleIntervalRef = useRef(0);
   const backgroundXRef = useRef(0);
+  const groundXRef = useRef(0);
   const scoreRef = useRef<number>(0);
+  const loadedGroundImgRef = useRef<HTMLImageElement | null>(null); // NUEVA REF para el suelo
 
   const loadedRunFramesRef = useRef<HTMLImageElement[]>([]);
   const loadedJumpFramesRef = useRef<HTMLImageElement[]>([]);
@@ -97,6 +100,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         const runFrames = await Promise.all(assetsConfig.playerRunFrames.map(src => loadImageElement(src)));
         const jumpFrames = await Promise.all(assetsConfig.playerJumpFrames.map(src => loadImageElement(src)));
         const bgImg = await loadImageElement(assetsConfig.background);
+        const groundImg = await loadImageElement(assetsConfig.ground); 
 
         const allIndividualObstacleSrcs: string[] = [];
         assetsConfig.obstacles.forEach(config => {
@@ -123,6 +127,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
           loadedRunFramesRef.current = runFrames.filter(img => img.naturalHeight !== 0);
           loadedJumpFramesRef.current = jumpFrames.filter(img => img.naturalHeight !== 0);
           loadedBackgroundImgRef.current = bgImg.naturalHeight !== 0 ? bgImg : null;
+          loadedGroundImgRef.current = groundImg.naturalHeight !== 0 ? groundImg : null;
           loadedObstacleImageCacheRef.current = newObstacleCache;
 
           if (loadedRunFramesRef.current.length === 0 && assetsConfig.playerRunFrames.length > 0) {
@@ -168,6 +173,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       Math.random() * (difficultyConfig.initialMaxSpawnIntervalMs - difficultyConfig.initialMinSpawnIntervalMs) +
       difficultyConfig.initialMinSpawnIntervalMs;
     backgroundXRef.current = 0;
+    groundXRef.current = 0;
     setGameState('idle');
     audioManager.stopBackgroundMusic();
   }, [
@@ -249,13 +255,33 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     // 4. Mover fondo usando la velocidad actual
     if (loadedBackgroundImgRef.current) {
       const bgImg = loadedBackgroundImgRef.current;
-      const bgDisplayHeight = canvasHeight;
+      const bgDisplayHeight = canvasHeight; // Asumiendo que el fondo ocupa toda la altura
       const bgDisplayWidth = (bgImg.width / bgImg.height) * bgDisplayHeight;
-      backgroundXRef.current -= actualSpeed * dt;
-      if (backgroundXRef.current <= -bgDisplayWidth) {
-        backgroundXRef.current += bgDisplayWidth; // o backgroundXRef.current %= bgDisplayWidth; si es siempre negativo
+  
+      // AJUSTA ESTE FACTOR PARA LA VELOCIDAD DEL FONDO
+      // 0 = Estático
+      // 0.1 - 0.5 = Lento
+      // 1 = Misma velocidad que el suelo (no es lo que quieres para parallax)
+      const backgroundSpeedFactor = 0.2; // Ejemplo: fondo se mueve al 20% de la velocidad del juego
+  
+      backgroundXRef.current -= actualSpeed * backgroundSpeedFactor * dt;
+      if (bgDisplayWidth > 0 && backgroundXRef.current <= -bgDisplayWidth) {
+        backgroundXRef.current += bgDisplayWidth; // o backgroundXRef.current %= bgDisplayWidth;
       }
     }
+
+    // NUEVO: Mover suelo
+  if (loadedGroundImgRef.current) {
+    const groundImg = loadedGroundImgRef.current;
+    // Asumiendo que el suelo también se dibuja para que parezca continuo
+    const groundDisplayHeight = canvasHeight * GROUND_HEIGHT_RATIO; // O la altura real de tu imagen de suelo
+    const groundTileWidth = (groundImg.width / groundImg.height) * groundDisplayHeight; // Ancho de una "baldosa" de suelo si la imagen no es super ancha
+
+    groundXRef.current -= actualSpeed * dt; // El suelo se mueve con la velocidad completa del juego
+    if (groundTileWidth > 0 && groundXRef.current <= -groundTileWidth) {
+      groundXRef.current += groundTileWidth; // o groundXRef.current %= groundTileWidth;
+    }
+  }
 
     // Actualización de animación del jugador
     const player = playerStateRef.current;
@@ -464,6 +490,51 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     }
 
+    // Dibujar Suelo (Ground)
+    if (loadedGroundImgRef.current) {
+      const groundImg = loadedGroundImgRef.current;
+  
+      // Determinar la altura de dibujado para el suelo visual
+      const groundDrawHeight = VISUAL_GROUND_DRAW_HEIGHT; // Usando la constante definida arriba
+      // Si usas un ratio:
+      // const groundDrawHeight = canvasHeight * VISUAL_GROUND_DRAW_HEIGHT_RATIO;
+  
+      // Posición Y para dibujar el suelo (su borde superior)
+      // Esto lo alinea con la base del canvas.
+      const groundYPos = canvasHeight - groundDrawHeight;
+  
+      // Calcular el ancho de "una baldosa" de la imagen del suelo para mantener su proporción original
+      // al ser dibujada con la nueva groundDrawHeight.
+      const groundImageAspectRatio = groundImg.naturalWidth / groundImg.naturalHeight;
+      let groundTileWidth = groundDrawHeight * groundImageAspectRatio;
+  
+      // Asegurarse de que groundTileWidth sea positivo para evitar bucles infinitos o errores
+      if (groundTileWidth <= 0) {
+          groundTileWidth = groundImg.naturalWidth; // Fallback al ancho natural si el aspect ratio da problemas
+      }
+  
+  
+      let currentXGround = groundXRef.current;
+      if (groundTileWidth > 0) {
+          currentXGround %= groundTileWidth; // Asegura que currentXGround esté en el rango [-groundTileWidth, 0]
+          if (currentXGround > 0) currentXGround -= groundTileWidth; // Corrección si es positivo después del módulo
+      } else {
+          currentXGround = 0; // Si groundTileWidth no es válido, no hay scroll
+      }
+  
+  
+      if (groundTileWidth > 0) {
+        for (let x = currentXGround; x < canvasWidth; x += groundTileWidth) {
+          ctx.drawImage(groundImg, x, groundYPos, groundTileWidth, groundDrawHeight);
+        }
+      } else {
+          // Fallback si la imagen del suelo no se puede dimensionar (ej. no cargó o dimensiones inválidas)
+          // Podrías dibujar un rectángulo de color como placeholder
+          ctx.fillStyle = '#556B2F'; // Un color de suelo genérico (verde oscuro)
+          ctx.fillRect(0, groundYPos, canvasWidth, groundDrawHeight);
+      }
+    }
+
     // Dibujar Jugador
     if (playerStateRef.current) {
       const player = playerStateRef.current;
@@ -483,7 +554,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       }
     });
 
-    const DEBUG_COLLIDERS = true; // Cambia a true para ver hitboxes
+    const DEBUG_COLLIDERS = false; // Cambia a true para ver hitboxes
 
     if (DEBUG_COLLIDERS && playerStateRef.current) {
       const playerRectDebug = getPlayerCollider(playerStateRef.current);

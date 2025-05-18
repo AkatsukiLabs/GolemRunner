@@ -16,10 +16,14 @@ import iceCrystalAsset from '../../../assets/Maps/Ice/stalagmite.png';       // 
 import iceSpikeAsset from '../../../assets/Maps/Ice/IceBlock.png';         // EJEMPLO - CREA ESTE ASSET
 import volcanoRockAsset from '../../../assets/Maps/Volcano/VolcanicRock.png';   // EJEMPLO - CREA ESTE ASSET
 import lavaPuddleAsset from '../../../assets/Maps/Volcano/geyser.png';   // EJEMPLO - CREA ESTE ASSET
+import forestGround from '../../../assets/Maps/Forest/ground.png'; 
+import iceGround from '../../../assets/Maps/Ice/ground.png';
+import volcanoGround from '../../../assets/Maps/Volcano/ground.png';
 
 const THEME_MAP_CONFIGS: Record<MapTheme, {
   assets: {
     background: string;
+    ground: string;
     obstacles: ObstacleConfig[];
   };
   physics: GamePhysics;
@@ -28,6 +32,7 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
   forest: {
     assets: {
       background: forestBG,
+      ground: forestGround,
       obstacles: [
         { type: 'single', src: forestStumpAsset, width: 90, height: 65 },
         { type: 'single', src: forestRockAsset, width: 110, height: 80 },
@@ -65,6 +70,7 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
   ice: {
     assets: {
       background: iceBG,
+      ground: iceGround,
       obstacles: [
         { type: 'single', src: iceCrystalAsset, width: 100, height: 75 },
         { type: 'single', src: iceSpikeAsset, width: 120, height: 90 },
@@ -102,6 +108,7 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
   volcano: {
     assets: {
       background: volcanoBG,
+      ground: volcanoGround,
       obstacles: [
         { type: 'single', src: volcanoRockAsset, width: 100, height: 75 },
         { type: 'single', src: lavaPuddleAsset, width: 120, height: 90 },
@@ -201,6 +208,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
     return {
       background: themeConfig.assets.background,
+      ground: themeConfig.assets.ground,
       obstacles: themeConfig.assets.obstacles,
       playerRunFrames: runFrames,
       playerJumpFrames: jumpFrames,

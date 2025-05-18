@@ -47,6 +47,7 @@ export interface ObstacleInstance {
 // Defines the structure for assets in THEME_CONFIGS and passed to GameCanvas
 export interface GameThemeAssets {
   background: string;         // Imported background image source string
+  ground: string; 
   obstacles: ObstacleConfig[];        // Array of imported obstacle image source strings
   playerRunFrames: string[];  // Array of imported run frame source strings
   playerJumpFrames: string[]; // Array of imported jump frame source strings
