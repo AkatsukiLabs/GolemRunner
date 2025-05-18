@@ -144,12 +144,29 @@ export function AvatarCarouselFixed({
               <img
                 src={characters[index].image}
                 alt={characters[index].name}
-                className="w-48 h-48 object-contain z-10 relative transform translate-x-4"
+                className={`
+                  w-48 h-48 object-contain z-10 relative transform translate-x-4
+                  ${index === activeIndex ? 'animate-[pulse_2s_ease-in-out_infinite]' : ''}
+                `}
                 style={{
                   filter: index !== activeIndex ? 'grayscale(30%)' : 'none',
-                  maxWidth: 'none'
+                  maxWidth: 'none',
+                  ...(index === activeIndex && {
+                    animation: 'pulse 2s ease-in-out infinite',
+                  })
                 }}
               />
+
+              {/* Glow effect for selected character */}
+              {index === activeIndex && (
+                <div
+                  className="absolute inset-0 z-0"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)',
+                    animation: 'pulse 2s ease-in-out infinite',
+                  }}
+                />
+              )}
             </div>
           </animated.div>
         ))}
