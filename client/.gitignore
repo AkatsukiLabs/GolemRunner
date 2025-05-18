@@ -19,8 +19,8 @@ dist-ssr
 # mkcert certificates
 mkcert+1.pem
 mkcert+1-key.pem
-localhost+*.pem
-localhost+*-key.pem
+localhost*.pem
+localhost*-key.pem
 
 # Editor directories and files
 .vscode/*
