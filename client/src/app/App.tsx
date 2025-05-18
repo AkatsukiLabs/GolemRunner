@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { CoverScreen } from "../components/screens/Cover/cover-screen";
 import { HomeScreen } from "../components/screens/Home/HomeScreen";
 import { PlayScreen } from "../components/screens/Play/PlayScreen";
@@ -12,7 +12,7 @@ import type { Map } from "../components/types/map";
 import { defaultGolems } from "../constants/golems";
 import { defaultMaps } from "../constants/maps";
 
-type Screen = "cover" | "connect" | "home" | "play" | "market" | "ranking" | "profile";
+type Screen = "cover" | "home" | "play" | "market" | "ranking" | "profile";
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("cover");
@@ -55,13 +55,17 @@ export default function App() {
         : [...prev, { ...golem, owned: true }]
     );
 
+    const handleLoadingComplete = useCallback(
+      () => setShowConnectOverlay(true),
+      []
+    );
+
   return (
     <div className="relative min-h-screen pb-16">
 
       {currentScreen === "cover" && (
-        <CoverScreen onLoadingComplete={() => setShowConnectOverlay(true)} />
+        <CoverScreen onLoadingComplete={handleLoadingComplete} />
       )}
-
       {showConnectOverlay && (
         <ConnectController
           onConnect={() => {
@@ -126,7 +130,7 @@ export default function App() {
       )}
 
       {/* NavBar*/}
-      {currentScreen !== "cover" && currentScreen !== "connect" && currentScreen !== "play" &&(
+      {currentScreen !== "cover" && currentScreen !== "play" &&(
        <NavBar
          activeTab={currentScreen as "market"|"home"|"ranking"|"profile"}
          onNavigation={handleNavigation}
