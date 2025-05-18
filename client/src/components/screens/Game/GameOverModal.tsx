@@ -91,7 +91,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
             {/* Botones */}
             <div className="flex w-full gap-4">
               <motion.button
-                className="flex-1 bg-dark text-cream py-3 rounded-lg font-luckiest rounded-[5px]"
+                className="flex-1 bg-dark text-cream py-3 font-luckiest rounded-[5px]"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleExitClick}
@@ -99,7 +99,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
                 EXIT
               </motion.button>
               <motion.button
-                className="flex-1 btn-cr-yellow py-3 rounded-lg font-luckiest rounded-[5px]"
+                className="flex-1 btn-cr-yellow py-3 font-luckiest rounded-[5px]"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleRestartClick}

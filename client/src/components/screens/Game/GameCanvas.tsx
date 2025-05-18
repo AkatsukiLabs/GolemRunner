@@ -15,6 +15,7 @@ import {
 } from '../../types/game'; // Ajusta la ruta si es necesario
 import audioManager from './AudioManager'; // Ajusta la ruta si es necesario
 import ScoreDisplay from './ScoreDisplay'; // Ajusta la ruta si es necesario
+import GameOverModal from './GameOverModal';
 
 interface GameCanvasProps {
   assetsConfig: GameThemeAssets;
@@ -64,6 +65,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<GameState>('idle');
   const [score, setScore] = useState(0);
+  const [showGameOverModal, setShowGameOverModal] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const speedScaleRef = useRef(1); // Multiplicador de velocidad, comienza en 1
   const currentActualSpeedRef = useRef(physicsConfig.baseSpeed); // Velocidad calculada: baseSpeed * speedScale
@@ -398,7 +401,10 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         setGameState('gameOver');
         audioManager.stopBackgroundMusic();
         audioManager.playGameOverSound();
-        onGameOver(Math.floor(scoreRef.current));
+        const final = Math.floor(scoreRef.current);
+        setFinalScore(final);
+        setShowGameOverModal(true);
+        onGameOver(final); 
         return;
       }
     }
@@ -524,14 +530,31 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   return (
     <div className="relative" style={{ width: canvasWidth, height: canvasHeight }}>
       <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className="block" />
+  
       {gameState === 'idle' && assetsCurrentlyLoaded && (
         <StartModal onStart={handleInteraction} />
       )}
-      {(gameState === 'playing' || gameState === 'gameOver' || (gameState === 'idle' && score > 0)) && (
+  
+      {gameState !== 'gameOver' && score > 0 && (
         <ScoreDisplay score={score} highScore={initialHighScore} />
       )}
+  
+      <GameOverModal
+        score={finalScore}
+        record={initialHighScore}
+        isOpen={showGameOverModal}
+        onExit={() => {
+          setShowGameOverModal(false);
+          onGameOver(finalScore);
+        }}
+        onRestart={() => {
+          setShowGameOverModal(false);
+          resetGame();
+        }}
+      />
     </div>
   );
+  
 };
 
 export default GameCanvas;
