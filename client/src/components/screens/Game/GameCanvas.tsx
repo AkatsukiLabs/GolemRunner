@@ -74,6 +74,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const lastObstacleTimeRef = useRef(0);
   const nextObstacleIntervalRef = useRef(0);
   const backgroundXRef = useRef(0);
+  const scoreRef = useRef<number>(0);
 
   const loadedRunFramesRef = useRef<HTMLImageElement[]>([]);
   const loadedJumpFramesRef = useRef<HTMLImageElement[]>([]);
@@ -154,6 +155,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     };
     obstaclesRef.current = [];
     setScore(0);
+    scoreRef.current = 0;
 
     speedScaleRef.current = 1; // Resetear speedScale
     currentActualSpeedRef.current = physicsConfig.baseSpeed * speedScaleRef.current; // Recalcular velocidad actual
@@ -236,7 +238,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     // console.log(`[GameCanvas] speedScale: ${speedScaleRef.current.toFixed(3)}, actualSpeed: ${actualSpeed.toFixed(2)}`);
 
     // 3. Actualizar puntuación usando la velocidad actual
-    setScore((prevScore) => prevScore + actualSpeed * dt * 0.1);
+    setScore((prevScore) => {
+      const updated = prevScore + actualSpeed * dt * 0.1;
+      scoreRef.current = updated; // 👈 sincronizamos aquí
+      return updated;
+    });
 
     // 4. Mover fondo usando la velocidad actual
     if (loadedBackgroundImgRef.current) {
@@ -392,7 +398,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         setGameState('gameOver');
         audioManager.stopBackgroundMusic();
         audioManager.playGameOverSound();
-        onGameOver(score); // score es el estado de React, ya está actualizado
+        onGameOver(Math.floor(scoreRef.current));
         return;
       }
     }

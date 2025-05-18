@@ -11,8 +11,14 @@ interface GameOverModalProps {
   isOpen: boolean;
 }
 
-const GameOverModal: React.FC<GameOverModalProps> = ({ score, record, onExit, onRestart, isOpen }) => {
-  const isNewRecord = score > 0 && score === record;
+const GameOverModal: React.FC<GameOverModalProps> = ({
+  score,
+  record,
+  onExit,
+  onRestart,
+  isOpen,
+}) => {
+  const isNewRecord = score > record;
 
   const handleRestartClick = () => {
     audioManager.playClickSound();
@@ -28,45 +34,78 @@ const GameOverModal: React.FC<GameOverModalProps> = ({ score, record, onExit, on
     <AnimatePresence>
       {isOpen && (
         <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-dark/80"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
         >
           <motion.div
-            initial={{ scale: 0.7, y: 50 }}
+            className="bg-surface rounded-xl border-4 border-primary w-full max-w-xs mx-4 p-6 flex flex-col items-center"
+            initial={{ scale: 0.8, y: 50 }}
             animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.7, y: 50 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className="bg-golem-gradient p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-md text-center font-rubik"
+            exit={{ scale: 0.8, y: 50 }}
+            transition={{ type: 'spring', stiffness: 300, delay: 0.2 }}
           >
-            <h2 className="text-4xl sm:text-5xl font-bangers text-cream mb-4">GAME OVER</h2>
-            
-            <div className="bg-screen bg-opacity-80 p-4 rounded-lg mb-6">
-              <p className="text-2xl font-luckiest text-primary mb-2">YOUR SCORE</p>
-              <p className="text-5xl font-bangers text-cream mb-4">{Math.floor(score)}</p>
-              
+            <h2 className="font-bangers text-4xl text-primary mb-6 tracking-wider">
+              GAME OVER
+            </h2>
+
+            <div className="w-full mb-6">
+              {/* Puntuación actual */}
+              <div className="flex justify-between items-center mb-3">
+                <span className="font-luckiest text-dark text-xl">SCORE</span>
+                <span className="font-luckiest text-primary text-2xl">
+                  {Math.floor(score)}
+                </span>
+              </div>
+
+              {/* Récord */}
+              <div className="flex justify-between items-center">
+                <span className="font-luckiest text-dark text-xl">RECORD</span>
+                <motion.span
+                  className={`font-luckiest text-2xl ${
+                    isNewRecord
+                      ? 'bg-golem-gradient text-transparent bg-clip-text'
+                      : 'text-dark'
+                  }`}
+                  animate={isNewRecord ? { scale: [1, 1.2, 1] } : {}}
+                  transition={{ repeat: 2, duration: 0.5 }}
+                >
+                  {isNewRecord ? Math.floor(score) : Math.floor(record)}
+                </motion.span>
+              </div>
+
+              {/* Mensaje de nuevo récord (condicional) */}
               {isNewRecord && (
-                <p className="text-xl font-luckiest text-yellow-400 animate-pulse mb-1">NEW RECORD!</p>
+                <motion.div
+                  className="bg-golem-gradient text-cream text-center py-2 rounded-lg mt-4 font-luckiest"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  NEW RECORD!
+                </motion.div>
               )}
-              <p className="text-lg font-luckiest text-cream opacity-80">
-                RECORD: {Math.floor(record)}
-              </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:justify-center gap-4">
-              <button
-                onClick={handleRestartClick}
-                className="btn-cr-yellow py-3 px-6 text-xl w-full sm:w-auto" // Usando clase de global.css
-              >
-                RESTART
-              </button>
-              <button
+            {/* Botones */}
+            <div className="flex w-full gap-4">
+              <motion.button
+                className="flex-1 bg-dark text-cream py-3 rounded-lg font-luckiest rounded-[5px]"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleExitClick}
-                className="btn-cr-blue py-3 px-6 text-xl w-full sm:w-auto" // Usando clase de global.css
               >
                 EXIT
-              </button>
+              </motion.button>
+              <motion.button
+                className="flex-1 btn-cr-yellow py-3 rounded-lg font-luckiest rounded-[5px]"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleRestartClick}
+              >
+                RESTART
+              </motion.button>
             </div>
           </motion.div>
         </motion.div>
