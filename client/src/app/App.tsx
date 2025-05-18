@@ -85,6 +85,7 @@ export default function App() {
           level={level}
           playerAddress={playerAddress}
           onNavigation={handleNavigation}
+          onNavigateCover={() => handleNavigation("cover")}
         />
       )}
 

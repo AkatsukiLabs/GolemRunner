@@ -7,7 +7,7 @@ interface ConnectControllerProps {
 }
 
 export function ConnectController({ onConnect }: ConnectControllerProps) {
-const { connect, connectors } = useConnect();
+  const { connect, connectors } = useConnect();
   const { status } = useAccount();
 
   const handleConnect = async () => {
