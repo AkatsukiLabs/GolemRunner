@@ -8,32 +8,30 @@ import { TopBar } from "../../layout/TopBar"
 import TalkIconButton from "../../../assets/icons/TalkIconButton.png"
 import { GolemTalkModal } from "./GolemTalkModal"
 
-interface HomeScreenProps {
-  onPlayClick: () => void
-  onMarketClick: () => void
-  coins: number
-  level: number
-  playerAddress: string
-  onNavigation: (screen: "home" | "play" | "market" | "ranking" | "profile") => void
-}
+ interface HomeScreenProps {
+   onPlayClick: (character: typeof characters[0]) => void
+   onMarketClick: () => void
+   coins: number
+   level: number
+   onNavigation: (screen: "home" | "play" | "market" | "ranking" | "profile") => void
+ }
 
-export function HomeScreen({
-  onPlayClick,
-  coins,
-  level,
-  playerAddress,
-}: HomeScreenProps) {
-  const [selectedCharacter, setSelectedCharacter] = useState(characters[0])
-  const [showTalkModal, setShowTalkModal] = useState(false)
+ export function HomeScreen({
+   onPlayClick,
+   coins,
+   level,
+ }: HomeScreenProps) {
+   const [selectedCharacter, setSelectedCharacter] = useState(characters[0])
+   const [showTalkModal, setShowTalkModal] = useState(false)
 
   const handleCharacterSelect = (character: (typeof characters)[0]) => {
     setSelectedCharacter(character)
   }
 
-  const handlePlay = () => {
-    console.log(`Starting game with ${selectedCharacter.name}`)
-    onPlayClick()
-  }
+   const handlePlay = () => {
+     console.log("Play clicked with character:", selectedCharacter)
+     onPlayClick(selectedCharacter)
+   }
 
   const openTalk = () => setShowTalkModal(true)
   const closeTalk = () => setShowTalkModal(false)
