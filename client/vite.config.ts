@@ -22,6 +22,9 @@ export default defineConfig(({ mode }) => ({
       devOptions: {
         enabled: mode === 'development'
       },
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
+      },
       includeAssets: [
         "icons/logo.png",
         "screenshots/loading.png",

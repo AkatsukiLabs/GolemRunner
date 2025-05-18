@@ -59,10 +59,18 @@ export function GolemTalkModal({ playerAddress, onClose }: GolemTalkModalProps) 
         onClick={(e: { stopPropagation: () => any }) => e.stopPropagation()}
       >
         {/* Image of the golem above the card */}
-        <img
+        <motion.img
           src={GolemTalkIcon}
           alt="Golem hablando"
           className="w-48 h-48 mx-auto -mt-16 mb-2"
+          animate={{
+            scale: [1, 1.05, 1],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
         />
         {/* Dialogue card inspired by Clash of Clans */}
         <div className="bg-cream rounded-xl p-4 shadow-md">
