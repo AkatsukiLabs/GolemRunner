@@ -11,16 +11,3 @@ createRoot(document.getElementById("root")!).render(
   </React.StrictMode>
 );
 
-// Service Worker registration
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(registration => {
-        console.log('Service Worker registered succesfully:', registration);
-      })
-      .catch(error => {
-        console.log('Error registering the Service Worker:', error);
-      });
-  });
-}
-
