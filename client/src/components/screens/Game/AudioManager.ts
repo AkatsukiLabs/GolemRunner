@@ -1,21 +1,19 @@
-// src/components/game/AudioManager.ts
-
 class AudioManager {
     private backgroundMusic: HTMLAudioElement | null = null;
     private gameOverSound: HTMLAudioElement | null = null;
     private clickSound: HTMLAudioElement | null = null;
     private jumpSound: HTMLAudioElement | null = null;
   
-    private soundsEnabled: boolean = true; // Podrías hacerlo configurable
+    private soundsEnabled: boolean = true; 
   
     constructor() {
       if (typeof Audio !== 'undefined') {
-        this.backgroundMusic = new Audio('/assets/audio/background_music.mp3'); // Reemplaza con tu ruta
+        this.backgroundMusic = new Audio('/assets/audio/background_music.mp3'); 
         this.backgroundMusic.loop = true;
   
-        this.gameOverSound = new Audio('/assets/audio/game_over.wav'); // Reemplaza con tu ruta
-        this.clickSound = new Audio('/assets/audio/click.wav'); // Reemplaza con tu ruta
-        this.jumpSound = new Audio('/assets/audio/jump.wav'); // Reemplaza con tu ruta
+        this.gameOverSound = new Audio('/assets/audio/game_over.wav'); 
+        this.clickSound = new Audio('/assets/audio/click.wav'); 
+        this.jumpSound = new Audio('/assets/audio/jump.wav');
       } else {
         console.warn("Web Audio API not available. Sounds will be disabled.");
         this.soundsEnabled = false;
@@ -64,6 +62,7 @@ class AudioManager {
     }
   }
   
-  // Exportar una instancia singleton
+  // Export a singleton instance of AudioManager
   const audioManager = new AudioManager();
   export default audioManager;
+  

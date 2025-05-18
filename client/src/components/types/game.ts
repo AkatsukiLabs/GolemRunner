@@ -1,8 +1,7 @@
-// src/components/game/types.ts
 export type GameState = 'idle' | 'playing' | 'gameOver';
 export type MapTheme = 'forest' | 'ice' | 'volcano';
 
-export interface ObstacleBaseConfig { // Configuración base de un obstáculo visual
+export interface ObstacleBaseConfig { 
   src: string;
   width: number;
   height: number;
@@ -12,31 +11,24 @@ export interface ObstacleBaseConfig { // Configuración base de un obstáculo vi
   colliderHeight?: number;
 }
 
-// Configuración para un solo obstáculo
 export interface SingleObstacleConfig extends ObstacleBaseConfig {
   type: 'single';
 }
 
-// Configuración para un obstáculo que es parte de un grupo (con espaciado relativo)
 export interface GroupMemberObstacleConfig extends ObstacleBaseConfig {
-  spacingAfter?: number; // Espacio horizontal después de este obstáculo antes del siguiente en el grupo (en píxeles)
+  spacingAfter?: number;
 }
 
-// Configuración para un grupo de obstáculos
 export interface ObstacleGroupConfig {
   type: 'group';
-  members: GroupMemberObstacleConfig[]; // Los obstáculos que componen el grupo
+  members: GroupMemberObstacleConfig[]; 
 }
 
-// ObstacleConfig ahora puede ser uno de estos dos
 export type ObstacleConfig = SingleObstacleConfig | ObstacleGroupConfig;
 
-
-// Representa un obstáculo activo EN EL JUEGO DENTRO DE GameCanvas
 export interface ObstacleInstance {
   id: string;
-  // 'config' podría referirse a ObstacleBaseConfig si normalizamos al crear la instancia
-  baseConfig: ObstacleBaseConfig; // La configuración visual del obstáculo individual
+  baseConfig: ObstacleBaseConfig; 
   imageElement: HTMLImageElement;
   x: number;
   y: number;
@@ -44,13 +36,12 @@ export interface ObstacleInstance {
   height: number;
 }
 
-// Defines the structure for assets in THEME_CONFIGS and passed to GameCanvas
 export interface GameThemeAssets {
-  background: string;         // Imported background image source string
+  background: string;         
   ground: string; 
-  obstacles: ObstacleConfig[];        // Array of imported obstacle image source strings
-  playerRunFrames: string[];  // Array of imported run frame source strings
-  playerJumpFrames: string[]; // Array of imported jump frame source strings
+  obstacles: ObstacleConfig[];        
+  playerRunFrames: string[];  
+  playerJumpFrames: string[]; 
 }
 
 export interface GamePhysics {
@@ -59,8 +50,6 @@ export interface GamePhysics {
   baseSpeed: number;
   playerGroundOffset?: number;
 }
-
-// Matches the GameDifficultyConfig from your example Map.tsx
 export interface GameDifficultyConfig {
   speedScaleIncrementPerSecond: number;
   initialMinSpawnIntervalMs: number;

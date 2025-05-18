@@ -1,4 +1,3 @@
-// src/components/game/ScoreDisplay.tsx
 import React from 'react';
 
 interface ScoreDisplayProps {

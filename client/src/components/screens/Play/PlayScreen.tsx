@@ -7,32 +7,24 @@ import { defaultMaps } from "../../../constants/maps";
 import type { Map as MapDataType } from '../../types/map'; 
 import MapComponent from '../Game/Map'; 
 import { MapTheme } from '../../types/game'; 
-
-// Asumiendo que tienes acceso a los datos de golems (ej. de golems.ts)
-// Deberías tener un Golem seleccionado de HomeScreen.
-// Por ahora, vamos a hardcodear las animaciones de un golem para el ejemplo.
-import { defaultGolems } from '../../../constants/golems'; // Ajusta ruta
+import { defaultGolems } from '../../../constants/golems'; 
 
 interface PlayScreenProps {
   onClose: () => void;
   coins: number;
   onSpendCoins: (amount: number) => void;
   onNavigation?: (screen: "home" | "play" | "market" | "profile" | "ranking") => void;
-  // Necesitas pasar el Golem seleccionado o sus assets
-  selectedGolemId?: number; // ID del golem seleccionado en HomeScreen
+  selectedGolemId?: number; 
 }
 
 export function PlayScreen({ 
     onClose, 
     coins, 
     onSpendCoins, 
-    selectedGolemId = 1 // Default a Ice Golem (ID 1 en tu defaultGolems)
+    selectedGolemId = 1
 }: PlayScreenProps) {
   const [showGame, setShowGame] = useState(false);
   const [selectedMapTheme, setSelectedMapTheme] = useState<MapTheme | null>(null);
-
-  // Obtener los frames de animación del Golem seleccionado
-  // Esto es un ejemplo, idealmente el objeto Golem completo o sus assets se pasarían como prop
   const [playerRunFrames, setCurrentPlayerRunFrames] = useState<string[]>([]);
   const [playerJumpFrames, setCurrentPlayerJumpFrames] = useState<string[]>([]);
 
@@ -42,19 +34,17 @@ export function PlayScreen({
       setCurrentPlayerRunFrames(golemData.animations.run);
       setCurrentPlayerJumpFrames(golemData.animations.jump);
     } else {
-      // Fallback si el golem no se encuentra o no tiene frames (IMPORTANTE)
       console.warn(`Selected Golem (ID: ${selectedGolemId}) not found or missing animations. Using first Golem as fallback.`);
       const fallbackGolem = defaultGolems[0];
       if (fallbackGolem?.animations?.run && fallbackGolem?.animations?.jump) {
           setCurrentPlayerRunFrames(fallbackGolem.animations.run);
           setCurrentPlayerJumpFrames(fallbackGolem.animations.jump);
-      } else { // Si ni el fallback funciona
-          setCurrentPlayerRunFrames([]); // Enviar arrays vacíos, GameCanvas debe manejarlo
+      } else { 
+          setCurrentPlayerRunFrames([]);
           setCurrentPlayerJumpFrames([]);
       }
     }
   }, [selectedGolemId]);
-
 
   const handleUnlockMap = (mapId: number, price: number) => {
     if (coins >= price) {
@@ -69,25 +59,23 @@ export function PlayScreen({
 
   const handlePlayMap = (mapData: MapDataType) => {
     if (mapData.unlocked) {
-      const theme = mapData.theme; // Asegúrate que 'theme' exista y sea del tipo correcto
+      const theme = mapData.theme; 
       if (theme && (playerRunFrames.length > 0 || playerJumpFrames.length > 0)) {
         setSelectedMapTheme(theme);
         setShowGame(true);
         console.log(`Starting game on map ${mapData.name} with theme ${theme}`);
       } else {
         console.error("Map theme is not defined or player animation frames are missing for map:", mapData.name);
-        // Podrías mostrar una notificación al usuario aquí.
       }
     } else {
         console.log("Map is locked. Unlock it first.");
-        // Podrías mostrar una notificación para desbloquear.
+        // show notification here
     }
   };
 
   const handleExitGame = () => {
     setShowGame(false);
     setSelectedMapTheme(null);
-    // Considera si necesitas llamar a onClose aquí o si el usuario debe hacerlo manualmente
   };
 
   if (showGame && selectedMapTheme) {
@@ -139,7 +127,7 @@ export function PlayScreen({
         >
           <h2 className="font-luckiest text-3xl text-dark mb-4 text-center">Maps</h2>
           <MapCarousel
-            maps={defaultMaps} // Asume que defaultMaps tiene la info de 'unlocked' actualizada
+            maps={defaultMaps}
             coins={coins}
             onUnlock={handleUnlockMap}
             onSelect={(mapId) => {

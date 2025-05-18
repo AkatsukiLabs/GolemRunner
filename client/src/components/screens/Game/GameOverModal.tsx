@@ -1,4 +1,3 @@
-// src/components/game/GameOverModal.tsx
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import audioManager from './AudioManager';
@@ -51,7 +50,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
             </h2>
 
             <div className="w-full mb-6">
-              {/* Puntuación actual */}
+              {/* Current Score */}
               <div className="flex justify-between items-center mb-3">
                 <span className="font-luckiest text-dark text-xl">SCORE</span>
                 <span className="font-luckiest text-primary text-2xl">
@@ -59,7 +58,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
                 </span>
               </div>
 
-              {/* Récord */}
+              {/* High Score */}
               <div className="flex justify-between items-center">
                 <span className="font-luckiest text-dark text-xl">RECORD</span>
                 <motion.span
@@ -75,7 +74,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
                 </motion.span>
               </div>
 
-              {/* Mensaje de nuevo récord (condicional) */}
+              {/*Is New Record*/}
               {isNewRecord && (
                 <motion.div
                   className="bg-golem-gradient text-cream text-center py-2 rounded-lg mt-4 font-luckiest"
@@ -88,7 +87,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
               )}
             </div>
 
-            {/* Botones */}
+            {/* Buttons */}
             <div className="flex w-full gap-4">
               <motion.button
                 className="flex-1 bg-dark text-cream py-3 font-luckiest rounded-[5px]"

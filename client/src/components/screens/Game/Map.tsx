@@ -1,21 +1,18 @@
-// src/components/game/Map.tsx
 import React, { useState, useEffect, useMemo } from 'react';
 import GameCanvas from './GameCanvas';
-import GameOverModal from './GameOverModal'; // Asegúrate que la ruta sea correcta
+import GameOverModal from './GameOverModal'; 
 import type { GameThemeAssets, GamePhysics, GameDifficultyConfig, MapTheme, ObstacleConfig } from '../../types/game';
 
-// Importa SOLO assets específicos del TEMA (fondos, obstáculos del tema)
-import forestBG from '../../../assets/Maps/Forest/ForestMap.png'; // Ajusta ruta si Map.tsx no está en src/components/game/
+import forestBG from '../../../assets/Maps/Forest/ForestMap.png'; 
 import iceBG from '../../../assets/Maps/Ice/IceMap.png';
 import volcanoBG from '../../../assets/Maps/Volcano/VolcanoMap.png';
 
-// DEFINE TUS PROPIOS ASSETS DE OBSTÁCULOS REALES E IMPÓRTALOS
-import forestStumpAsset from '../../../assets/Maps/Forest/rock.png'; // EJEMPLO - CREA ESTE ASSET
-import forestRockAsset from '../../../assets/Maps/Forest/forestLog.png';     // EJEMPLO - CREA ESTE ASSET
-import iceCrystalAsset from '../../../assets/Maps/Ice/stalagmite.png';       // EJEMPLO - CREA ESTE ASSET
-import iceSpikeAsset from '../../../assets/Maps/Ice/IceBlock.png';         // EJEMPLO - CREA ESTE ASSET
-import volcanoRockAsset from '../../../assets/Maps/Volcano/VolcanicRock.png';   // EJEMPLO - CREA ESTE ASSET
-import lavaPuddleAsset from '../../../assets/Maps/Volcano/geyser.png';   // EJEMPLO - CREA ESTE ASSET
+import forestStumpAsset from '../../../assets/Maps/Forest/rock.png'; 
+import forestRockAsset from '../../../assets/Maps/Forest/forestLog.png';     
+import iceCrystalAsset from '../../../assets/Maps/Ice/stalagmite.png';      
+import iceSpikeAsset from '../../../assets/Maps/Ice/IceBlock.png';        
+import volcanoRockAsset from '../../../assets/Maps/Volcano/VolcanicRock.png';   
+import lavaPuddleAsset from '../../../assets/Maps/Volcano/geyser.png';   
 import forestGround from '../../../assets/Maps/Forest/ground.png'; 
 import iceGround from '../../../assets/Maps/Ice/ground.png';
 import volcanoGround from '../../../assets/Maps/Volcano/ground.png';
@@ -39,8 +36,8 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
         { 
           type: 'group', 
           members: [
-            { src: forestStumpAsset, width: 60, height: 50, spacingAfter: 1 }, // Roca pequeña, luego 20px de espacio
-            { src: forestRockAsset, width: 90, height: 65 },                         // Tocón
+            { src: forestStumpAsset, width: 60, height: 50, spacingAfter: 1 },
+            { src: forestRockAsset, width: 90, height: 65 },                         
           ]
         },
         {
@@ -77,15 +74,15 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
         { 
           type: 'group', 
           members: [
-            { src: iceSpikeAsset, width: 70, height: 60, spacingAfter: 1 }, // Roca pequeña, luego 20px de espacio
-            { src: iceCrystalAsset, width: 90, height: 75 },                         // Tocón
+            { src: iceSpikeAsset, width: 70, height: 60, spacingAfter: 1 }, 
+            { src: iceCrystalAsset, width: 90, height: 75 },                       
           ]
         },
         {
           type: 'group',
           members: [
             { src: iceCrystalAsset, width: 60, height: 50, spacingAfter: 0 },
-            { src: iceSpikeAsset, width: 80, height: 70, spacingAfter: 0 }, // Roca mediana un poco más alta
+            { src: iceSpikeAsset, width: 80, height: 70, spacingAfter: 0 }, 
             { src: iceCrystalAsset, width: 60, height: 50 },
           ]
         },
@@ -115,15 +112,15 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
         { 
           type: 'group', 
           members: [
-            { src: volcanoRockAsset, width: 70, height: 60, spacingAfter: 1 }, // Roca pequeña, luego 20px de espacio
-            { src: lavaPuddleAsset, width: 100, height: 75 },                         // Tocón
+            { src: volcanoRockAsset, width: 70, height: 60, spacingAfter: 1 }, 
+            { src: lavaPuddleAsset, width: 100, height: 75 },                       
           ]
         },
         {
           type: 'group',
           members: [
             { src: volcanoRockAsset, width: 60, height: 50, spacingAfter: 0},
-            { src: lavaPuddleAsset, width: 80, height: 70, spacingAfter: 0}, // Roca mediana un poco más alta
+            { src: lavaPuddleAsset, width: 80, height: 70, spacingAfter: 0}, 
             { src: lavaPuddleAsset, width: 70, height: 50 },
           ]
         },

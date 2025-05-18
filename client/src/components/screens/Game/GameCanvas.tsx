@@ -1,25 +1,24 @@
-// src/components/game/GameCanvas.tsx
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { StartModal } from './StartModal';
 import {
   GameState,
   GameThemeAssets,
-  GamePhysics, // Asegúrate que este tipo ahora use baseSpeed
-  GameDifficultyConfig, // Asegúrate que este tipo ahora use speedScaleIncrementPerSecond y maxSpeedScale
+  GamePhysics, 
+  GameDifficultyConfig, 
   PlayerState,
   ObstacleInstance,
   MapTheme,
   SingleObstacleConfig,
-  ObstacleGroupConfig, // Incluido por si acaso, aunque ObstacleInstance ya lo usa
-} from '../../types/game'; // Ajusta la ruta si es necesario
-import audioManager from './AudioManager'; // Ajusta la ruta si es necesario
-import ScoreDisplay from './ScoreDisplay'; // Ajusta la ruta si es necesario
+  ObstacleGroupConfig, 
+} from '../../types/game'; 
+import audioManager from './AudioManager'; 
+import ScoreDisplay from './ScoreDisplay';
 import GameOverModal from './GameOverModal';
 
 interface GameCanvasProps {
   assetsConfig: GameThemeAssets;
-  physicsConfig: GamePhysics; // Debería contener baseSpeed
-  difficultyConfig: GameDifficultyConfig; // Debería contener speedScaleIncrementPerSecond
+  physicsConfig: GamePhysics; 
+  difficultyConfig: GameDifficultyConfig;
   theme: MapTheme;
   onGameOver: (score: number) => void;
   initialHighScore: number;
@@ -68,8 +67,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
 
-  const speedScaleRef = useRef(1); // Multiplicador de velocidad, comienza en 1
-  const currentActualSpeedRef = useRef(physicsConfig.baseSpeed); // Velocidad calculada: baseSpeed * speedScale
+  const speedScaleRef = useRef(1); 
+  const currentActualSpeedRef = useRef(physicsConfig.baseSpeed);
 
   const playerStateRef = useRef<PlayerState | null>(null);
   const obstaclesRef = useRef<ObstacleInstance[]>([]);
@@ -79,7 +78,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const backgroundXRef = useRef(0);
   const groundXRef = useRef(0);
   const scoreRef = useRef<number>(0);
-  const loadedGroundImgRef = useRef<HTMLImageElement | null>(null); // NUEVA REF para el suelo
+  const loadedGroundImgRef = useRef<HTMLImageElement | null>(null); 
 
   const loadedRunFramesRef = useRef<HTMLImageElement[]>([]);
   const loadedJumpFramesRef = useRef<HTMLImageElement[]>([]);
@@ -164,8 +163,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     setScore(0);
     scoreRef.current = 0;
 
-    speedScaleRef.current = 1; // Resetear speedScale
-    currentActualSpeedRef.current = physicsConfig.baseSpeed * speedScaleRef.current; // Recalcular velocidad actual
+    speedScaleRef.current = 1; 
+    currentActualSpeedRef.current = physicsConfig.baseSpeed * speedScaleRef.current;
 
     gameTimeRef.current = 0;
     lastObstacleTimeRef.current = 0;
@@ -182,10 +181,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     groundY,
     playerHeight,
     playerWidth,
-    physicsConfig.baseSpeed, // Usar baseSpeed
-    difficultyConfig.initialMinSpawnIntervalMs, // Incluir todas las dependencias de difficultyConfig usadas
+    physicsConfig.baseSpeed,
+    difficultyConfig.initialMinSpawnIntervalMs,
     difficultyConfig.initialMaxSpawnIntervalMs,
-    // Asegúrate de incluir todas las dependencias de los hooks
   ]);
 
   useEffect(() => {
@@ -225,12 +223,12 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     };
   }, [handleInteraction, assetsCurrentlyLoaded]);
 
-  const updateGame = useCallback((dt: number) => { // ctx ya no es necesario como argumento si no se usa directamente
+  const updateGame = useCallback((dt: number) => { 
     if (!playerStateRef.current || gameState !== 'playing') return;
 
     gameTimeRef.current += dt;
 
-    // 1. Actualizar speedScale
+    // 1. update speedScale
     if (speedScaleRef.current < (difficultyConfig.maxSpeedScale ?? Infinity)) {
       speedScaleRef.current += difficultyConfig.speedScaleIncrementPerSecond * dt;
       if (difficultyConfig.maxSpeedScale) {
@@ -238,62 +236,59 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       }
     }
 
-    // 2. Calcular la velocidad actual real
+    // 2. Calculate actual speed
     currentActualSpeedRef.current = physicsConfig.baseSpeed * speedScaleRef.current;
     const actualSpeed = currentActualSpeedRef.current;
 
-    // Log para depuración (opcional)
-    // console.log(`[GameCanvas] speedScale: ${speedScaleRef.current.toFixed(3)}, actualSpeed: ${actualSpeed.toFixed(2)}`);
-
-    // 3. Actualizar puntuación usando la velocidad actual
+    // 3. Update score using actual speed
     setScore((prevScore) => {
       const updated = prevScore + actualSpeed * dt * 0.1;
-      scoreRef.current = updated; // 👈 sincronizamos aquí
+      scoreRef.current = updated; 
       return updated;
     });
 
-    // 4. Mover fondo usando la velocidad actual
+    // 4. Move background using current speed
     if (loadedBackgroundImgRef.current) {
       const bgImg = loadedBackgroundImgRef.current;
       const bgDisplayHeight = canvasHeight; // Asumiendo que el fondo ocupa toda la altura
       const bgDisplayWidth = (bgImg.width / bgImg.height) * bgDisplayHeight;
   
-      // AJUSTA ESTE FACTOR PARA LA VELOCIDAD DEL FONDO
-      // 0 = Estático
-      // 0.1 - 0.5 = Lento
-      // 1 = Misma velocidad que el suelo (no es lo que quieres para parallax)
-      const backgroundSpeedFactor = 0.2; // Ejemplo: fondo se mueve al 20% de la velocidad del juego
-  
+      // ADJUST THIS FACTOR FOR BACKGROUND SPEED
+      // 0 = Static
+      // 0.1 - 0.5 = Slow
+      // 1 = Same speed as the ground (not ideal for parallax)
+      const backgroundSpeedFactor = 0.2; // Example: background moves at 20% of the game speed
+      
       backgroundXRef.current -= actualSpeed * backgroundSpeedFactor * dt;
       if (bgDisplayWidth > 0 && backgroundXRef.current <= -bgDisplayWidth) {
-        backgroundXRef.current += bgDisplayWidth; // o backgroundXRef.current %= bgDisplayWidth;
+        backgroundXRef.current += bgDisplayWidth; // or backgroundXRef.current %= bgDisplayWidth;
       }
-    }
+        }
 
-    // NUEVO: Mover suelo
-  if (loadedGroundImgRef.current) {
-    const groundImg = loadedGroundImgRef.current;
-    // Asumiendo que el suelo también se dibuja para que parezca continuo
-    const groundDisplayHeight = canvasHeight * GROUND_HEIGHT_RATIO; // O la altura real de tu imagen de suelo
-    const groundTileWidth = (groundImg.width / groundImg.height) * groundDisplayHeight; // Ancho de una "baldosa" de suelo si la imagen no es super ancha
+        // Move ground
+      if (loadedGroundImgRef.current) {
+        const groundImg = loadedGroundImgRef.current;
+        // Assuming the ground is also drawn to appear continuous
+        const groundDisplayHeight = canvasHeight * GROUND_HEIGHT_RATIO; // Or the actual height of your ground image
+        const groundTileWidth = (groundImg.width / groundImg.height) * groundDisplayHeight; // Width of a "tile" of ground if the image isn't super wide
 
-    groundXRef.current -= actualSpeed * dt; // El suelo se mueve con la velocidad completa del juego
-    if (groundTileWidth > 0 && groundXRef.current <= -groundTileWidth) {
-      groundXRef.current += groundTileWidth; // o groundXRef.current %= groundTileWidth;
-    }
-  }
+        groundXRef.current -= actualSpeed * dt; // The ground moves at the full game speed
+        if (groundTileWidth > 0 && groundXRef.current <= -groundTileWidth) {
+      groundXRef.current += groundTileWidth; // or groundXRef.current %= groundTileWidth;
+        }
+      }
 
-    // Actualización de animación del jugador
+        // Player animation update
     const player = playerStateRef.current;
     if (player.frameCount > 0) {
-      player.currentFrameTime += dt * 1000; // dt a ms
+      player.currentFrameTime += dt * 1000; 
       if (player.currentFrameTime >= player.frameTime) {
         player.currentFrame = (player.currentFrame + 1) % player.frameCount;
         player.currentFrameTime = 0;
       }
     }
 
-    // Lógica de salto
+    // Jumo logic
     if (player.isJumping) {
       player.y += player.velocityY * dt;
       player.velocityY += physicsConfig.gravity * dt;
@@ -307,31 +302,28 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       }
     }
 
-    // 5. Mover obstáculos y filtrar los que salen de pantalla
+    // 5. Move obstacles and filter out those that go off-screen
     obstaclesRef.current = obstaclesRef.current.filter(obs => obs.x + obs.width > 0);
     obstaclesRef.current.forEach(obs => { obs.x -= actualSpeed * dt; });
 
-    // 6. Lógica de aparición de obstáculos
-    lastObstacleTimeRef.current += dt * 1000; // dt a ms
+    // 6. Obstacle spawning logic
+    lastObstacleTimeRef.current += dt * 1000;
     if (lastObstacleTimeRef.current >= nextObstacleIntervalRef.current) {
       createObstacle();
       lastObstacleTimeRef.current = 0;
 
       const currentSpeedScale = speedScaleRef.current;
-      const maxScale = difficultyConfig.maxSpeedScale || 2.5; // Usar un default si no está definido
-      const speedFactor = Math.min(1, currentSpeedScale / maxScale); // Normalizar speedScale (0 a 1), asegurando que no pase de 1
+      const maxScale = difficultyConfig.maxSpeedScale || 2.5; 
+      const speedFactor = Math.min(1, currentSpeedScale / maxScale); 
 
       const reductionFactor = difficultyConfig.obstacleIntervalSpeedFactor;
-      // Asegurar que el factor de reducción no invierta los intervalos
-      const spawnMultiplier = Math.max(0.1, 1 - speedFactor * reductionFactor); // Evitar que sea 0 o negativo
+      const spawnMultiplier = Math.max(0.1, 1 - speedFactor * reductionFactor);
 
       const minSpawn = difficultyConfig.initialMinSpawnIntervalMs * spawnMultiplier;
       const maxSpawn = difficultyConfig.initialMaxSpawnIntervalMs * spawnMultiplier;
 
       const newInterval = Math.random() * (Math.max(difficultyConfig.minOverallSpawnIntervalMs, maxSpawn) - Math.max(difficultyConfig.minOverallSpawnIntervalMs, minSpawn)) +
         Math.max(difficultyConfig.minOverallSpawnIntervalMs, minSpawn);
-
-      // console.log(`[GameCanvas] New obstacle interval: ${newInterval.toFixed(0)}ms (actualSpeed: ${actualSpeed.toFixed(2)}, speedScale: ${currentSpeedScale.toFixed(2)}, speedFactor: ${speedFactor.toFixed(2)})`);
       nextObstacleIntervalRef.current = newInterval;
     }
     checkCollisions();
@@ -340,76 +332,68 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     physicsConfig.baseSpeed,
     physicsConfig.gravity,
     physicsConfig.jumpForce,
-    difficultyConfig, // Dependencia completa de difficultyConfig
+    difficultyConfig, 
     canvasHeight,
     groundY,
-    // playerHeight ya está en groundY, pero por claridad
   ]);
 
   const createObstacle = useCallback(() => {
     if (assetsConfig.obstacles.length === 0 || !assetsCurrentlyLoaded) return;
 
-    // Elige una ObstacleConfig (puede ser Single u Group) al azar
+    // Choose an ObstacleConfig (can be Single or Group) at random
     const randomObstacleOrGroupCfg = assetsConfig.obstacles[Math.floor(Math.random() * assetsConfig.obstacles.length)];
 
-    let currentX = canvasWidth; // Posición X inicial para el primer obstáculo (o el único)
+    let currentX = canvasWidth; // Initial X position for the first obstacle (or the only one)
 
     if (randomObstacleOrGroupCfg.type === 'single') {
-      // Es un solo obstáculo
+      // It's a single obstacle
       const obstacleCfg = randomObstacleOrGroupCfg as SingleObstacleConfig; // Type assertion
       const obstacleImageElement = loadedObstacleImageCacheRef.current.get(obstacleCfg.src);
 
       if (obstacleImageElement && obstacleImageElement.naturalHeight !== 0) {
-        obstaclesRef.current.push({
-          id: `obs-${Date.now()}-${Math.random()}`,
-          baseConfig: obstacleCfg, // Guardamos la config base del obstáculo
-          imageElement: obstacleImageElement,
-          x: currentX,
-          y: groundY - obstacleCfg.height,
-          width: obstacleCfg.width,
-          height: obstacleCfg.height,
-        });
+      obstaclesRef.current.push({
+        id: `obs-${Date.now()}-${Math.random()}`,
+        baseConfig: obstacleCfg, // Save the base config of the obstacle
+        imageElement: obstacleImageElement,
+        x: currentX,
+        y: groundY - obstacleCfg.height,
+        width: obstacleCfg.width,
+        height: obstacleCfg.height,
+      });
       } else {
-        console.warn("Attempted to create single obstacle, but its image was not found or is invalid:", obstacleCfg.src);
+      console.warn("Attempted to create single obstacle, but its image was not found or is invalid:", obstacleCfg.src);
       }
     } else if (randomObstacleOrGroupCfg.type === 'group') {
-      // Es un grupo de obstáculos
+      // It's a group of obstacles
       const groupCfg = randomObstacleOrGroupCfg as ObstacleGroupConfig; // Type assertion
 
       for (let i = 0; i < groupCfg.members.length; i++) {
-        const memberCfg = groupCfg.members[i];
-        const obstacleImageElement = loadedObstacleImageCacheRef.current.get(memberCfg.src);
+      const memberCfg = groupCfg.members[i];
+      const obstacleImageElement = loadedObstacleImageCacheRef.current.get(memberCfg.src);
 
-        if (obstacleImageElement && obstacleImageElement.naturalHeight !== 0) {
-          obstaclesRef.current.push({
-            id: `obs-${Date.now()}-${Math.random()}-${i}`, // ID único para cada miembro
-            baseConfig: memberCfg, // Guardamos la config base del miembro
-            imageElement: obstacleImageElement,
-            x: currentX,
-            y: groundY - memberCfg.height, // La altura puede variar por miembro
-            width: memberCfg.width,
-            height: memberCfg.height,
-          });
-          // Avanzar currentX para el siguiente obstáculo del grupo
-          currentX += memberCfg.width + (memberCfg.spacingAfter ?? 0);
-        } else {
-          console.warn("Attempted to create group member obstacle, but its image was not found or is invalid:", memberCfg.src);
-        }
+      if (obstacleImageElement && obstacleImageElement.naturalHeight !== 0) {
+        obstaclesRef.current.push({
+        id: `obs-${Date.now()}-${Math.random()}-${i}`, // Unique ID for each member
+        baseConfig: memberCfg, // Save the base config of the member
+        imageElement: obstacleImageElement,
+        x: currentX,
+        y: groundY - memberCfg.height, // Height may vary per member
+        width: memberCfg.width,
+        height: memberCfg.height,
+        });
+        // Advance currentX for the next obstacle in the group
+        currentX += memberCfg.width + (memberCfg.spacingAfter ?? 0);
+      } else {
+        console.warn("Attempted to create group member obstacle, but its image was not found or is invalid:", memberCfg.src);
+      }
       }
     }
-  }, [
+    }, [
     assetsConfig.obstacles,
     assetsCurrentlyLoaded,
     canvasWidth,
     groundY,
-    // loadedObstacleImageCacheRef.current no es una dependencia estable para useCallback,
-    // pero la función createObstacle depende de su contenido.
-    // Esto es un compromiso común con refs que contienen datos dinámicos.
-    // Si loadedObstacleImageCacheRef se reconstruyera, este callback no se actualizaría
-    // a menos que assetsCurrentlyLoaded o assetsConfig.obstacles cambien.
-    // Podrías pasar loadedObstacleImageCacheRef.current como dependencia si cambia de forma controlada,
-    // o aceptar que createObstacle siempre usa la versión más reciente de la ref.
-  ]);
+    ]);
 
   function getPlayerCollider(player: PlayerState) {
     const leftPadding = 0.35;
@@ -429,8 +413,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   function getObstacleCollider(obs: ObstacleInstance) {
     const paddingX = 0.2;
     const paddingY = 0.2;
-    const widthRatio = 1 - paddingX * 2;  // 60%
-    const heightRatio = 1 - paddingY * 2; // 60%
+    const widthRatio = 1 - paddingX * 2;  
+    const heightRatio = 1 - paddingY * 2; 
 
     return {
       x: obs.x + obs.width * paddingX,
@@ -443,7 +427,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const checkCollisions = useCallback(() => {
     if (!playerStateRef.current) return;
     const player = playerStateRef.current;
-    // Ajustar estos valores de hitbox según sea necesario
     const playerRect = getPlayerCollider(player);
 
     for (const obs of obstaclesRef.current) {
@@ -462,26 +445,26 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         return;
       }
     }
-  }, [score, onGameOver /* playerStateRef, obstaclesRef ... */]);
+  }, [score, onGameOver]);
 
   const drawGame = useCallback((ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    // Dibujar Fondo
+    // Draw Background
     if (loadedBackgroundImgRef.current) {
       const bg = loadedBackgroundImgRef.current;
       const bgDisplayHeight = canvasHeight;
       const bgDisplayWidth = (bg.width / bg.height) * bgDisplayHeight;
       let currentX = backgroundXRef.current % bgDisplayWidth;
-      // Asegurar que currentX sea negativo o cero para el bucle
+      // Ensure currentX is negative or zero for looping
       if (currentX > 0 && bgDisplayWidth > 0) currentX -= bgDisplayWidth;
 
-      if (bgDisplayWidth > 0) { // Evitar bucle infinito si bgDisplayWidth es 0
+      if (bgDisplayWidth > 0) { // Avoid infinite loop if bgDisplayWidth is 0
         while (currentX < canvasWidth) {
           ctx.drawImage(bg, currentX, 0, bgDisplayWidth, bgDisplayHeight);
           currentX += bgDisplayWidth;
         }
-      } else { // Fallback si el fondo no se puede dimensionar
+      } else { // Fallback if the background cannot be sized
         ctx.fillStyle = theme === 'ice' ? '#87CEEB' : theme === 'volcano' ? '#B22222' : '#3B8E59';
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
       }
@@ -490,52 +473,50 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     }
 
-    // Dibujar Suelo (Ground)
+    // Draw Ground
     if (loadedGroundImgRef.current) {
       const groundImg = loadedGroundImgRef.current;
   
-      // Determinar la altura de dibujado para el suelo visual
-      const groundDrawHeight = VISUAL_GROUND_DRAW_HEIGHT; // Usando la constante definida arriba
-      // Si usas un ratio:
+      // Determine the visual draw height for the ground
+      const groundDrawHeight = VISUAL_GROUND_DRAW_HEIGHT; // Using the constant defined above
+      // If using a ratio:
       // const groundDrawHeight = canvasHeight * VISUAL_GROUND_DRAW_HEIGHT_RATIO;
   
-      // Posición Y para dibujar el suelo (su borde superior)
-      // Esto lo alinea con la base del canvas.
+      // Y position to draw the ground (its top edge)
+      // This aligns it with the base of the canvas.
       const groundYPos = canvasHeight - groundDrawHeight;
   
-      // Calcular el ancho de "una baldosa" de la imagen del suelo para mantener su proporción original
-      // al ser dibujada con la nueva groundDrawHeight.
+      // Calculate the width of a "tile" of the ground image to maintain its original aspect ratio
+      // when drawn with the new groundDrawHeight.
       const groundImageAspectRatio = groundImg.naturalWidth / groundImg.naturalHeight;
       let groundTileWidth = groundDrawHeight * groundImageAspectRatio;
   
-      // Asegurarse de que groundTileWidth sea positivo para evitar bucles infinitos o errores
+      // Ensure groundTileWidth is positive to avoid infinite loops or errors
       if (groundTileWidth <= 0) {
-          groundTileWidth = groundImg.naturalWidth; // Fallback al ancho natural si el aspect ratio da problemas
+          groundTileWidth = groundImg.naturalWidth; // Fallback to natural width if the aspect ratio causes issues
       }
-  
   
       let currentXGround = groundXRef.current;
       if (groundTileWidth > 0) {
-          currentXGround %= groundTileWidth; // Asegura que currentXGround esté en el rango [-groundTileWidth, 0]
-          if (currentXGround > 0) currentXGround -= groundTileWidth; // Corrección si es positivo después del módulo
+          currentXGround %= groundTileWidth; // Ensure currentXGround is in the range [-groundTileWidth, 0]
+          if (currentXGround > 0) currentXGround -= groundTileWidth; // Correction if positive after modulo
       } else {
-          currentXGround = 0; // Si groundTileWidth no es válido, no hay scroll
+          currentXGround = 0; // If groundTileWidth is invalid, no scrolling
       }
-  
   
       if (groundTileWidth > 0) {
         for (let x = currentXGround; x < canvasWidth; x += groundTileWidth) {
           ctx.drawImage(groundImg, x, groundYPos, groundTileWidth, groundDrawHeight);
         }
       } else {
-          // Fallback si la imagen del suelo no se puede dimensionar (ej. no cargó o dimensiones inválidas)
-          // Podrías dibujar un rectángulo de color como placeholder
-          ctx.fillStyle = '#556B2F'; // Un color de suelo genérico (verde oscuro)
+          // Fallback if the ground image cannot be sized (e.g., it didn't load or has invalid dimensions)
+          // You could draw a placeholder rectangle
+          ctx.fillStyle = '#556B2F'; // A generic ground color (dark green)
           ctx.fillRect(0, groundYPos, canvasWidth, groundDrawHeight);
       }
     }
 
-    // Dibujar Jugador
+    // Draw Player
     if (playerStateRef.current) {
       const player = playerStateRef.current;
       const framesToUse = player.isJumping ? loadedJumpFramesRef.current : loadedRunFramesRef.current;
@@ -547,14 +528,14 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       }
     }
 
-    // Dibujar Obstáculos
+    // Draw Obstacles
     obstaclesRef.current.forEach(obs => {
       if (obs.imageElement && obs.imageElement.complete && obs.imageElement.naturalHeight !== 0) {
         ctx.drawImage(obs.imageElement, obs.x, obs.y, obs.width, obs.height);
       }
     });
 
-    const DEBUG_COLLIDERS = false; // Cambia a true para ver hitboxes
+    const DEBUG_COLLIDERS = false; // Change to true to see hitboxes
 
     if (DEBUG_COLLIDERS && playerStateRef.current) {
       const playerRectDebug = getPlayerCollider(playerStateRef.current);
@@ -591,17 +572,17 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       if (gameState === 'playing') {
         updateGame(dtSeconds);
       }
-      drawGame(ctx); // Dibujar siempre, incluso si está en idle o gameOver
+      drawGame(ctx); // Always draw, even if idle or gameOver
 
-      if (gameState !== 'gameOver') { // Continuar el bucle si no es gameOver
+      if (gameState !== 'gameOver') { // Continue the loop if not gameOver
         animationFrameId = requestAnimationFrame(gameLoop);
       }
     };
 
-    if (gameState === 'playing' || gameState === 'idle') { // Iniciar bucle si jugando o esperando inicio
+    if (gameState === 'playing' || gameState === 'idle') { // Start loop if playing or waiting to start
       animationFrameId = requestAnimationFrame(gameLoop);
-    } else if (gameState === 'gameOver') { // Si el estado es gameOver al inicio de este efecto (ej. después de un reinicio rápido)
-      drawGame(ctx); // Dibujar el estado de gameOver una vez
+    } else if (gameState === 'gameOver') { // If the state is gameOver at the start of this effect (e.g., after a quick restart)
+      drawGame(ctx); // Draw the gameOver state once
     }
 
     return () => cancelAnimationFrame(animationFrameId);
