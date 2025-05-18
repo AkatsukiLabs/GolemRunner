@@ -96,13 +96,13 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         const bgImg = await loadImageElement(assetsConfig.background);
         
         // Load all unique obstacle images specified in assetsConfig.obstacles (which is string[])
-        const uniqueObstacleSrcs = Array.from(new Set(assetsConfig.obstacles));
-        const obstacleImagePromises = uniqueObstacleSrcs.map(src => loadImageElement(src));
-        const loadedObstacles = await Promise.all(obstacleImagePromises);
+        const uniqueObstacleSrcStrings = Array.from(new Set(assetsConfig.obstacles.map(config => config.src)));
+        const obstacleImagePromises = uniqueObstacleSrcStrings.map(srcString => loadImageElement(srcString));
+        const loadedImageElements = await Promise.all(obstacleImagePromises);
 
         const newObstacleCache = new Map<string, HTMLImageElement>();
-        uniqueObstacleSrcs.forEach((src, index) => {
-          newObstacleCache.set(src, loadedObstacles[index]);
+        uniqueObstacleSrcStrings.forEach((srcString, index) => {
+          newObstacleCache.set(srcString, loadedImageElements[index]);
         });
 
         if (mounted) {
@@ -268,20 +268,24 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
 
   const createObstacle = () => {
     if (assetsConfig.obstacles.length === 0) return;
-    const randomObstacleSrc = assetsConfig.obstacles[Math.floor(Math.random() * assetsConfig.obstacles.length)];
-    const obstacleImage = loadedObstacleImageCacheRef.current.get(randomObstacleSrc);
 
-    if (obstacleImage && obstacleImage.naturalHeight !== 0) { // Image is loaded and valid
-      obstaclesRef.current.push({
+    // Elige una ObstacleConfig al azar
+    const randomObstacleCfg = assetsConfig.obstacles[Math.floor(Math.random() * assetsConfig.obstacles.length)];
+    // Obtiene el HTMLImageElement precargado del caché usando el src de la config
+    const obstacleImageElement = loadedObstacleImageCacheRef.current.get(randomObstacleCfg.src);
+
+    if (obstacleImageElement && obstacleImageElement.naturalHeight !== 0) {
+      obstaclesRef.current.push({ // Esto crea una ObstacleInstance
         id: `obs-${Date.now()}-${Math.random()}`,
-        imageSrc: randomObstacleSrc,
+        config: randomObstacleCfg,             // Guarda la configuración original
+        imageElement: obstacleImageElement,    // Guarda el elemento imagen cargado
         x: canvasWidth,
-        y: groundY - obstacleImage.naturalHeight, // Use natural height for y-pos
-        width: obstacleImage.naturalWidth,       // Use natural width
-        height: obstacleImage.naturalHeight,     // Use natural height
+        y: groundY - randomObstacleCfg.height, // Usa la altura de la config
+        width: randomObstacleCfg.width,        // Usa el ancho de la config
+        height: randomObstacleCfg.height,      // Usa la altura de la config
       });
     } else {
-        console.warn("Attempted to create obstacle with unloaded or invalid image:", randomObstacleSrc);
+      console.warn("Attempted to create obstacle, but its image was not found in cache or is invalid:", randomObstacleCfg.src);
     }
   };
 
@@ -291,7 +295,10 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     const playerRect = { x: player.x + player.width * 0.15, y: player.y + player.height * 0.1, width: player.width * 0.7, height: player.height * 0.8 };
     for (const obs of obstaclesRef.current) {
       const obsRect = { x: obs.x + obs.width * 0.1, y: obs.y + obs.height * 0.1, width: obs.width * 0.8, height: obs.height * 0.8 };
-      if (playerRect.x < obsRect.x + obsRect.width && playerRect.x + playerRect.width > obsRect.x && playerRect.y < obsRect.y + obsRect.height && playerRect.y + playerRect.height > obsRect.y) {
+      if (playerRect.x < obsRect.x + obsRect.width &&
+        playerRect.x + playerRect.width > obsRect.x &&
+        playerRect.y < obsRect.y + obsRect.height &&
+        playerRect.y + playerRect.height > obsRect.y) {
         setGameState('gameOver');
         audioManager.stopBackgroundMusic();
         audioManager.playGameOverSound();
@@ -329,12 +336,41 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       }
     }
     
-    obstaclesRef.current.forEach(obs => {
-      const obstacleImage = loadedObstacleImageCacheRef.current.get(obs.imageSrc);
-      if (obstacleImage && obstacleImage.complete && obstacleImage.naturalHeight !== 0) {
-        ctx.drawImage(obstacleImage, obs.x, obs.y, obs.width, obs.height);
+    obstaclesRef.current.forEach(obs => { // obs es ObstacleInstance
+      // Usa obs.imageElement directamente, ya que es el HTMLImageElement cargado
+      if (obs.imageElement && obs.imageElement.complete && obs.imageElement.naturalHeight !== 0) {
+        ctx.drawImage(obs.imageElement, obs.x, obs.y, obs.width, obs.height);
       }
     });
+
+    const DEBUG_COLLIDERS = true;
+
+    if (DEBUG_COLLIDERS && playerStateRef.current) {
+      const player = playerStateRef.current;
+      const playerRectDebug = { // Usa la misma lógica que en checkCollisions
+        x: player.x + player.width * 0.15,
+        y: player.y + player.height * 0.1,
+        width: player.width * 0.7,
+        height: player.height * 0.8,
+      };
+      ctx.strokeStyle = 'green'; // Color para el collider del jugador
+      ctx.lineWidth = 2;
+      ctx.strokeRect(playerRectDebug.x, playerRectDebug.y, playerRectDebug.width, playerRectDebug.height);
+    }
+
+    if (DEBUG_COLLIDERS) {
+      obstaclesRef.current.forEach(obs => {
+        const obsRectDebug = { // Usa la misma lógica que en checkCollisions
+          x: obs.x + obs.width * 0.1,
+          y: obs.y + obs.height * 0.1,
+          width: obs.width * 0.8,
+          height: obs.height * 0.8,
+        };
+        ctx.strokeStyle = 'red'; // Color para los colliders de obstáculos
+        ctx.lineWidth = 2;
+        ctx.strokeRect(obsRectDebug.x, obsRectDebug.y, obsRectDebug.width, obsRectDebug.height);
+      });
+    }
 
     if (gameState === 'idle' && assetsCurrentlyLoaded) {
       ctx.fillStyle = "rgba(0, 0, 0, 0.6)";

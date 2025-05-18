@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import GameCanvas from './GameCanvas';
 import GameOverModal from './GameOverModal'; // Asegúrate que la ruta sea correcta
-import type { GameThemeAssets, GamePhysics, GameDifficultyConfig, MapTheme } from '../../types/game';
+import type { GameThemeAssets, GamePhysics, GameDifficultyConfig, MapTheme, ObstacleConfig } from '../../types/game';
 
 // Importa SOLO assets específicos del TEMA (fondos, obstáculos del tema)
 import forestBG from '../../../assets/Maps/Forest/ForestMap.png'; // Ajusta ruta si Map.tsx no está en src/components/game/
@@ -17,38 +17,90 @@ import iceSpikeAsset from '../../../assets/icons/GoldenTrophyIcon.png';         
 import volcanoRockAsset from '../../../assets/icons/GoldenTrophyIcon.png';   // EJEMPLO - CREA ESTE ASSET
 import lavaPuddleAsset from '../../../assets/icons/GoldenTrophyIcon.png';   // EJEMPLO - CREA ESTE ASSET
 
-// Configuración base de assets por tema (sin los frames del jugador)
-interface ThemeMapAssets {
-  background: string;
-  obstacles: string[]; // Solo los src de los obstáculos
-}
-
 const THEME_MAP_CONFIGS: Record<MapTheme, {
-  assets: ThemeMapAssets;
+  assets: {
+    background: string;
+    obstacles: ObstacleConfig[];
+  };
   physics: GamePhysics;
   difficulty: GameDifficultyConfig;
 }> = {
   forest: {
-    assets: { background: forestBG, obstacles: [forestStumpAsset, forestRockAsset] },
-    physics: { gravity: 2300, jumpForce: 880, initialSpeed: 280, playerGroundOffset: 15 },
-    difficulty: { speedIncrement: 12, initialMinSpawnIntervalMs: 2000, initialMaxSpawnIntervalMs: 3800, minOverallSpawnIntervalMs: 600, obstacleIntervalSpeedFactor: 0.04, maxSpeed: 800 },
+    assets: {
+      background: forestBG,
+      obstacles: [
+        { src: forestStumpAsset, width: 70, height: 45 },
+        { src: forestRockAsset, width: 90, height: 60 },
+      ],
+    },
+    physics: {
+      gravity: 2300,
+      jumpForce: 880,
+      initialSpeed: 280,
+      playerGroundOffset: 15,
+    },
+    difficulty: {
+      speedIncrement: 12,
+      initialMinSpawnIntervalMs: 2000,
+      initialMaxSpawnIntervalMs: 3800,
+      minOverallSpawnIntervalMs: 600,
+      obstacleIntervalSpeedFactor: 0.04,
+      maxSpeed: 800,
+    },
   },
   ice: {
-    assets: { background: iceBG, obstacles: [iceCrystalAsset, iceSpikeAsset] },
-    physics: { gravity: 2200, jumpForce: 900, initialSpeed: 270, playerGroundOffset: 15 },
-    difficulty: { speedIncrement: 11, initialMinSpawnIntervalMs: 2200, initialMaxSpawnIntervalMs: 4000, minOverallSpawnIntervalMs: 650, obstacleIntervalSpeedFactor: 0.035, maxSpeed: 750 },
+    assets: {
+      background: iceBG,
+      obstacles: [
+        { src: iceCrystalAsset, width: 50, height: 80 },
+        { src: iceSpikeAsset, width: 40, height: 90 },
+      ],
+    },
+    physics: {
+      gravity: 2200,
+      jumpForce: 900,
+      initialSpeed: 270,
+      playerGroundOffset: 15,
+    },
+    difficulty: {
+      speedIncrement: 11,
+      initialMinSpawnIntervalMs: 2200,
+      initialMaxSpawnIntervalMs: 4000,
+      minOverallSpawnIntervalMs: 650,
+      obstacleIntervalSpeedFactor: 0.035,
+      maxSpeed: 750,
+    },
   },
   volcano: {
-    assets: { background: volcanoBG, obstacles: [volcanoRockAsset, lavaPuddleAsset] },
-    physics: { gravity: 2400, jumpForce: 850, initialSpeed: 300, playerGroundOffset: 15 },
-    difficulty: { speedIncrement: 14, initialMinSpawnIntervalMs: 1800, initialMaxSpawnIntervalMs: 3500, minOverallSpawnIntervalMs: 500, obstacleIntervalSpeedFactor: 0.05, maxSpeed: 850 },
+    assets: {
+      background: volcanoBG,
+      obstacles: [
+        { src: volcanoRockAsset, width: 80, height: 75 },
+        { src: lavaPuddleAsset, width: 120, height: 30 },
+      ],
+    },
+    physics: {
+      gravity: 2400,
+      jumpForce: 850,
+      initialSpeed: 300,
+      playerGroundOffset: 15,
+    },
+    difficulty: {
+      speedIncrement: 14,
+      initialMinSpawnIntervalMs: 1800,
+      initialMaxSpawnIntervalMs: 3500,
+      minOverallSpawnIntervalMs: 500,
+      obstacleIntervalSpeedFactor: 0.05,
+      maxSpeed: 850,
+    },
   },
 };
 
+
 export interface MapComponentProps {
   theme: MapTheme;
-  selectedPlayerRunFrames: string[];  // Estos vienen de PlayScreen
-  selectedPlayerJumpFrames: string[]; // Estos vienen de PlayScreen
+  selectedPlayerRunFrames: string[];
+  selectedPlayerJumpFrames: string[];
   onExitGame: () => void;
 }
 
@@ -58,18 +110,32 @@ const MapComponent: React.FC<MapComponentProps> = ({
   selectedPlayerJumpFrames,
   onExitGame,
 }) => {
+  if (!theme || !THEME_MAP_CONFIGS[theme]) {
+    return <div className="text-center text-red-500">Invalid theme: {String(theme)}</div>;
+  }
+
+  const themeConfig = THEME_MAP_CONFIGS[theme];
+
   const [currentScore, setCurrentScore] = useState(0);
-  const [highScore, setHighScore] = useState(() => parseInt(localStorage.getItem(`golemRunner_${theme}_highscore`) || '0', 10));
+  const [highScore, setHighScore] = useState(() =>
+    parseInt(localStorage.getItem(`golemRunner_${theme}_highscore`) || '0', 10)
+  );
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [gameKey, setGameKey] = useState(Date.now());
-  const [canvasDimensions, setCanvasDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const [canvasDimensions, setCanvasDimensions] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
 
   useEffect(() => {
-    const updateDimensions = () => setCanvasDimensions({ width: window.innerWidth, height: window.innerHeight });
+    const updateDimensions = () =>
+      setCanvasDimensions({ width: window.innerWidth, height: window.innerHeight });
+
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
     document.body.style.overflow = 'hidden';
-    document.body.style.background = '#0D2930'; // Color de tu tema 'screen'
+    document.body.style.background = '#0D2930';
+
     return () => {
       window.removeEventListener('resize', updateDimensions);
       document.body.style.overflow = 'auto';
@@ -77,26 +143,27 @@ const MapComponent: React.FC<MapComponentProps> = ({
     };
   }, []);
 
-  // Combina los assets del tema con los frames del jugador seleccionado
+  useEffect(() => {
+    setHighScore(parseInt(localStorage.getItem(`golemRunner_${theme}_highscore`) || '0', 10));
+  }, [theme]);
+
   const finalAssetsForGameCanvas: GameThemeAssets = useMemo(() => {
-    const themeAssets = THEME_MAP_CONFIGS[theme].assets;
-    // Fallback por si las props de frames llegan vacías (PlayScreen debería asegurar que no)
     const runFrames = selectedPlayerRunFrames.length > 0 ? selectedPlayerRunFrames : [];
     const jumpFrames = selectedPlayerJumpFrames.length > 0 ? selectedPlayerJumpFrames : [];
 
     if (runFrames.length === 0 || jumpFrames.length === 0) {
-        console.warn(`MapComponent: Player animation frames for theme '${theme}' are incomplete or missing. Gameplay might be affected.`);
+      console.warn(
+        `MapComponent: Missing run or jump frames for theme '${theme}'. Check PlayScreen props.`
+      );
     }
 
     return {
-      ...themeAssets, // background, obstacles
+      background: themeConfig.assets.background,
+      obstacles: themeConfig.assets.obstacles,
       playerRunFrames: runFrames,
       playerJumpFrames: jumpFrames,
     };
-  }, [theme, selectedPlayerRunFrames, selectedPlayerJumpFrames]);
-
-  const activePhysicsConfig = THEME_MAP_CONFIGS[theme].physics;
-  const activeDifficultyConfig = THEME_MAP_CONFIGS[theme].difficulty;
+  }, [theme, themeConfig, selectedPlayerRunFrames, selectedPlayerJumpFrames]);
 
   const handleGameOver = (finalScore: number) => {
     setCurrentScore(finalScore);
@@ -109,7 +176,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   const handleRestartGame = () => {
     setShowGameOverModal(false);
-    setGameKey(Date.now()); // Cambia la key para forzar el re-montado de GameCanvas
+    setGameKey(Date.now());
   };
 
   const handleExitAndCloseModal = () => {
@@ -122,8 +189,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
       <GameCanvas
         key={gameKey}
         assetsConfig={finalAssetsForGameCanvas}
-        physicsConfig={activePhysicsConfig}
-        difficultyConfig={activeDifficultyConfig}
+        physicsConfig={themeConfig.physics}
+        difficultyConfig={themeConfig.difficulty}
         onGameOver={handleGameOver}
         theme={theme}
         canvasWidth={canvasDimensions.width}
