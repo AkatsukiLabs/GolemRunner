@@ -5,7 +5,7 @@ import wasm from "vite-plugin-wasm";
 import { VitePWA } from "vite-plugin-pwa";
 // import fs from "fs";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   // server: {
   //   https: {
   //     key: fs.readFileSync("mkcert+1-key.pem"), // Path to private key file
@@ -18,6 +18,9 @@ export default defineConfig({
     topLevelAwait(),
     VitePWA({
       registerType: "autoUpdate",
+      devOptions: {
+        enabled: mode === 'development'
+      },
       includeAssets: [
         "icons/logo.png",
         "screenshots/loading.png",
@@ -37,6 +40,12 @@ export default defineConfig({
         background_color: "#000000",
         orientation: "any",
         icons: [
+          {
+            src: "/icons/logo.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any maskable"
+          },
           {
             src: "/icons/logo.png",
             sizes: "192x192",
@@ -80,4 +89,4 @@ export default defineConfig({
   server: {
     port: 3000,
   },
-});
+}));
