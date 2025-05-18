@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { useAccount } from "@starknet-react/core";
+import { useAccount, useDisconnect } from "@starknet-react/core";
 
 // Assets
 import menuIcon from "../../../assets/icons/svg/icon-menu.svg";
@@ -8,33 +8,41 @@ import profileIcon from "../../../assets/icons/svg/icon-profile.svg";
 import shareIcon from "../../../assets/icons/svg/icon-share.svg";
 import logoutIcon from "../../../assets/icons/svg/icon-logout.svg";
 
-export const GameMenu: React.FC = () => {
+interface DropdownMenuProps {
+  onNavigateCover: () => void;
+}
+
+export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onNavigateCover }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { connector } = useAccount();
+  const { disconnect } = useDisconnect();
 
   const toggleMenu = useCallback(() => {
-    setIsOpen((prev) => !prev);
+    setIsOpen(prev => !prev);
   }, []);
 
   const handleProfile = useCallback(() => {
-    if (!connector || !('controller' in connector)) return;
+    if (!connector || !('controller' in connector)) {
+      console.error("Connector not initialized");
+      return;
+    }
     if (connector.controller && typeof connector.controller === 'object' && 'openProfile' in connector.controller) {
       (connector.controller as { openProfile: (profile: string) => void }).openProfile("achievements");
+    } else {
+      console.error("Connector controller is not properly initialized");
     }
   }, [connector]);
 
-  const handleShare = useCallback(() => {
-    if (!connector || !('controller' in connector)) return;
-    if (connector.controller && typeof connector.controller === 'object' && 'shareOnX' in connector.controller) {
-      (connector.controller as { shareOnX: () => void }).shareOnX();
-    }
-  }, [connector]);
+  const handleShareClick = useCallback(() => {
+    setIsShareModalOpen(true);
+  }, []);
 
   const handleDisconnect = useCallback(() => {
-    if (connector?.disconnect) {
-      connector.disconnect();
-    }
-  }, [connector]);
+    disconnect();
+    setIsOpen(false);
+    onNavigateCover();
+  }, [disconnect, onNavigateCover]);
 
   return (
     <div className="relative">
@@ -62,7 +70,7 @@ export const GameMenu: React.FC = () => {
           </button>
 
           <button
-            onClick={handleShare}
+            onClick={handleShareClick}
             className="flex items-center space-x-3 w-full hover:scale-105 transition-transform"
           >
             <img src={shareIcon} alt="Share on X" className="w-5 h-5" />
@@ -73,7 +81,7 @@ export const GameMenu: React.FC = () => {
             onClick={handleDisconnect}
             className="flex items-center space-x-3 w-full hover:scale-105 transition-transform"
           >
-            <img src={logoutIcon} alt="Disconnect" className="w-5 h-5" />
+            <img src={logoutIcon} alt="Logout" className="w-5 h-5" />
             <span className="text-dark font-luckiest">Disconnect</span>
           </button>
         </div>

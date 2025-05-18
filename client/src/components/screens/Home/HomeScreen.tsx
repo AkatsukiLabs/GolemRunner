@@ -7,7 +7,7 @@ import { characters } from "../../../constants/characters"
 import { TopBar } from "../../layout/TopBar"
 import TalkIconButton from "../../../assets/icons/TalkIconButton.png"
 import { GolemTalkModal } from "./GolemTalkModal"
-import { GameMenu } from "./DropDownMenu";
+import { DropdownMenu } from "./DropDownMenu";
 
  interface HomeScreenProps {
    playerAddress: string
@@ -16,6 +16,7 @@ import { GameMenu } from "./DropDownMenu";
    coins: number
    level: number
    onNavigation: (screen: "home" | "play" | "market" | "ranking" | "profile") => void
+   onNavigateCover: () => void
  }
 
  export function HomeScreen({
@@ -23,6 +24,7 @@ import { GameMenu } from "./DropDownMenu";
    onPlayClick,
    coins,
    level,
+   onNavigateCover,
  }: HomeScreenProps) {
    const [selectedCharacter, setSelectedCharacter] = useState(characters[0])
    const [showTalkModal, setShowTalkModal] = useState(false)
@@ -70,7 +72,7 @@ import { GameMenu } from "./DropDownMenu";
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
           >
-            <GameMenu />
+            <DropdownMenu onNavigateCover={onNavigateCover} />
           </motion.div>
         </div>
   
