@@ -9,7 +9,6 @@ import {
   PlayerState,
   ObstacleInstance,
   MapTheme,
-  ObstacleConfig,
   SingleObstacleConfig,
   ObstacleGroupConfig, // Incluido por si acaso, aunque ObstacleInstance ya lo usa
 } from '../../types/game'; // Ajusta la ruta si es necesario
@@ -29,8 +28,8 @@ interface GameCanvasProps {
 }
 
 const PLAYER_ANIMATION_FRAME_TIME = 80; // ms per frame
-const PLAYER_BASE_WIDTH = 60;
-const PLAYER_BASE_HEIGHT = 80;
+const PLAYER_BASE_WIDTH = 150;
+const PLAYER_BASE_HEIGHT = 170;
 const GROUND_HEIGHT_RATIO = 0.15;
 
 const loadImageElement = (src: string): Promise<HTMLImageElement> => {
@@ -386,14 +385,43 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     // o aceptar que createObstacle siempre usa la versión más reciente de la ref.
   ]);
 
+  function getPlayerCollider(player: PlayerState) {
+    const leftPadding = 0.35;
+    const topPadding = 0.15;
+    const widthRatio = 0.35;
+    const heightRatio = 0.7;
+  
+    return {
+      x: player.x + player.width * leftPadding,
+      y: player.y + player.height * topPadding,
+      width: player.width * widthRatio,
+      height: player.height * heightRatio,
+    };
+  }
+
+
+  function getObstacleCollider(obs: ObstacleInstance) {
+    const paddingX = 0.2;
+    const paddingY = 0.2;
+    const widthRatio = 1 - paddingX * 2;  // 60%
+    const heightRatio = 1 - paddingY * 2; // 60%
+
+    return {
+      x: obs.x + obs.width * paddingX,
+      y: obs.y + obs.height * paddingY,
+      width: obs.width * widthRatio,
+      height: obs.height * heightRatio,
+    };
+  }
+
   const checkCollisions = useCallback(() => {
     if (!playerStateRef.current) return;
     const player = playerStateRef.current;
     // Ajustar estos valores de hitbox según sea necesario
-    const playerRect = { x: player.x + player.width * 0.15, y: player.y + player.height * 0.1, width: player.width * 0.7, height: player.height * 0.8 };
+    const playerRect = getPlayerCollider(player);
 
     for (const obs of obstaclesRef.current) {
-      const obsRect = { x: obs.x + obs.width * 0.1, y: obs.y + obs.height * 0.1, width: obs.width * 0.8, height: obs.height * 0.8 };
+      const obsRect = getObstacleCollider(obs);
       if (playerRect.x < obsRect.x + obsRect.width &&
         playerRect.x + playerRect.width > obsRect.x &&
         playerRect.y < obsRect.y + obsRect.height &&
@@ -455,16 +483,10 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       }
     });
 
-    const DEBUG_COLLIDERS = false; // Cambia a true para ver hitboxes
+    const DEBUG_COLLIDERS = true; // Cambia a true para ver hitboxes
 
     if (DEBUG_COLLIDERS && playerStateRef.current) {
-      const player = playerStateRef.current;
-      const playerRectDebug = {
-        x: player.x + player.width * 0.15,
-        y: player.y + player.height * 0.1,
-        width: player.width * 0.7,
-        height: player.height * 0.8,
-      };
+      const playerRectDebug = getPlayerCollider(playerStateRef.current);
       ctx.strokeStyle = 'green';
       ctx.lineWidth = 2;
       ctx.strokeRect(playerRectDebug.x, playerRectDebug.y, playerRectDebug.width, playerRectDebug.height);
@@ -472,12 +494,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
 
     if (DEBUG_COLLIDERS) {
       obstaclesRef.current.forEach(obs => {
-        const obsRectDebug = {
-          x: obs.x + obs.width * 0.1,
-          y: obs.y + obs.height * 0.1,
-          width: obs.width * 0.8,
-          height: obs.height * 0.8,
-        };
+        const obsRectDebug = getObstacleCollider(obs);
         ctx.strokeStyle = 'red';
         ctx.lineWidth = 2;
         ctx.strokeRect(obsRectDebug.x, obsRectDebug.y, obsRectDebug.width, obsRectDebug.height);

@@ -10,12 +10,12 @@ import iceBG from '../../../assets/Maps/Ice/IceMap.png';
 import volcanoBG from '../../../assets/Maps/Volcano/VolcanoMap.png';
 
 // DEFINE TUS PROPIOS ASSETS DE OBSTÁCULOS REALES E IMPÓRTALOS
-import forestStumpAsset from '../../../assets/icons/GoldenTrophyIcon.png'; // EJEMPLO - CREA ESTE ASSET
-import forestRockAsset from '../../../assets/icons/GoldenTrophyIcon.png';     // EJEMPLO - CREA ESTE ASSET
-import iceCrystalAsset from '../../../assets/icons/GoldenTrophyIcon.png';       // EJEMPLO - CREA ESTE ASSET
-import iceSpikeAsset from '../../../assets/icons/GoldenTrophyIcon.png';         // EJEMPLO - CREA ESTE ASSET
-import volcanoRockAsset from '../../../assets/icons/GoldenTrophyIcon.png';   // EJEMPLO - CREA ESTE ASSET
-import lavaPuddleAsset from '../../../assets/icons/GoldenTrophyIcon.png';   // EJEMPLO - CREA ESTE ASSET
+import forestStumpAsset from '../../../assets/Maps/Forest/rock.png'; // EJEMPLO - CREA ESTE ASSET
+import forestRockAsset from '../../../assets/Maps/Forest/forestLog.png';     // EJEMPLO - CREA ESTE ASSET
+import iceCrystalAsset from '../../../assets/Maps/Ice/stalagmite.png';       // EJEMPLO - CREA ESTE ASSET
+import iceSpikeAsset from '../../../assets/Maps/Ice/IceBlock.png';         // EJEMPLO - CREA ESTE ASSET
+import volcanoRockAsset from '../../../assets/Maps/Volcano/VolcanicRock.png';   // EJEMPLO - CREA ESTE ASSET
+import lavaPuddleAsset from '../../../assets/Maps/Volcano/geyser.png';   // EJEMPLO - CREA ESTE ASSET
 
 const THEME_MAP_CONFIGS: Record<MapTheme, {
   assets: {
@@ -29,21 +29,21 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
     assets: {
       background: forestBG,
       obstacles: [
-        { type: 'single', src: forestStumpAsset, width: 70, height: 45 },
-        { type: 'single', src: forestRockAsset, width: 90, height: 60 },
+        { type: 'single', src: forestStumpAsset, width: 90, height: 65 },
+        { type: 'single', src: forestRockAsset, width: 110, height: 80 },
         { 
           type: 'group', 
           members: [
-            { src: forestStumpAsset, width: 40, height: 30, spacingAfter: 20 }, // Roca pequeña, luego 20px de espacio
-            { src: forestRockAsset, width: 70, height: 45 },                         // Tocón
+            { src: forestStumpAsset, width: 60, height: 50, spacingAfter: 1 }, // Roca pequeña, luego 20px de espacio
+            { src: forestRockAsset, width: 90, height: 65 },                         // Tocón
           ]
         },
         {
           type: 'group',
           members: [
-            { src: forestStumpAsset, width: 40, height: 30, spacingAfter: 10 },
-            { src: forestStumpAsset, width: 60, height: 50, spacingAfter: 10 }, // Roca mediana un poco más alta
-            { src: forestRockAsset, width: 40, height: 30 },
+            { src: forestStumpAsset, width: 60, height: 50, spacingAfter: 0 },
+            { src: forestRockAsset, width: 80, height: 50 },
+            { src: forestStumpAsset, width: 60, height: 50 },
           ]
         },
       ],
@@ -66,28 +66,28 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
     assets: {
       background: iceBG,
       obstacles: [
-        { type: 'single', src: iceCrystalAsset, width: 70, height: 45 },
-        { type: 'single', src: iceSpikeAsset, width: 90, height: 60 },
+        { type: 'single', src: iceCrystalAsset, width: 100, height: 75 },
+        { type: 'single', src: iceSpikeAsset, width: 120, height: 90 },
         { 
           type: 'group', 
           members: [
-            { src: iceSpikeAsset, width: 40, height: 30, spacingAfter: 20 }, // Roca pequeña, luego 20px de espacio
-            { src: iceCrystalAsset, width: 70, height: 45 },                         // Tocón
+            { src: iceSpikeAsset, width: 70, height: 60, spacingAfter: 1 }, // Roca pequeña, luego 20px de espacio
+            { src: iceCrystalAsset, width: 90, height: 75 },                         // Tocón
           ]
         },
         {
           type: 'group',
           members: [
-            { src: iceCrystalAsset, width: 40, height: 30, spacingAfter: 10 },
-            { src: iceSpikeAsset, width: 60, height: 50, spacingAfter: 10 }, // Roca mediana un poco más alta
-            { src: iceCrystalAsset, width: 40, height: 30 },
+            { src: iceCrystalAsset, width: 60, height: 50, spacingAfter: 0 },
+            { src: iceSpikeAsset, width: 80, height: 70, spacingAfter: 0 }, // Roca mediana un poco más alta
+            { src: iceCrystalAsset, width: 60, height: 50 },
           ]
         },
       ],
     },
     physics: {
       gravity: 2200,
-      jumpForce: 800,
+      jumpForce: 900,
       baseSpeed: 270,
       playerGroundOffset: 15,
     },
@@ -103,28 +103,28 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
     assets: {
       background: volcanoBG,
       obstacles: [
-        { type: 'single', src: volcanoRockAsset, width: 70, height: 45 },
-        { type: 'single', src: lavaPuddleAsset, width: 90, height: 60 },
+        { type: 'single', src: volcanoRockAsset, width: 100, height: 75 },
+        { type: 'single', src: lavaPuddleAsset, width: 120, height: 90 },
         { 
           type: 'group', 
           members: [
-            { src: volcanoRockAsset, width: 40, height: 30, spacingAfter: 20 }, // Roca pequeña, luego 20px de espacio
-            { src: lavaPuddleAsset, width: 70, height: 45 },                         // Tocón
+            { src: volcanoRockAsset, width: 70, height: 60, spacingAfter: 1 }, // Roca pequeña, luego 20px de espacio
+            { src: lavaPuddleAsset, width: 100, height: 75 },                         // Tocón
           ]
         },
         {
           type: 'group',
           members: [
-            { src: volcanoRockAsset, width: 40, height: 30, spacingAfter: 10 },
-            { src: lavaPuddleAsset, width: 60, height: 50, spacingAfter: 10 }, // Roca mediana un poco más alta
-            { src: lavaPuddleAsset, width: 40, height: 30 },
+            { src: volcanoRockAsset, width: 60, height: 50, spacingAfter: 0},
+            { src: lavaPuddleAsset, width: 80, height: 70, spacingAfter: 0}, // Roca mediana un poco más alta
+            { src: lavaPuddleAsset, width: 70, height: 50 },
           ]
         },
       ],
     },
     physics: {
-      gravity: 2400,
-      jumpForce: 850,
+      gravity: 2300,
+      jumpForce: 950,
       baseSpeed: 300,
       playerGroundOffset: 15,
     },
