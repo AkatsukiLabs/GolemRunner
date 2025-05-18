@@ -114,7 +114,7 @@ export default function App() {
       )}
 
       {/* NavBar*/}
-      {currentScreen !== "cover" && (
+      {currentScreen !== "cover" && currentScreen !== "play" &&(
        <NavBar
          activeTab={currentScreen as "market"|"home"|"ranking"|"profile"}
          onNavigation={handleNavigation}
