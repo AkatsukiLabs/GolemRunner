@@ -19,6 +19,7 @@ export default function App() {
   const [level] = useState(3);
   const [experience] = useState(75);
   const [nextLevelExperience] = useState(100);
+  const [playerAddress] = useState("0x123"); // Temporal address for testing
   const [ownedGolems, setOwnedGolems] = useState<Golem[]>([
     defaultGolems[0],
     defaultGolems[2],
@@ -65,6 +66,7 @@ export default function App() {
           onMarketClick={() => handleNavigation("market")}
           coins={coins}
           level={level}
+          playerAddress={playerAddress}
           onNavigation={handleNavigation}
         />
       )}

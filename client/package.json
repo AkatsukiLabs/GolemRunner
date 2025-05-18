@@ -30,6 +30,7 @@
     "@tsparticles/slim": "^3.8.1",
     "@types/uuid": "^10.0.0",
     "@use-gesture/react": "^10.3.0",
+    "dexie": "^4.0.11",
     "framer-motion": "^12.10.5",
     "immer": "^10.1.1",
     "lucide-react": "^0.509.0",
