@@ -233,10 +233,9 @@ export const useSpawnPlayer = () => {
       
       return { success: false, playerExists: false, error: errorMessage };
     } finally {
-      // Liberar el lock
       isInitializingRef.current = false;
     }
-  }, [status, account]); // ¡Dependencias mínimas!
+  }, [status, account]); 
 
   /**
    * Reset initialization state (useful for retry scenarios)
@@ -260,7 +259,7 @@ export const useSpawnPlayer = () => {
     setLoading(initState.isInitializing || playerLoading);
   }, [initState.isInitializing, playerLoading, setLoading]);
 
-  // Cleanup effect para resetear refs cuando el componente se desmonte
+  // Cleanup for unmounted component
   useEffect(() => {
     return () => {
       console.log("🧹 Cleaning up spawn player hook...");

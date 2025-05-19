@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
 import { useStarknetConnect } from '../../../dojo/hooks/useStarknetConnect';
-import { useSpawnPlayer } from '../../../dojo/hooks/useSpawnGolem';
+import { useSpawnPlayer } from '../../../dojo/hooks/useSpawn';
 import desktopBg from '../../../assets/login-desktop.png';
 import mobileBg from '../../../assets/login-mobile.png';
 interface LoginScreenProps {
