@@ -14,7 +14,7 @@ interface DropdownMenuProps {
 
 export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onNavigateCover }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [_isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { connector } = useAccount();
   const { disconnect } = useDisconnect();
 
