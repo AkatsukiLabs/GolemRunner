@@ -1,14 +1,14 @@
 import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
-import { CairoCustomEnum, BigNumberish } from 'starknet';
+import { CairoCustomEnum } from 'starknet';
 
 // Type definition for `golem_runner::models::golem::Golem` struct
 export interface Golem {
-	id: BigNumberish;
+	id: number;
 	player_id: string;
-	name: BigNumberish;
-	description: BigNumberish;
-	price: BigNumberish;
+	name: number;
+	description: number;
+	price: number;
 	rarity: RarityEnum;
 	is_starter: boolean;
 	is_unlocked: boolean;
@@ -16,9 +16,9 @@ export interface Golem {
 
 // Type definition for `golem_runner::models::golem::GolemValue` struct
 export interface GolemValue {
-	name: BigNumberish;
-	description: BigNumberish;
-	price: BigNumberish;
+	name: number;
+	description: number;
+	price: number;
 	rarity: RarityEnum;
 	is_starter: boolean;
 	is_unlocked: boolean;
@@ -27,65 +27,65 @@ export interface GolemValue {
 // Type definition for `golem_runner::models::player::Player` struct
 export interface Player {
 	address: string;
-	coins: BigNumberish;
-	total_points: BigNumberish;
-	level: BigNumberish;
-	experience: BigNumberish;
-	creation_day: BigNumberish;
+	coins: number;
+	total_points: number;
+	level: number;
+	experience: number;
+	creation_day: number;
 }
 
 // Type definition for `golem_runner::models::player::PlayerValue` struct
 export interface PlayerValue {
-	coins: BigNumberish;
-	total_points: BigNumberish;
-	level: BigNumberish;
-	experience: BigNumberish;
-	creation_day: BigNumberish;
+	coins: number;
+	total_points: number;
+	level: number;
+	experience: number;
+	creation_day: number;
 }
 
 // Type definition for `golem_runner::models::ranking::Ranking` struct
 export interface Ranking {
-	world_id: BigNumberish;
+	world_id: number;
 	player: string;
-	points: BigNumberish;
+	points: number;
 }
 
 // Type definition for `golem_runner::models::ranking::RankingValue` struct
 export interface RankingValue {
-	points: BigNumberish;
+	points: number;
 }
 
 // Type definition for `golem_runner::models::world::World` struct
 export interface World {
-	id: BigNumberish;
+	id: number;
 	player_id: string;
-	name: BigNumberish;
-	description: BigNumberish;
-	price: BigNumberish;
+	name: number;
+	description: number;
+	price: number;
 	is_starter: boolean;
 	is_unlocked: boolean;
 }
 
 // Type definition for `golem_runner::models::world::WorldValue` struct
 export interface WorldValue {
-	name: BigNumberish;
-	description: BigNumberish;
-	price: BigNumberish;
+	name: number;
+	description: number;
+	price: number;
 	is_starter: boolean;
 	is_unlocked: boolean;
 }
 
 // Type definition for `achievement::events::index::TrophyCreation` struct
 export interface TrophyCreation {
-	id: BigNumberish;
+	id: number;
 	hidden: boolean;
-	index: BigNumberish;
-	points: BigNumberish;
-	start: BigNumberish;
-	end: BigNumberish;
-	group: BigNumberish;
-	icon: BigNumberish;
-	title: BigNumberish;
+	index: number;
+	points: number;
+	start: number;
+	end: number;
+	group: number;
+	icon: number;
+	title: number;
 	description: string;
 	tasks: Array<Task>;
 	data: string;
@@ -94,13 +94,13 @@ export interface TrophyCreation {
 // Type definition for `achievement::events::index::TrophyCreationValue` struct
 export interface TrophyCreationValue {
 	hidden: boolean;
-	index: BigNumberish;
-	points: BigNumberish;
-	start: BigNumberish;
-	end: BigNumberish;
-	group: BigNumberish;
-	icon: BigNumberish;
-	title: BigNumberish;
+	index: number;
+	points: number;
+	start: number;
+	end: number;
+	group: number;
+	icon: number;
+	title: number;
 	description: string;
 	tasks: Array<Task>;
 	data: string;
@@ -108,22 +108,22 @@ export interface TrophyCreationValue {
 
 // Type definition for `achievement::events::index::TrophyProgression` struct
 export interface TrophyProgression {
-	player_id: BigNumberish;
-	task_id: BigNumberish;
-	count: BigNumberish;
-	time: BigNumberish;
+	player_id: number;
+	task_id: number;
+	count: number;
+	time: number;
 }
 
 // Type definition for `achievement::events::index::TrophyProgressionValue` struct
 export interface TrophyProgressionValue {
-	count: BigNumberish;
-	time: BigNumberish;
+	count: number;
+	time: number;
 }
 
 // Type definition for `achievement::types::index::Task` struct
 export interface Task {
-	id: BigNumberish;
-	total: BigNumberish;
+	id: number;
+	total: number;
 	description: string;
 }
 

@@ -1,9 +1,9 @@
 import { DojoProvider, DojoCall } from "@dojoengine/core";
-import { Account, AccountInterface, BigNumberish } from "starknet";
+import { Account, AccountInterface } from "starknet";
 
 export function setupWorld(provider: DojoProvider) {
 
-	const build_game_rewardPlayer_calldata = (points: BigNumberish, coinsCollected: BigNumberish): DojoCall => {
+	const build_game_rewardPlayer_calldata = (points: number, coinsCollected: number): DojoCall => {
 		return {
 			contractName: "game",
 			entrypoint: "reward_player",
@@ -11,7 +11,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const game_rewardPlayer = async (snAccount: Account | AccountInterface, points: BigNumberish, coinsCollected: BigNumberish) => {
+	const game_rewardPlayer = async (snAccount: Account | AccountInterface, points: number, coinsCollected: number) => {
 		try {
 			return await provider.execute(
 				snAccount as any,
@@ -45,7 +45,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_game_unlockGolemStore_calldata = (golemId: BigNumberish): DojoCall => {
+	const build_game_unlockGolemStore_calldata = (golemId: number): DojoCall => {
 		return {
 			contractName: "game",
 			entrypoint: "unlock_golem_store",
@@ -53,7 +53,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const game_unlockGolemStore = async (snAccount: Account | AccountInterface, golemId: BigNumberish) => {
+	const game_unlockGolemStore = async (snAccount: Account | AccountInterface, golemId: number) => {
 		try {
 			return await provider.execute(
 				snAccount as any,
@@ -66,7 +66,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_game_unlockWorldStore_calldata = (worldId: BigNumberish): DojoCall => {
+	const build_game_unlockWorldStore_calldata = (worldId: number): DojoCall => {
 		return {
 			contractName: "game",
 			entrypoint: "unlock_world_store",
@@ -74,7 +74,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const game_unlockWorldStore = async (snAccount: Account | AccountInterface, worldId: BigNumberish) => {
+	const game_unlockWorldStore = async (snAccount: Account | AccountInterface, worldId: number) => {
 		try {
 			return await provider.execute(
 				snAccount as any,
@@ -87,7 +87,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_game_updatePlayerRanking_calldata = (worldId: BigNumberish, points: BigNumberish): DojoCall => {
+	const build_game_updatePlayerRanking_calldata = (worldId: number, points: number): DojoCall => {
 		return {
 			contractName: "game",
 			entrypoint: "update_player_ranking",
@@ -95,7 +95,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const game_updatePlayerRanking = async (snAccount: Account | AccountInterface, worldId: BigNumberish, points: BigNumberish) => {
+	const game_updatePlayerRanking = async (snAccount: Account | AccountInterface, worldId: number, points: number) => {
 		try {
 			return await provider.execute(
 				snAccount as any,

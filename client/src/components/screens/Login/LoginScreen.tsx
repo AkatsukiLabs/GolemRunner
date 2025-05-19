@@ -14,6 +14,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
   useEffect(() => {
     if (status === "connected" && hasTriedConnect) {
+      //Add spawm call here
       onLoginSuccess();
     }
   }, [status, hasTriedConnect, onLoginSuccess]);
