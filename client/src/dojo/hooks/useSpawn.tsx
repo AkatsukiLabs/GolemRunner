@@ -32,7 +32,7 @@ export const useSpawnPlayer = () => {
   const { player, isLoading: playerLoading, refetch: refetchPlayer } = usePlayer();
   const { setPlayer, setLoading } = useAppStore();
 
-  // Ref para prevenir ejecuciones múltiples
+  // Ref to prevent multiple executions
   const isInitializingRef = useRef(false);
   const hasExecutedRef = useRef(false);
 
