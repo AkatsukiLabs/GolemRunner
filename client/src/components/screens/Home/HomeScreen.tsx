@@ -18,7 +18,7 @@ interface HomeScreenProps {
   onNavigation: (
     screen: "home" | "play" | "market" | "ranking" | "profile"
   ) => void;
-  onNavigateCover: () => void;
+  onNavigateLogin: () => void;
 }
 
 export function HomeScreen({
@@ -26,7 +26,7 @@ export function HomeScreen({
   onPlayClick,
   coins,
   level,
-  onNavigateCover,
+  onNavigateLogin,
 }: HomeScreenProps) {
   const [selectedCharacter, setSelectedCharacter] = useState(characters[0]);
   const [showTalkModal, setShowTalkModal] = useState(false);
@@ -115,7 +115,7 @@ export function HomeScreen({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
           >
-            <DropdownMenu onNavigateCover={onNavigateCover} />
+            <DropdownMenu onNavigateLogin={onNavigateLogin} />
           </motion.div>
         </div>
   

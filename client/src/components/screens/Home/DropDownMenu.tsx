@@ -9,10 +9,10 @@ import shareIcon from "../../../assets/icons/svg/icon-share.svg";
 import logoutIcon from "../../../assets/icons/svg/icon-logout.svg";
 
 interface DropdownMenuProps {
-  onNavigateCover: () => void;
+  onNavigateLogin: () => void;
 }
 
-export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onNavigateCover }) => {
+export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onNavigateLogin }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [_isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { connector } = useAccount();
@@ -41,8 +41,8 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onNavigateCover }) =
   const handleDisconnect = useCallback(() => {
     disconnect();
     setIsOpen(false);
-    onNavigateCover();
-  }, [disconnect, onNavigateCover]);
+    onNavigateLogin();
+  }, [disconnect, onNavigateLogin]);
 
   return (
     <div className="relative">

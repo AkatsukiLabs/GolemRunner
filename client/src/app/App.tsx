@@ -5,18 +5,17 @@ import { PlayScreen } from "../components/screens/Play/PlayScreen";
 import { MarketScreen } from "../components/screens/Market/MarketScreen";
 import { ProfileScreen } from "../components/screens/Profile/ProfileScreen";
 import { RankingScreen } from "../components/screens/Ranking/RankingScreen";
-import { ConnectController } from "../components/screens/ConnectController/ControllerScreen"
+import { LoginScreen } from "../components/screens/Login/LoginScreen"
 import { NavBar } from "../components/layout/NavBar"
 import type { Golem } from "../components/types/golem";
 import type { Map } from "../components/types/map";
 import { defaultGolems } from "../constants/golems";
 import { defaultMaps } from "../constants/maps";
 
-type Screen = "cover" | "home" | "play" | "market" | "ranking" | "profile";
+type Screen = "login" | "cover" | "home" | "play" | "market" | "ranking" | "profile";
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>("cover");
-  const [showConnectOverlay, setShowConnectOverlay] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState<Screen>("login");
   const [coins, setCoins] = useState(385);
   const [level] = useState(3);
   const [experience] = useState(75);
@@ -55,24 +54,21 @@ export default function App() {
         : [...prev, { ...golem, owned: true }]
     );
 
-    const handleLoadingComplete = useCallback(
-      () => setShowConnectOverlay(true),
-      []
-    );
+  const handleLoadingComplete = useCallback(
+    () => setCurrentScreen("home"),
+    []
+  );
 
   return (
     <div className="relative min-h-screen pb-16">
+      {currentScreen === "login" && (
+        <LoginScreen
+          onLoginSuccess={() => handleNavigation("cover")}
+        />
+      )}
 
       {currentScreen === "cover" && (
         <CoverScreen onLoadingComplete={handleLoadingComplete} />
-      )}
-      {showConnectOverlay && (
-        <ConnectController
-          onConnect={() => {
-            setShowConnectOverlay(false);
-            setCurrentScreen("home");
-          }}
-        />
       )}
 
       {currentScreen === "home" && (
@@ -85,7 +81,7 @@ export default function App() {
           level={level}
           playerAddress={playerAddress}
           onNavigation={handleNavigation}
-          onNavigateCover={() => handleNavigation("cover")}
+          onNavigateLogin={() => handleNavigation("login")}
         />
       )}
 
@@ -131,12 +127,12 @@ export default function App() {
       )}
 
       {/* NavBar*/}
-      {currentScreen !== "cover" && currentScreen !== "play" &&(
-       <NavBar
-         activeTab={currentScreen as "market"|"home"|"ranking"|"profile"}
-         onNavigation={handleNavigation}
-       />
-     )}
+      {currentScreen !== "cover" && currentScreen !== "play" && currentScreen !== "login" && (
+        <NavBar
+          activeTab={currentScreen as "market"|"home"|"ranking"|"profile"}
+          onNavigation={handleNavigation}
+        />
+      )}
     </div>
   );
 }
