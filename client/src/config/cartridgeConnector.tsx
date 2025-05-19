@@ -6,7 +6,7 @@ import { constants } from "starknet";
 
 const { VITE_PUBLIC_DEPLOY_TYPE } = import.meta.env;
 
-const CONTRACT_ADDRESS_GAME = '0x7293e0d29ad517a34379faef457009e0325840fa6f7bd6b782a5473fa4663e3'
+const CONTRACT_ADDRESS_GAME = '0x4b50da4ab0c14714f89a80a6d8d10fc7e80e80e2f616021f456452ef27b18f4'
 
 const policies: SessionPolicies = {
   contracts: {
