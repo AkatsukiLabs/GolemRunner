@@ -6,8 +6,8 @@ import { CairoCustomEnum } from 'starknet';
 export interface Golem {
 	id: number;
 	player_id: string;
-	name: number;
-	description: number;
+	name: string;
+	description: string;
 	price: number;
 	rarity: RarityEnum;
 	is_starter: boolean;
@@ -163,8 +163,8 @@ export const schema: SchemaType = {
 		Golem: {
 		id: 0,
 			player_id: "",
-			name: 0,
-			description: 0,
+			name: "",
+			description: "",
 			price: 0,
 		rarity: new CairoCustomEnum({ 
 				Basic: "Basic",
