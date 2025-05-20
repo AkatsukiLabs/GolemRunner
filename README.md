@@ -1,6 +1,6 @@
 # Golem Runner 🌟
 
-![image](client/src/assets/Cover.png)
+![image](client/src/assets/cover-mobile.png)
 
 
 ## 📱 About
