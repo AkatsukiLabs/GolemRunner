@@ -52,6 +52,13 @@ export function HomeScreen({
   const openTalk = () => setShowTalkModal(true);
   const closeTalk = () => setShowTalkModal(false);
 
+  // Prepare golem data for sharing
+  const selectedGolemData = {
+    name: selectedCharacter.name,
+    description: selectedCharacter.description || "A powerful golem ready for adventure",
+    level: level
+  };
+
   return (
     <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik flex flex-col">
       <BackgroundParticles />
@@ -115,7 +122,10 @@ export function HomeScreen({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
           >
-            <DropdownMenu onNavigateLogin={onNavigateLogin} />
+            <DropdownMenu 
+              onNavigateLogin={onNavigateLogin} 
+              selectedGolem={selectedGolemData}
+            />
           </motion.div>
         </div>
   

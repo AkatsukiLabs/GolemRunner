@@ -1,6 +1,9 @@
 import { useCallback, useState } from "react";
 import { useAccount, useDisconnect } from "@starknet-react/core";
 
+// Components
+import { ShareModal } from "./ShareModal";
+
 // Assets
 import menuIcon from "../../../assets/icons/svg/icon-menu.svg";
 import closeIcon from "../../../assets/icons/svg/icon-close.svg";
@@ -10,11 +13,19 @@ import logoutIcon from "../../../assets/icons/svg/icon-logout.svg";
 
 interface DropdownMenuProps {
   onNavigateLogin: () => void;
+  selectedGolem?: {
+    name: string;
+    description: string;
+    level: number;
+  };
 }
 
-export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onNavigateLogin }) => {
+export const DropdownMenu: React.FC<DropdownMenuProps> = ({ 
+  onNavigateLogin,
+  selectedGolem 
+}) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [_isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { connector } = useAccount();
   const { disconnect } = useDisconnect();
 
@@ -36,6 +47,7 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onNavigateLogin }) =
 
   const handleShareClick = useCallback(() => {
     setIsShareModalOpen(true);
+    setIsOpen(false); // Close dropdown when opening share modal
   }, []);
 
   const handleDisconnect = useCallback(() => {
@@ -86,6 +98,13 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onNavigateLogin }) =
           </button>
         </div>
       )}
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        golemData={selectedGolem}
+      />
     </div>
   );
 };
