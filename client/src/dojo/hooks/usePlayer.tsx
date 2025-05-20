@@ -6,10 +6,6 @@ import { Player } from '../bindings';
 import useAppStore from '../../zustand/store';
 
 // Types
-interface PlayerEdge {
-  node: Player;
-}
-
 interface UsePlayerReturn {
   player: Player | null;
   isLoading: boolean;
@@ -20,7 +16,7 @@ interface UsePlayerReturn {
 // Constants
 const TORII_URL = dojoConfig.toriiUrl + "/graphql";
 const PLAYER_QUERY = `
-  query GetPlayer($playerAddress: String!) {
+  query GetPlayer($playerAddress: ContractAddress!) {
     golemRunnerPlayerModels(where: { address: $playerAddress }) {
       edges {
         node {
@@ -40,6 +36,8 @@ const PLAYER_QUERY = `
 // API Functions
 const fetchPlayerData = async (playerAddress: string): Promise<Player | null> => {
   try {
+    console.log("Fetching player with address:", playerAddress);
+    
     const response = await fetch(TORII_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -50,12 +48,18 @@ const fetchPlayerData = async (playerAddress: string): Promise<Player | null> =>
     });
 
     const result = await response.json();
+    console.log("GraphQL response:", result);
     
     if (!result.data?.golemRunnerPlayerModels?.edges?.length) {
+      console.log("No player found in response");
       return null; // Player not found
     }
 
-    return result.data.golemRunnerPlayerModels.edges[0].node;
+    // Extract player data
+    const playerData = result.data.golemRunnerPlayerModels.edges[0].node;
+    console.log("Player data extracted:", playerData);
+    
+    return playerData;
   } catch (error) {
     console.error("Error fetching player:", error);
     throw error;
@@ -67,7 +71,10 @@ export const usePlayer = (): UsePlayerReturn => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const { account } = useAccount();
-  const { player: storePlayer, setPlayer } = useAppStore();
+  
+  // Get and set player from/to store
+  const storePlayer = useAppStore(state => state.player);
+  const setPlayer = useAppStore(state => state.setPlayer);
 
   // Memoize the formatted user address
   const userAddress = useMemo(() => 
@@ -87,9 +94,18 @@ export const usePlayer = (): UsePlayerReturn => {
       setError(null);
       
       const playerData = await fetchPlayerData(userAddress);
+      console.log("Player data fetched:", playerData);
+      
+      // Update store with player data
       setPlayer(playerData);
+      
+      // Check if player was set in store
+      const updatedPlayer = useAppStore.getState().player;
+      console.log("Player in store after update:", updatedPlayer);
+      
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error occurred');
+      console.error("Error in refetch:", error);
       setError(error);
       setPlayer(null);
     } finally {
@@ -99,12 +115,16 @@ export const usePlayer = (): UsePlayerReturn => {
 
   // Effect to fetch player data when address changes
   useEffect(() => {
-    refetch();
+    if (userAddress) {
+      console.log("Address changed, refetching player data");
+      refetch();
+    }
   }, [userAddress]);
 
   // Effect to sync with account changes
   useEffect(() => {
     if (!account) {
+      console.log("No account, clearing player data");
       setPlayer(null);
       setError(null);
       setIsLoading(false);

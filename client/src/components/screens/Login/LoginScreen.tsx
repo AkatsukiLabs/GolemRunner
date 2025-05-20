@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
 import { useStarknetConnect } from '../../../dojo/hooks/useStarknetConnect';
 import { useSpawnPlayer } from '../../../dojo/hooks/useSpawn';
+import useAppStore from '../../../zustand/store';
 import desktopBg from '../../../assets/login-desktop.png';
 import mobileBg from '../../../assets/login-mobile.png';
 interface LoginScreenProps {
@@ -11,7 +12,14 @@ interface LoginScreenProps {
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const { status, handleConnect, hasTriedConnect } = useStarknetConnect();
-  const { txHash, txStatus, initializePlayer } = useSpawnPlayer();
+  const { 
+    txHash, 
+    txStatus, 
+    initializePlayer, 
+    playerExists,
+    completed
+  } = useSpawnPlayer();
+  const storePlayer = useAppStore(state => state.player);
 
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 768);
   const position = isMobile ? 'bottom-center' : 'top-right';
@@ -19,9 +27,25 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   // Trigger player initialization on wallet connect
   useEffect(() => {
     if (status === 'connected') {
-      initializePlayer();
+      console.log("Wallet connected, initializing player...");
+      initializePlayer().then(result => {
+        console.log("Player initialization result:", result);
+      });
     }
   }, [status, hasTriedConnect, initializePlayer]);
+
+  // Redirect on player exists or initialization completion
+  useEffect(() => {
+    console.log("Player exists check:", playerExists);
+    console.log("Store player:", storePlayer);
+    console.log("Initialization completed:", completed);
+    
+    // If player exists or initialization completed successfully, redirect
+    if ((playerExists || completed) && storePlayer) {
+      console.log("Player exists or initialization completed, redirecting...");
+      setTimeout(onLoginSuccess, 1500);
+    }
+  }, [playerExists, completed, storePlayer, onLoginSuccess]);
 
   // Transaction toast and success toast
   useEffect(() => {
