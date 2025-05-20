@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
-import CoverImg from "../../../assets/Cover.png"
+import CoverImgMobile from "../../../assets/cover-mobile.png"
+import CoverImgWeb from "../../../assets/cover-web.png"
+
 
 interface CoverScreenProps {
   onLoadingComplete: () => void
@@ -7,6 +9,13 @@ interface CoverScreenProps {
 
 export function CoverScreen({ onLoadingComplete }: CoverScreenProps) {
   const [loadingProgress, setLoadingProgress] = useState(0)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     const startTime = Date.now()
@@ -31,7 +40,7 @@ export function CoverScreen({ onLoadingComplete }: CoverScreenProps) {
     <div className="fixed inset-0 bg-screen flex items-center justify-center overflow-hidden">
       {/* Background cover */}
       <img
-        src={CoverImg}
+        src={isMobile ? CoverImgMobile : CoverImgWeb}
         alt="GolemRunner Cover"
         className="absolute inset-0 w-full h-full object-cover object-center"
         onError={(e) => {
@@ -39,7 +48,6 @@ export function CoverScreen({ onLoadingComplete }: CoverScreenProps) {
             "/placeholder.svg?height=800&width=450"
         }}
       />
-
       {/* Progress bar */}
       <div className="absolute top-4 left-4 right-4 z-10">
         <div className="relative h-5 bg-surface/30 rounded-full overflow-hidden">
