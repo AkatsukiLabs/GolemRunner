@@ -33,7 +33,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
   // Trigger player initialization on wallet connect
   useEffect(() => {
-    if (status === 'connected') {
+    if (status === 'connected' && hasTriedConnect) {
       console.log("Wallet connected, initializing player...");
       initializePlayer().then(result => {
         console.log("Player initialization result:", result);
