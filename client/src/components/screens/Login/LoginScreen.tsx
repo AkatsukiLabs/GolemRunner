@@ -10,6 +10,13 @@ interface LoginScreenProps {
   onLoginSuccess: () => void;
 }
 
+// Helper function to truncate hash
+const truncateHash = (hash: string, startLength = 6, endLength = 4) => {
+  if (!hash) return '';
+  if (hash.length <= startLength + endLength) return hash;
+  return `${hash.slice(0, startLength)}...${hash.slice(-endLength)}`;
+};
+
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const { status, handleConnect, hasTriedConnect } = useStarknetConnect();
   const { 
@@ -26,7 +33,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
   // Trigger player initialization on wallet connect
   useEffect(() => {
-    if (status === 'connected') {
+    if (status === 'connected' && hasTriedConnect) {
       console.log("Wallet connected, initializing player...");
       initializePlayer().then(result => {
         console.log("Player initialization result:", result);
@@ -48,9 +55,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       // Always show transaction hash toast
       toast(
         <span className="text-dark">
-          Tx {txStatus}: {txHash}{' '}
+          Tx {txStatus}: {truncateHash(txHash)}
+          <br />
           <a
-            href={`https://starkscan.co/tx/${txHash}`}
+            href={`https://sepolia.starkscan.co/tx/${txHash}`}
             target="_blank"
             rel="noopener noreferrer"
             className="underline"
