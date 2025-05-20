@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useAccount } from "@starknet-react/core";
 import { CoverScreen } from "../components/screens/Cover/cover-screen";
 import { HomeScreen } from "../components/screens/Home/HomeScreen";
 import { PlayScreen } from "../components/screens/Play/PlayScreen";
@@ -15,6 +16,7 @@ import { defaultMaps } from "../constants/maps";
 type Screen = "login" | "cover" | "home" | "play" | "market" | "ranking" | "profile";
 
 export default function App() {
+  const { isConnected } = useAccount();
   const [currentScreen, setCurrentScreen] = useState<Screen>("login");
   const [coins, setCoins] = useState(385);
   const [level] = useState(3);
@@ -37,6 +39,13 @@ export default function App() {
     score: 7850,
     rank: 24,
   };
+
+  // Add effect to handle disconnection
+  useEffect(() => {
+    if (!isConnected && currentScreen !== "login") {
+      setCurrentScreen("login");
+    }
+  }, [isConnected, currentScreen]);
 
   // Handlers
   const handleNavigation = (screen: Screen) => setCurrentScreen(screen);

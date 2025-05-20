@@ -53,7 +53,10 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
   const handleDisconnect = useCallback(() => {
     disconnect();
     setIsOpen(false);
-    onNavigateLogin();
+    // Add a small delay to ensure the wallet modal is closed before navigation
+    setTimeout(() => {
+      onNavigateLogin();
+    }, 100);
   }, [disconnect, onNavigateLogin]);
 
   return (

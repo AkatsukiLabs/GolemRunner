@@ -10,7 +10,7 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
-  const { status, handleConnect } = useStarknetConnect();
+  const { status, handleConnect, hasTriedConnect } = useStarknetConnect();
   const { txHash, txStatus, initializePlayer } = useSpawnPlayer();
 
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 768);
@@ -21,7 +21,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     if (status === 'connected') {
       initializePlayer();
     }
-  }, [status, initializePlayer]);
+  }, [status, hasTriedConnect, initializePlayer]);
 
   // Transaction toast and success toast
   useEffect(() => {
