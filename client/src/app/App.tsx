@@ -12,12 +12,14 @@ import type { Golem } from "../components/types/golem";
 import type { Map } from "../components/types/map";
 import { defaultGolems } from "../constants/golems";
 import { defaultMaps } from "../constants/maps";
+import { MusicProvider, useMusic } from "../context/MusicContext";
 
 type Screen = "login" | "cover" | "home" | "play" | "market" | "ranking" | "profile";
 
-export default function App() {
+function AppContent() {
   const { isConnected } = useAccount();
-  const [currentScreen, setCurrentScreen] = useState<Screen>("login");
+  const { setCurrentScreen } = useMusic();
+  const [currentScreen, setCurrentScreenState] = useState<Screen>("login");
   const [coins, setCoins] = useState(385);
   const [level] = useState(3);
   const [experience] = useState(75);
@@ -45,10 +47,13 @@ export default function App() {
     if (!isConnected && currentScreen !== "login") {
       setCurrentScreen("login");
     }
-  }, [isConnected, currentScreen]);
+  }, [isConnected, currentScreen, setCurrentScreen]);
 
   // Handlers
-  const handleNavigation = (screen: Screen) => setCurrentScreen(screen);
+  const handleNavigation = (screen: Screen) => {
+    setCurrentScreenState(screen);
+    setCurrentScreen(screen);
+  };
   const handleSpendCoins = (amount: number) => {
     if (coins >= amount) {
       setCoins((prev) => Math.max(0, prev - amount));
@@ -64,8 +69,11 @@ export default function App() {
     );
 
   const handleLoadingComplete = useCallback(
-    () => setCurrentScreen("home"),
-    []
+    () => {
+      setCurrentScreenState("home");
+      setCurrentScreen("home");
+    },
+    [setCurrentScreen]
   );
 
   return (
@@ -143,5 +151,13 @@ export default function App() {
         />
       )}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <MusicProvider>
+      <AppContent />
+    </MusicProvider>
   );
 }
