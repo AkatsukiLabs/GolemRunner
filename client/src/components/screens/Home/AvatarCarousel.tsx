@@ -8,6 +8,7 @@ interface Character {
   rarity: string
   description: string
   image: string
+  isUnlocked: boolean
 }
 
 interface AvatarCarouselProps {

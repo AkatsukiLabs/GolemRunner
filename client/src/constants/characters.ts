@@ -1,27 +1,48 @@
-import IceIdle0   from "../assets/IceGolem/0_Golem_Idle_000.png"
-import FireIdle0  from "../assets/LavaGolem/0_Golem_Idle_000.png"
-import StoneIdle0 from "../assets/MossyGolem/0_Golem_Idle_000.png"
+import IceIdle0 from "../assets/IceGolem/0_Golem_Idle_000.png";
+import FireIdle0 from "../assets/LavaGolem/0_Golem_Idle_000.png";
+import StoneIdle0 from "../assets/MossyGolem/0_Golem_Idle_000.png";
 
-export const characters = [
-  {
-    id: 1,
+export const golemVisualData: Record<number, {
+  name: string;
+  rarity: string;
+  description: string;
+  image: string;
+}> = {
+  // ID 1: Stone Golem - Starter, Unlocked (true, true)
+  1: {
+    name: "Stone Golem",
+    rarity: "Common", 
+    description: "A sturdy elemental being",
+    image: StoneIdle0
+  },
+  // ID 2: Fire Golem - Not Starter, Locked (false, false)
+  2: {
+    name: "Fire Golem",
+    rarity: "Uncommon", 
+    description: "A fiery elemental being",
+    image: FireIdle0
+  },
+  // ID 3: Ice Golem - Not Starter, Locked (false, false)
+  3: {
     name: "Ice Golem",
-    rarity: "Epic",
-    description: "A frosty brute with a heart of ice.",
-    image: IceIdle0,
-  },
-  {
-    id: 2,
-    name: "Mossy Golem",
-    rarity: "Rare",
-    description: "Overgrown with ancient moss",
-    image: StoneIdle0,
-  },
-  {
-    id: 3,
-    name: "Lava Golem",
-    rarity: "Common",
-    description: "Born in the molten core",
-    image: FireIdle0,
-  },
-]
+    rarity: "Rare", 
+    description: "A frosty elemental being",
+    image: IceIdle0
+  }
+};
+
+// For compatibility with existing code
+export const characters = Object.entries(golemVisualData).map(([id, data]) => ({
+  id: parseInt(id),
+  ...data
+}));
+
+// Utility function to get the visual data of a golem by its ID
+export const getGolemVisualDataById = (id: number) => {
+  return golemVisualData[id] || {
+    name: `Unknown Golem (ID: ${id})`,
+    rarity: "Unknown",
+    description: "This golem's details are missing",
+    image: StoneIdle0 // Default image
+  };
+};

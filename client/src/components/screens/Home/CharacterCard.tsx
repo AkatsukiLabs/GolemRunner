@@ -6,14 +6,16 @@ interface Character {
   rarity: string
   description: string
   image: string
+  isUnlocked: boolean
 }
 
 interface CharacterCardProps {
   character: Character
   onSelect: () => void
+  isUnlocked: boolean
 }
 
-export function CharacterCard({ character, onSelect }: CharacterCardProps) {
+export function CharacterCard({ character, onSelect, isUnlocked }: CharacterCardProps) {
   const rarityColors = {
     Common: "bg-gray-500",
     Rare: "bg-blue-500",
@@ -26,7 +28,7 @@ export function CharacterCard({ character, onSelect }: CharacterCardProps) {
 
   return (
     <motion.div
-      className="bg-surface p-4 rounded-xl shadow-md text-center"
+      className={`bg-surface p-4 rounded-xl shadow-md text-center ${!isUnlocked ? 'opacity-90' : ''}`}
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
@@ -47,12 +49,21 @@ export function CharacterCard({ character, onSelect }: CharacterCardProps) {
         {character.description}
       </p>
 
-      <button
-        onClick={onSelect}
-        className="btn-cr-yellow"
-      >
-        Select
-      </button>
+      {isUnlocked ? (
+        <button
+          onClick={onSelect}
+          className="btn-cr-yellow"
+        >
+          Select
+        </button>
+      ) : (
+        <button
+          onClick={onSelect}
+          className="btn-cr-gray cursor-not-allowed"
+        >
+          Locked
+        </button>
+      )}
     </motion.div>
   )
 }
