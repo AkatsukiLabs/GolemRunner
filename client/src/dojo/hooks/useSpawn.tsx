@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useAccount } from "@starknet-react/core";
 import { Account } from "starknet";
@@ -30,11 +30,7 @@ export const useSpawnPlayer = () => {
   const { account } = useAccount();
   const { status } = useStarknetConnect();
   const { player, isLoading: playerLoading, refetch: refetchPlayer } = usePlayer();
-  const { setPlayer, setLoading } = useAppStore();
-
-  // Ref to prevent multiple executions
-  const isInitializingRef = useRef(false);
-  const hasExecutedRef = useRef(false);
+  const { setLoading } = useAppStore();
 
   // Local state
   const [initState, setInitState] = useState<InitializeState>({
@@ -45,22 +41,27 @@ export const useSpawnPlayer = () => {
     txHash: null,
     txStatus: null
   });
-
+  
+  // Tracking if we're currently initializing
+  const [isInitializing, setIsInitializing] = useState(false);
+  
   /**
    * Check if player exists and initialize accordingly
    * This function handles both existing players and new player creation
    */
   const initializePlayer = useCallback(async (): Promise<InitializeResponse> => {
-    // Prevenir ejecuciones múltiples
-    if (isInitializingRef.current || hasExecutedRef.current) {
-      console.log("🚫 Initialize already in progress or completed");
-      return { success: false, playerExists: false, error: "Already initialized" };
+    // Prevent multiple executions
+    if (isInitializing) {
+      return { success: false, playerExists: false, error: "Already initializing" };
     }
-
+    
+    setIsInitializing(true);
+    
     // Validation: Check if wallet is connected
     if (status !== "connected") {
       const error = "Wallet not connected. Please connect your wallet first.";
       setInitState(prev => ({ ...prev, error }));
+      setIsInitializing(false);
       return { success: false, playerExists: false, error };
     }
 
@@ -68,17 +69,14 @@ export const useSpawnPlayer = () => {
     if (!account) {
       const error = "No account found. Please connect your wallet.";
       setInitState(prev => ({ ...prev, error }));
+      setIsInitializing(false);
       return { success: false, playerExists: false, error };
     }
-
-    // Mark as initializing
-    isInitializingRef.current = true;
-    hasExecutedRef.current = true;
 
     const transactionId = uuidv4();
 
     try {
-      // Step 1: Check if player exists
+      // Start initialization
       setInitState(prev => ({ 
         ...prev, 
         isInitializing: true, 
@@ -87,42 +85,34 @@ export const useSpawnPlayer = () => {
       }));
 
       console.log("🎮 Starting player initialization...");
-
-      // Wait for player loading to complete if it's still loading
-      let attempts = 0;
-      while (playerLoading && attempts < 50) { // Max 5 seconds
-        console.log("⏳ Waiting for player data...");
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-      }
-
-      // Refetch player data to ensure we have the latest information
+      
+      // Refetch player data
       console.log("🔄 Fetching latest player data...");
       await refetchPlayer();
-
-      // Get latest player state after refetch
-      const latestPlayer = player;
       
-      // Check if player exists (non-null and has a valid address)
-      const playerExists = latestPlayer && latestPlayer.address && latestPlayer.address !== "0x0";
+      // Wait a bit to ensure data is loaded
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      console.log("🎮 Player check:", { 
-        playerExists: !!playerExists, 
-        playerAddress: latestPlayer?.address,
-        accountAddress: account.address 
+      // Direct check from store - log what we have in the store
+      const storePlayer = useAppStore.getState().player;
+      
+      // Simple direct check if player exists in the store
+      const playerExists = storePlayer !== null;
+      
+      console.log("🎮 Final player check:", { 
+        playerExists, 
+        playerInStore: !!storePlayer,
+        accountAddress: account.address
       });
 
       if (playerExists) {
-        // Step 2a: Player exists - load data and continue
+        // Player exists - load data and continue
         console.log("✅ Player already exists, continuing with existing data...");
         
         setInitState(prev => ({ 
           ...prev, 
           step: 'loading'
         }));
-
-        // Ensure player data is in the store
-        setPlayer(latestPlayer);
         
         // Small delay to show loading state
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -133,14 +123,15 @@ export const useSpawnPlayer = () => {
           isInitializing: false,
           step: 'success'
         }));
-
+        
+        setIsInitializing(false);
         return { 
           success: true, 
           playerExists: true 
         };
 
       } else {
-        // Step 2b: Player doesn't exist - spawn new player
+        // Player doesn't exist - spawn new player
         console.log("🆕 Player does not exist, spawning new player...");
         
         setInitState(prev => ({ 
@@ -155,7 +146,6 @@ export const useSpawnPlayer = () => {
         
         console.log("📥 Spawn transaction response:", spawnTx);
         
-        // Update transaction hash
         if (spawnTx?.transaction_hash) {
           setInitState(prev => ({ 
             ...prev, 
@@ -163,11 +153,9 @@ export const useSpawnPlayer = () => {
           }));
         }
         
-        // Check transaction success
         if (spawnTx && spawnTx.code === "SUCCESS") {
           console.log("🎉 Player spawned successfully!");
           
-          // Update transaction status
           setInitState(prev => ({ 
             ...prev, 
             txStatus: 'SUCCESS'
@@ -175,9 +163,9 @@ export const useSpawnPlayer = () => {
           
           // Wait for transaction to be processed
           console.log("⏳ Waiting for transaction to be processed...");
-          await new Promise(resolve => setTimeout(resolve, 2500));
+          await new Promise(resolve => setTimeout(resolve, 3500));
           
-          // Refetch player data to get the newly created player
+          // Refetch player data
           console.log("🔄 Refetching player data after spawn...");
           await refetchPlayer();
           
@@ -191,6 +179,7 @@ export const useSpawnPlayer = () => {
           // Confirm transaction in store
           state.confirmTransaction(transactionId);
           
+          setIsInitializing(false);
           return { 
             success: true, 
             playerExists: false,
@@ -231,19 +220,17 @@ export const useSpawnPlayer = () => {
         step: 'checking'
       }));
       
+      setIsInitializing(false);
       return { success: false, playerExists: false, error: errorMessage };
-    } finally {
-      isInitializingRef.current = false;
     }
-  }, [status, account]); 
+  }, [status, account, refetchPlayer, player, isInitializing]); 
 
   /**
-   * Reset initialization state (useful for retry scenarios)
+   * Reset initialization state
    */
   const resetInitializer = useCallback(() => {
     console.log("🔄 Resetting initializer state...");
-    hasExecutedRef.current = false;
-    isInitializingRef.current = false;
+    setIsInitializing(false);
     setInitState({
       isInitializing: false,
       error: null,
@@ -259,14 +246,12 @@ export const useSpawnPlayer = () => {
     setLoading(initState.isInitializing || playerLoading);
   }, [initState.isInitializing, playerLoading, setLoading]);
 
-  // Cleanup for unmounted component
+  // Store update effect
   useEffect(() => {
-    return () => {
-      console.log("🧹 Cleaning up spawn player hook...");
-      isInitializingRef.current = false;
-      hasExecutedRef.current = false;
-    };
-  }, []);
+    // When player data changes in the store, log it
+    const storePlayer = useAppStore.getState().player;
+    console.log("Player data in store updated:", storePlayer);
+  }, [useAppStore.getState().player]);
 
   return {
     // State
@@ -277,7 +262,7 @@ export const useSpawnPlayer = () => {
     txHash: initState.txHash,
     txStatus: initState.txStatus,
     isConnected: status === "connected",
-    playerExists: !!(player && player.address && player.address !== "0x0"),
+    playerExists: useAppStore.getState().player !== null,
     
     // Actions
     initializePlayer,
