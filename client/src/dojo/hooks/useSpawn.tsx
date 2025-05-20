@@ -30,7 +30,7 @@ export const useSpawnPlayer = () => {
   const { account } = useAccount();
   const { status } = useStarknetConnect();
   const { player, isLoading: playerLoading, refetch: refetchPlayer } = usePlayer();
-  const { setPlayer, setLoading } = useAppStore();
+  const { setLoading } = useAppStore();
 
   // Local state
   const [initState, setInitState] = useState<InitializeState>({
@@ -52,7 +52,6 @@ export const useSpawnPlayer = () => {
   const initializePlayer = useCallback(async (): Promise<InitializeResponse> => {
     // Prevent multiple executions
     if (isInitializing) {
-      console.log("🚫 Already initializing");
       return { success: false, playerExists: false, error: "Already initializing" };
     }
     
@@ -86,7 +85,6 @@ export const useSpawnPlayer = () => {
       }));
 
       console.log("🎮 Starting player initialization...");
-      console.log("Account address:", account.address);
       
       // Refetch player data
       console.log("🔄 Fetching latest player data...");
@@ -97,7 +95,6 @@ export const useSpawnPlayer = () => {
       
       // Direct check from store - log what we have in the store
       const storePlayer = useAppStore.getState().player;
-      console.log("Store player state:", storePlayer);
       
       // Simple direct check if player exists in the store
       const playerExists = storePlayer !== null;

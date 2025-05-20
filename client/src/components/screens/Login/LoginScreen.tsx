@@ -36,13 +36,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
   // Redirect on player exists or initialization completion
   useEffect(() => {
-    console.log("Player exists check:", playerExists);
-    console.log("Store player:", storePlayer);
-    console.log("Initialization completed:", completed);
-    
     // If player exists or initialization completed successfully, redirect
     if ((playerExists || completed) && storePlayer) {
-      console.log("Player exists or initialization completed, redirecting...");
       setTimeout(onLoginSuccess, 1500);
     }
   }, [playerExists, completed, storePlayer, onLoginSuccess]);
