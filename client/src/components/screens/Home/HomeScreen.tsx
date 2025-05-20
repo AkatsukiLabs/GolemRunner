@@ -8,6 +8,7 @@ import { TopBar } from "../../layout/TopBar";
 import TalkIconButton from "../../../assets/icons/TalkIconButton.png";
 import { GolemTalkModal } from "./GolemTalkModal";
 import { DropdownMenu } from "./DropDownMenu"; 
+import useAppStore from "../../../zustand/store";
 
 interface HomeScreenProps {
   playerAddress: string;
@@ -32,6 +33,21 @@ export function HomeScreen({
   const [showTalkModal, setShowTalkModal] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 }); 
 
+  // Accedemos directamente a Zustand en lugar de usar el hook useGolems
+  const { golems, isLoading, error } = useAppStore(state => ({
+    golems: state.golems,
+    isLoading: state.isLoading,
+    error: state.error
+  }));
+
+  // Filtramos los golems desbloqueados
+  const unlockedGolems = golems.filter(golem => golem.is_unlocked);
+  
+  // Función para verificar si un golem está desbloqueado por su ID
+  const isGolemUnlocked = (id: number): boolean => {
+    return unlockedGolems.some(golem => golem.id === id);
+  };
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
@@ -40,13 +56,30 @@ export function HomeScreen({
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  useEffect(() => {
+    // Si tenemos golems cargados, intentamos seleccionar uno desbloqueado por defecto
+    if (!isLoading && unlockedGolems.length > 0) {
+      const firstUnlockedGolemId = unlockedGolems[0].id;
+      const matchingCharacter = characters.find(c => c.id === firstUnlockedGolemId);
+      if (matchingCharacter) {
+        setSelectedCharacter(matchingCharacter);
+      }
+    }
+  }, [unlockedGolems, isLoading]);
+
   const handleCharacterSelect = (character: (typeof characters)[0]) => {
     setSelectedCharacter(character);
   };
 
   const handlePlay = () => {
-    console.log("Play clicked with character:", selectedCharacter);
-    onPlayClick(selectedCharacter);
+    // Solo permitimos jugar si el golem está desbloqueado
+    if (isGolemUnlocked(selectedCharacter.id)) {
+      console.log("Play clicked with character:", selectedCharacter);
+      onPlayClick(selectedCharacter);
+    } else {
+      console.log("Golem locked, cannot play");
+      // Aquí podrías mostrar un mensaje al usuario
+    }
   };
 
   const openTalk = () => setShowTalkModal(true);
@@ -58,6 +91,15 @@ export function HomeScreen({
     description: selectedCharacter.description || "A powerful golem ready for adventure",
     level: level
   };
+
+  // Combinamos los datos visuales de 'characters' con el estado de desbloqueo de 'golems'
+  const enhancedCharacters = characters.map(character => {
+    const isUnlocked = isGolemUnlocked(character.id);
+    return {
+      ...character,
+      isUnlocked
+    };
+  });
 
   return (
     <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik flex flex-col">
