@@ -29,7 +29,7 @@ export function MapCard({ map, onPurchase }: MapCardProps) {
       whileHover={{ scale: 1.02 }}
       transition={{ type: "spring", stiffness: 300, damping: 15 }}
     >
-      {/* Imagen del mapa */}
+      {/* Map image */}
       <div className="relative w-full h-32 mb-3">
         <img
           src={map.image}
@@ -42,17 +42,17 @@ export function MapCard({ map, onPurchase }: MapCardProps) {
         />
       </div>
 
-      {/* Nombre del mapa */}
+      {/* Map name */}
       <h3 className="font-luckiest text-xl text-primary mb-2 text-center">
         {map.name}
       </h3>
 
-      {/* Descripción */}
+      {/* Description */}
       <p className="font-luckiest text-sm text-text-primary mb-3 text-center h-12 overflow-hidden">
         {map.description}
       </p>
 
-      {/* Botón de compra */}
+      {/* Purchase button */}
       {map.unlocked ? (
         <div className="btn-cr-yellow w-full flex items-center justify-center opacity-50 cursor-not-allowed">
           Unlocked

@@ -2,7 +2,6 @@ import { useEffect } from "react"
 import { motion } from "framer-motion"
 import coinIcon from "../../../assets/icons/CoinIcon.png"
 
-// Definir los tipos de marketplace
 interface MarketItem {
   id: number;
   name: string;
@@ -35,7 +34,7 @@ export function InsufficientBalanceAnimation({
   const missingAmount = (item.price || 0) - currentBalance;
   const isGolem = 'rarity' in item;
 
-  // Efecto para cerrar automáticamente después de 4 segundos
+  // Effect to automatically close after 4 seconds
   useEffect(() => {
     const timer = setTimeout(onClose, 4000);
     return () => clearTimeout(timer);
@@ -48,7 +47,7 @@ export function InsufficientBalanceAnimation({
       animate={{ opacity: 1 }}
       onClick={onClose}
     >
-      {/* Tarjeta de saldo insuficiente */}
+      {/* Insufficient balance card */}
       <motion.div
         className="bg-surface p-6 rounded-xl shadow-lg z-10 flex flex-col items-center max-w-xs w-full"
         initial={{ scale: 0.8, y: 20 }}
@@ -63,7 +62,7 @@ export function InsufficientBalanceAnimation({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Imagen con sacudida para efecto de error */}
+        {/* Image with shake effect for error indication */}
         <motion.div
           animate={{
             x: [0, -10, 10, -10, 0],
@@ -80,7 +79,7 @@ export function InsufficientBalanceAnimation({
               img.src = "/placeholder.svg?height=128&width=128"
             }}
           />
-          {/* Overlay rojo para indicar error */}
+          {/* Red overlay to indicate error */}
           <div className="absolute inset-0 bg-red-500/20 rounded-full"></div>
         </motion.div>
 

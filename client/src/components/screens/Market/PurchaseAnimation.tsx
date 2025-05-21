@@ -5,7 +5,6 @@ import type { Engine, Container, IOptions, RecursivePartial } from "@tsparticles
 import { MoveDirection } from "@tsparticles/engine"
 import { loadFull } from "tsparticles"
 
-// Definir los tipos de marketplace
 interface MarketItem {
   id: number;
   name: string;
@@ -38,7 +37,7 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
     }).then(() => setEngineLoaded(true))
   }, [])
 
-  // Efecto para cerrar automáticamente después de 4 segundos
+  // Effect to automatically close after 4 seconds
   useEffect(() => {
     const timer = setTimeout(onClose, 4000)
     return () => clearTimeout(timer)
@@ -107,7 +106,7 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
     legendary: "bg-yellow-500",
   }
 
-  // Determinar si es un golem o un mapa
+  // Determine if the item is a golem or a map
   const isGolem = 'rarity' in item;
   const rarityClass = isGolem ? rarityColors[(item as MarketGolem).rarity.toLowerCase()] || "bg-gray-500" : "bg-primary"
 
@@ -118,7 +117,7 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
       animate={{ opacity: 1 }}
       onClick={onClose}
     >
-      {/* Fondo de partículas */}
+      {/* Particle background */}
       <Particles
         id="purchaseParticles"
         className="absolute inset-0 z-0"
@@ -126,7 +125,7 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
         particlesLoaded={particlesLoaded}
       />
 
-      {/* Tarjeta de confirmación */}
+      {/* Confirmation card */}
       <motion.div
         className="bg-surface p-6 rounded-xl shadow-lg z-10 flex flex-col items-center max-w-xs w-full"
         initial={{ scale: 0.8, y: 20 }}
@@ -141,7 +140,7 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Imagen con glow */}
+        {/* Image with glow */}
         <motion.div
           initial={{ rotate: -10, scale: 0.9 }}
           animate={{

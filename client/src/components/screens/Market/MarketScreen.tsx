@@ -12,7 +12,6 @@ import useAppStore from "../../../zustand/store";
 import toast, { Toaster } from "react-hot-toast";
 import { getGolemVisualDataById } from "../../../constants/characters";
 import { getMapVisualDataById } from "../../../constants/mapVisualData";
-// Importar los tipos de MarketGolem y MarketMap
 import { MarketGolem, MarketMap } from "../../types/marketTypes";
 
 // Helper function to truncate hash
@@ -23,7 +22,7 @@ const truncateHash = (hash: string, startLength = 6, endLength = 4) => {
 };
 
 interface MarketScreenProps {
-  // Podemos dejarlo vacío si no necesitas props
+  // We can leave it empty if no props are needed
 }
 
 export function MarketScreen({}: MarketScreenProps) {
@@ -39,7 +38,7 @@ export function MarketScreen({}: MarketScreenProps) {
     purchaseWorld
   } = useMarketStore();
   
-  // Estado para los componentes del market
+  // State for market components
   const [selectedItem, setSelectedItem] = useState<MarketGolem | MarketMap | null>(null);
   const [showPurchaseAnimation, setShowPurchaseAnimation] = useState(false);
   const [showInsufficientBalance, setShowInsufficientBalance] = useState(false);
@@ -57,7 +56,6 @@ export function MarketScreen({}: MarketScreenProps) {
 
   useEffect(() => {
     if (txHash) {
-      // Mostrar toast con hash y link
       toast(
         <span className="text-dark font-luckiest">
           Tx {txStatus}: {truncateHash(txHash)}
@@ -74,7 +72,6 @@ export function MarketScreen({}: MarketScreenProps) {
         { id: 'tx-toast', position }
       );
   
-      // Toast de éxito cuando la transacción se completa
       if (txStatus === 'SUCCESS') {
         toast.success('Purchase successful!', {
           id: 'success-toast',
@@ -83,7 +80,6 @@ export function MarketScreen({}: MarketScreenProps) {
         });
       }
   
-      // Toast de error si la transacción falla
       if (txStatus === 'REJECTED') {
         toast.error('Transaction failed', {
           id: 'tx-error-toast',
@@ -138,7 +134,7 @@ export function MarketScreen({}: MarketScreenProps) {
     
     // Process the purchase
     try {
-      // Intentar comprar
+      // Attempt to purchase
       let result;
       if (isGolem) {
         result = await purchaseGolem(item.id);
@@ -146,12 +142,12 @@ export function MarketScreen({}: MarketScreenProps) {
         result = await purchaseWorld(item.id);
       }
       
-      // Si es exitoso, mostrar animación
+      // If successful, show animation
       if (result.success) {
         setSelectedItem(item);
         setShowPurchaseAnimation(true);
       } else {
-        // Si hay un mensaje de error específico, mostrarlo
+        // If there's a specific error message, show it
         toast.error(result.error || `Failed to purchase ${isGolem ? 'golem' : 'map'}`, { position });
       }
     } catch (error) {
@@ -178,14 +174,14 @@ export function MarketScreen({}: MarketScreenProps) {
         screen="market" 
       />
 
-      {/* Clash Royale style banner animado */}
+      {/* Clash Royale style animated banner */}
       <motion.div
         className="relative mt-12 mb-3"
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        {/* Golem Seller animado */}
+        {/* Animated Golem Seller */}
         <motion.div
           className="absolute -top-11 left-3 z-10 w-40 h-40"
           initial={{ opacity: 0, scale: 0.5 }}
@@ -251,7 +247,7 @@ export function MarketScreen({}: MarketScreenProps) {
         </div>
       </div>
 
-      {/* Animaciones */}
+      {/* Animations */}
       {selectedItem && (
         <>
           {showPurchaseAnimation && (

@@ -1,7 +1,6 @@
 import { motion } from "framer-motion"
 import { GolemCard } from "./GolemCard"
 
-// Definir el tipo específico para el marketplace
 interface MarketGolem {
   id: number;
   name: string;

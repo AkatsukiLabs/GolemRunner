@@ -2,7 +2,7 @@ import { motion } from "framer-motion"
 import coinIcon from "../../../assets/icons/CoinIcon.png";
 import { useMarketStore } from "../../../dojo/hooks/useMarketStore";
 
-// Tipo específico para el marketplace
+// Specific type for the marketplace
 interface MarketGolem {
   id: number;
   name: string;
@@ -42,7 +42,7 @@ export function GolemCard({ golem, onPurchase }: GolemCardProps) {
       whileHover={{ y: -5 }}
       transition={{ type: "spring", stiffness: 300 }}
     >
-      {/* Imagen del golem - Usando transform scale para hacerla más grande */}
+      {/* Golem image - Using transform scale to enlarge it */}
       <div className="h-32 flex items-center justify-center mb-2 overflow-visible">
         <div className="transform scale-150">
           <img
@@ -57,12 +57,12 @@ export function GolemCard({ golem, onPurchase }: GolemCardProps) {
         </div>
       </div>
 
-      {/* Nombre */}
+      {/* Name */}
       <h3 className="font-luckiest text-lg text-primary mb-1">
         {golem.name}
       </h3>
 
-      {/* Rareza */}
+      {/* Rarity */}
       <span
         className={`inline-block ${rarityColor} text-cream font-luckiest tracking-wide
           rounded-full px-2 py-0.5 text-sm mb-2`}
@@ -70,12 +70,12 @@ export function GolemCard({ golem, onPurchase }: GolemCardProps) {
         {golem.rarity}
       </span>
 
-      {/* Descripción */}
+      {/* Description */}
       <p className="font-luckiest text-sm text-text-primary mb-3 text-center h-12 overflow-hidden">
         {golem.description}
       </p>
 
-      {/* Botón o estado Owned */}
+      {/* Button or Owned state */}
       {golem.owned ? (
         <div className="btn-cr-yellow w-full flex items-center justify-center opacity-50 cursor-not-allowed">
           Owned
