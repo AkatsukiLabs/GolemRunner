@@ -1,7 +1,7 @@
 export interface Golem {
     id: number
     name: string
-    rarity: "Common" | "Rare" | "Uncommon" | "Legendary"
+    rarity: "Common" | "Rare" | "Epic" | "Legendary"
     description: string
     image: string
     price: number
