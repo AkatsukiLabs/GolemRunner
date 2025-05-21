@@ -1,14 +1,26 @@
 import { motion } from "framer-motion"
 import coinIcon from "../../../assets/icons/CoinIcon.png"
-import type { Map } from "../../../components/types/map"
+import { useMarketStore } from "../../../dojo/hooks/useMarketStore";
+
+interface MarketMap {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  theme: string;
+  price: number;
+  unlocked: boolean;
+}
 
 interface MapCardProps {
-  map: Map
-  canAfford: boolean
+  map: MarketMap
   onPurchase: () => void
 }
 
-export function MapCard({ map, canAfford, onPurchase }: MapCardProps) {
+export function MapCard({ map, onPurchase }: MapCardProps) {
+  const { canAfford } = useMarketStore();
+  const isAffordable = canAfford(map.price || 0);
+  
   return (
     <motion.div
       className="bg-surface p-5 rounded-xl shadow-md flex flex-col"
@@ -17,7 +29,7 @@ export function MapCard({ map, canAfford, onPurchase }: MapCardProps) {
       whileHover={{ scale: 1.02 }}
       transition={{ type: "spring", stiffness: 300, damping: 15 }}
     >
-      {/* Imagen del mapa */}
+      {/* Map image */}
       <div className="relative w-full h-32 mb-3">
         <img
           src={map.image}
@@ -30,17 +42,17 @@ export function MapCard({ map, canAfford, onPurchase }: MapCardProps) {
         />
       </div>
 
-      {/* Nombre del mapa */}
+      {/* Map name */}
       <h3 className="font-luckiest text-xl text-primary mb-2 text-center">
         {map.name}
       </h3>
 
-      {/* Descripción */}
+      {/* Description */}
       <p className="font-luckiest text-sm text-text-primary mb-3 text-center h-12 overflow-hidden">
         {map.description}
       </p>
 
-      {/* Botón de compra */}
+      {/* Purchase button */}
       {map.unlocked ? (
         <div className="btn-cr-yellow w-full flex items-center justify-center opacity-50 cursor-not-allowed">
           Unlocked
@@ -48,11 +60,11 @@ export function MapCard({ map, canAfford, onPurchase }: MapCardProps) {
       ) : (
         <motion.button
           onClick={onPurchase}
+          disabled={!isAffordable}
           className={`btn-cr-yellow w-full flex items-center justify-center gap-2 ${
-            !canAfford ? "opacity-50 cursor-not-allowed" : ""
+            !isAffordable ? "opacity-50 cursor-not-allowed" : ""
           }`}
-          whileTap={{ scale: canAfford ? 0.95 : 1 }}
-          disabled={!canAfford}
+          whileTap={{ scale: isAffordable ? 0.95 : 1 }}
         >
           <span>Buy</span>
           <img src={coinIcon} alt="Coin" className="h-5 w-5" />
@@ -62,5 +74,3 @@ export function MapCard({ map, canAfford, onPurchase }: MapCardProps) {
     </motion.div>
   )
 }
-
-export default MapCard 

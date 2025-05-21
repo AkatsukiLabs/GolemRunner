@@ -56,14 +56,46 @@ const fetchPlayerData = async (playerAddress: string): Promise<Player | null> =>
     }
 
     // Extract player data
-    const playerData = result.data.golemRunnerPlayerModels.edges[0].node;
-    console.log("Player data extracted:", playerData);
+    const rawPlayerData = result.data.golemRunnerPlayerModels.edges[0].node;
+    console.log("[usePlayer] Raw player data extracted:", rawPlayerData);
+    
+    // Convert hex values to numbers
+    const playerData: Player = {
+      address: rawPlayerData.address,
+      coins: hexToNumber(rawPlayerData.coins),
+      //coins: 999999,
+      total_points: hexToNumber(rawPlayerData.total_points),
+      level: hexToNumber(rawPlayerData.level),
+      experience: hexToNumber(rawPlayerData.experience),
+      creation_day: hexToNumber(rawPlayerData.creation_day)
+    };
+    
+    console.log("Player data after conversion:", playerData);
     
     return playerData;
   } catch (error) {
     console.error("Error fetching player:", error);
     throw error;
   }
+};
+
+// Helper to convert hex strings to numbers
+const hexToNumber = (hexValue: string | number): number => {
+  // If it's already a number, return it
+  if (typeof hexValue === 'number') return hexValue;
+  
+  // If it's a hex string, convert it
+  if (typeof hexValue === 'string' && hexValue.startsWith('0x')) {
+    return parseInt(hexValue, 16);
+  }
+  
+  // If it's a string but not hex, try to parse it as number
+  if (typeof hexValue === 'string') {
+    return parseInt(hexValue, 10);
+  }
+  
+  // Fallback
+  return 0;
 };
 
 // Hook

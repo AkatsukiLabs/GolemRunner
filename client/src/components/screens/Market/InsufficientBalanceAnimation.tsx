@@ -1,23 +1,44 @@
 import { useEffect } from "react"
 import { motion } from "framer-motion"
 import coinIcon from "../../../assets/icons/CoinIcon.png"
-import type { Golem } from "../../../components/types/golem"
-import type { Map } from "../../../components/types/map"
 
-interface InsufficientBalanceAnimationProps {
-  item: Golem | Map
-  currentBalance: number
-  onClose: () => void
+interface MarketItem {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  price: number;
 }
 
-export function InsufficientBalanceAnimation({ item, currentBalance, onClose }: InsufficientBalanceAnimationProps): JSX.Element {
-  const missingAmount = (item.price || 0) - currentBalance
+interface MarketGolem extends MarketItem {
+  rarity: string;
+  owned: boolean;
+}
 
-  // Efecto para cerrar automáticamente después de 4 segundos
+interface MarketMap extends MarketItem {
+  theme: string;
+  unlocked: boolean;
+}
+
+interface InsufficientBalanceAnimationProps {
+  item: MarketGolem | MarketMap;
+  currentBalance: number;
+  onClose: () => void;
+}
+
+export function InsufficientBalanceAnimation({ 
+  item, 
+  currentBalance, 
+  onClose 
+}: InsufficientBalanceAnimationProps): JSX.Element {
+  const missingAmount = (item.price || 0) - currentBalance;
+  const isGolem = 'rarity' in item;
+
+  // Effect to automatically close after 4 seconds
   useEffect(() => {
-    const timer = setTimeout(onClose, 4000)
-    return () => clearTimeout(timer)
-  }, [onClose])
+    const timer = setTimeout(onClose, 4000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
 
   return (
     <motion.div
@@ -26,7 +47,7 @@ export function InsufficientBalanceAnimation({ item, currentBalance, onClose }: 
       animate={{ opacity: 1 }}
       onClick={onClose}
     >
-      {/* Tarjeta de saldo insuficiente */}
+      {/* Insufficient balance card */}
       <motion.div
         className="bg-surface p-6 rounded-xl shadow-lg z-10 flex flex-col items-center max-w-xs w-full"
         initial={{ scale: 0.8, y: 20 }}
@@ -41,7 +62,7 @@ export function InsufficientBalanceAnimation({ item, currentBalance, onClose }: 
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Imagen con sacudida para efecto de error */}
+        {/* Image with shake effect for error indication */}
         <motion.div
           animate={{
             x: [0, -10, 10, -10, 0],
@@ -58,7 +79,7 @@ export function InsufficientBalanceAnimation({ item, currentBalance, onClose }: 
               img.src = "/placeholder.svg?height=128&width=128"
             }}
           />
-          {/* Overlay rojo para indicar error */}
+          {/* Red overlay to indicate error */}
           <div className="absolute inset-0 bg-red-500/20 rounded-full"></div>
         </motion.div>
 
@@ -88,7 +109,7 @@ export function InsufficientBalanceAnimation({ item, currentBalance, onClose }: 
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          You need {missingAmount} more coins to purchase this {('animations' in item) ? 'golem' : 'map'}!
+          You need {missingAmount} more coins to purchase this {isGolem ? 'golem' : 'map'}!
         </motion.p>
       </motion.div>
     </motion.div>

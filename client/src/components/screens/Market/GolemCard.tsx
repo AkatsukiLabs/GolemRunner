@@ -1,21 +1,34 @@
 import { motion } from "framer-motion"
 import coinIcon from "../../../assets/icons/CoinIcon.png";
-import type { Golem } from "../../types/golem"
+import { useMarketStore } from "../../../dojo/hooks/useMarketStore";
+
+// Specific type for the marketplace
+interface MarketGolem {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  rarity: string;
+  price: number;
+  owned: boolean;
+}
 
 interface GolemCardProps {
-  golem: Golem
-  canAfford: boolean
+  golem: MarketGolem
   onPurchase: () => void
 }
 
 export function GolemCard({ golem, onPurchase }: GolemCardProps) {
-  const rarityColors = {
+  const { canAfford } = useMarketStore();
+  const isAffordable = canAfford(golem.price);
+  
+  const rarityColors: Record<string, string> = {
     Common: "bg-gray-500",
     Rare: "bg-blue-500",
     Epic: "bg-purple-500",
     Legendary: "bg-yellow-500",
   }
-  const rarityColor = rarityColors[golem.rarity]
+  const rarityColor = rarityColors[golem.rarity] || "bg-gray-500";
 
   const item = {
     hidden: { y: 20, opacity: 0 },
@@ -29,7 +42,7 @@ export function GolemCard({ golem, onPurchase }: GolemCardProps) {
       whileHover={{ y: -5 }}
       transition={{ type: "spring", stiffness: 300 }}
     >
-      {/* Imagen del golem - Usando transform scale para hacerla más grande */}
+      {/* Golem image - Using transform scale to enlarge it */}
       <div className="h-32 flex items-center justify-center mb-2 overflow-visible">
         <div className="transform scale-150">
           <img
@@ -44,12 +57,12 @@ export function GolemCard({ golem, onPurchase }: GolemCardProps) {
         </div>
       </div>
 
-      {/* Nombre */}
+      {/* Name */}
       <h3 className="font-luckiest text-lg text-primary mb-1">
         {golem.name}
       </h3>
 
-      {/* Rareza */}
+      {/* Rarity */}
       <span
         className={`inline-block ${rarityColor} text-cream font-luckiest tracking-wide
           rounded-full px-2 py-0.5 text-sm mb-2`}
@@ -57,12 +70,12 @@ export function GolemCard({ golem, onPurchase }: GolemCardProps) {
         {golem.rarity}
       </span>
 
-      {/* Descripción */}
+      {/* Description */}
       <p className="font-luckiest text-sm text-text-primary mb-3 text-center h-12 overflow-hidden">
         {golem.description}
       </p>
 
-      {/* Botón o estado Owned */}
+      {/* Button or Owned state */}
       {golem.owned ? (
         <div className="btn-cr-yellow w-full flex items-center justify-center opacity-50 cursor-not-allowed">
           Owned
@@ -70,8 +83,11 @@ export function GolemCard({ golem, onPurchase }: GolemCardProps) {
       ) : (
         <motion.button
           onClick={onPurchase}
-          className="btn-cr-yellow w-full flex items-center justify-center gap-2"
-          whileTap={{ scale: 0.95 }}
+          disabled={!isAffordable}
+          className={`btn-cr-yellow w-full flex items-center justify-center gap-2 ${
+            !isAffordable ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          whileTap={{ scale: isAffordable ? 0.95 : 1 }}
         >
           <span>Buy</span>
           <img src={coinIcon} alt="Coin" className="h-5 w-5" />

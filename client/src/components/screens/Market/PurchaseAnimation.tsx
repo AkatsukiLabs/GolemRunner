@@ -4,12 +4,28 @@ import Particles, { initParticlesEngine } from "@tsparticles/react"
 import type { Engine, Container, IOptions, RecursivePartial } from "@tsparticles/engine"
 import { MoveDirection } from "@tsparticles/engine"
 import { loadFull } from "tsparticles"
-import type { Golem } from "../../../components/types/golem"
-import type { Map } from "../../../components/types/map"
+
+interface MarketItem {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  price: number;
+}
+
+interface MarketGolem extends MarketItem {
+  rarity: string;
+  owned: boolean;
+}
+
+interface MarketMap extends MarketItem {
+  theme: string;
+  unlocked: boolean;
+}
 
 interface PurchaseAnimationProps {
-  item: Golem | Map
-  onClose: () => void
+  item: MarketGolem | MarketMap;
+  onClose: () => void;
 }
 
 export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JSX.Element | null {
@@ -21,7 +37,7 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
     }).then(() => setEngineLoaded(true))
   }, [])
 
-  // Efecto para cerrar automáticamente después de 4 segundos
+  // Effect to automatically close after 4 seconds
   useEffect(() => {
     const timer = setTimeout(onClose, 4000)
     return () => clearTimeout(timer)
@@ -90,9 +106,9 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
     legendary: "bg-yellow-500",
   }
 
-  // Determinar si es un golem o un mapa
-  const isGolem = 'animations' in item
-  const rarityClass = isGolem ? rarityColors[(item as Golem).rarity.toLowerCase()] || "bg-gray-500" : "bg-primary"
+  // Determine if the item is a golem or a map
+  const isGolem = 'rarity' in item;
+  const rarityClass = isGolem ? rarityColors[(item as MarketGolem).rarity.toLowerCase()] || "bg-gray-500" : "bg-primary"
 
   return (
     <motion.div
@@ -101,7 +117,7 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
       animate={{ opacity: 1 }}
       onClick={onClose}
     >
-      {/* Fondo de partículas */}
+      {/* Particle background */}
       <Particles
         id="purchaseParticles"
         className="absolute inset-0 z-0"
@@ -109,7 +125,7 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
         particlesLoaded={particlesLoaded}
       />
 
-      {/* Tarjeta de confirmación */}
+      {/* Confirmation card */}
       <motion.div
         className="bg-surface p-6 rounded-xl shadow-lg z-10 flex flex-col items-center max-w-xs w-full"
         initial={{ scale: 0.8, y: 20 }}
@@ -124,7 +140,7 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Imagen con glow */}
+        {/* Image with glow */}
         <motion.div
           initial={{ rotate: -10, scale: 0.9 }}
           animate={{
@@ -139,7 +155,7 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
             alt={item.name}
             className="w-full h-full object-contain"
             onError={(e) => {
-              const img = e.currentTarget
+              const img = e.currentTarget as HTMLImageElement
               img.src = "/placeholder.svg?height=128&width=128"
             }}
           />
@@ -164,7 +180,7 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
           <span
             className={`inline-block ${rarityClass} font-luckiest text-surface rounded-full px-3 py-1 text-sm mb-3`}
           >
-            {(item as Golem).rarity}
+            {(item as MarketGolem).rarity}
           </span>
         )}
 
