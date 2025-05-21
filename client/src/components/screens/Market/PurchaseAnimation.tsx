@@ -4,13 +4,15 @@ import Particles, { initParticlesEngine } from "@tsparticles/react"
 import type { Engine, Container, IOptions, RecursivePartial } from "@tsparticles/engine"
 import { MoveDirection } from "@tsparticles/engine"
 import { loadFull } from "tsparticles"
-import type { Golem } from "../../types/golem"
+import type { Golem } from "../../../components/types/golem"
+import type { Map } from "../../../components/types/map"
 
 interface PurchaseAnimationProps {
-  golem: Golem
+  item: Golem | Map
+  onClose: () => void
 }
 
-export function PurchaseAnimation({ golem }: PurchaseAnimationProps): JSX.Element | null {
+export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JSX.Element | null {
   const [engineLoaded, setEngineLoaded] = useState(false)
 
   useEffect(() => {
@@ -18,6 +20,12 @@ export function PurchaseAnimation({ golem }: PurchaseAnimationProps): JSX.Elemen
       await loadFull(engine)
     }).then(() => setEngineLoaded(true))
   }, [])
+
+  // Efecto para cerrar automáticamente después de 4 segundos
+  useEffect(() => {
+    const timer = setTimeout(onClose, 4000)
+    return () => clearTimeout(timer)
+  }, [onClose])
 
   useEffect(() => {
     const audio = new Audio("/purchase-success.mp3")
@@ -81,14 +89,17 @@ export function PurchaseAnimation({ golem }: PurchaseAnimationProps): JSX.Elemen
     epic: "bg-purple-500",
     legendary: "bg-yellow-500",
   }
-  const rarityClass = rarityColors[golem.rarity.toLowerCase()] || "bg-gray-500"
+
+  // Determinar si es un golem o un mapa
+  const isGolem = 'animations' in item
+  const rarityClass = isGolem ? rarityColors[(item as Golem).rarity.toLowerCase()] || "bg-gray-500" : "bg-primary"
 
   return (
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      onClick={onClose}
     >
       {/* Fondo de partículas */}
       <Particles
@@ -102,7 +113,16 @@ export function PurchaseAnimation({ golem }: PurchaseAnimationProps): JSX.Elemen
       <motion.div
         className="bg-surface p-6 rounded-xl shadow-lg z-10 flex flex-col items-center max-w-xs w-full"
         initial={{ scale: 0.8, y: 20 }}
-        animate={{ scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 15 } }}
+        animate={{ 
+          scale: 1, 
+          y: 0,
+          transition: { 
+            type: "spring", 
+            stiffness: 300, 
+            damping: 15
+          } 
+        }}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Imagen con glow */}
         <motion.div
@@ -115,8 +135,8 @@ export function PurchaseAnimation({ golem }: PurchaseAnimationProps): JSX.Elemen
           className="relative w-32 h-32 mb-4"
         >
           <img
-            src={golem.image || "/placeholder.svg"}
-            alt={golem.name}
+            src={item.image || "/placeholder.svg"}
+            alt={item.name}
             className="w-full h-full object-contain"
             onError={(e) => {
               const img = e.currentTarget
@@ -137,17 +157,19 @@ export function PurchaseAnimation({ golem }: PurchaseAnimationProps): JSX.Elemen
         </motion.div>
 
         <h2 className="font-luckiest text-xl text-primary mb-2">
-          {golem.name} Acquired!
+          {item.name} Acquired!
         </h2>
 
-        <span
-          className={`inline-block ${rarityClass} font-luckiest text-surface rounded-full px-3 py-1 text-sm mb-3`}
-        >
-          {golem.rarity}
-        </span>
+        {isGolem && (
+          <span
+            className={`inline-block ${rarityClass} font-luckiest text-surface rounded-full px-3 py-1 text-sm mb-3`}
+          >
+            {(item as Golem).rarity}
+          </span>
+        )}
 
         <p className="text-text-primary font-luckiest text-center mb-4">
-          {golem.description}
+          {item.description}
         </p>
 
         <motion.p

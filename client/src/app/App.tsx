@@ -116,9 +116,15 @@ function AppContent() {
         <MarketScreen
           coins={coins}
           level={level}
-          onPurchase={handleSpendCoins}
-          onAddGolem={handleAddGolem}
-          onNavigation={handleNavigation}
+          onCoinsChange={handleSpendCoins}
+          onGolemPurchase={handleAddGolem}
+          onMapPurchase={(map) => {
+            // Actualizar el estado de desbloqueo en defaultMaps
+            const mapIndex = defaultMaps.findIndex(m => m.id === map.id);
+            if (mapIndex !== -1) {
+              defaultMaps[mapIndex].unlocked = true;
+            }
+          }}
         />
       )}
 
