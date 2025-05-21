@@ -19,8 +19,8 @@ interface PlayScreenProps {
 }
 
 export function PlayScreen({ 
-    onClose, 
-    selectedGolemId = 1
+  onClose,         
+  selectedGolemId
 }: PlayScreenProps) {
   const [showGame, setShowGame] = useState(false);
   const [selectedMapTheme, setSelectedMapTheme] = useState<MapTheme | null>(null);
