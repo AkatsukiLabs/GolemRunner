@@ -4,12 +4,29 @@ import Particles, { initParticlesEngine } from "@tsparticles/react"
 import type { Engine, Container, IOptions, RecursivePartial } from "@tsparticles/engine"
 import { MoveDirection } from "@tsparticles/engine"
 import { loadFull } from "tsparticles"
-import type { Golem } from "../../../components/types/golem"
-import type { Map } from "../../../components/types/map"
+
+// Definir los tipos de marketplace
+interface MarketItem {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  price: number;
+}
+
+interface MarketGolem extends MarketItem {
+  rarity: string;
+  owned: boolean;
+}
+
+interface MarketMap extends MarketItem {
+  theme: string;
+  unlocked: boolean;
+}
 
 interface PurchaseAnimationProps {
-  item: Golem | Map
-  onClose: () => void
+  item: MarketGolem | MarketMap;
+  onClose: () => void;
 }
 
 export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JSX.Element | null {
@@ -91,8 +108,8 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
   }
 
   // Determinar si es un golem o un mapa
-  const isGolem = 'animations' in item
-  const rarityClass = isGolem ? rarityColors[(item as Golem).rarity.toLowerCase()] || "bg-gray-500" : "bg-primary"
+  const isGolem = 'rarity' in item;
+  const rarityClass = isGolem ? rarityColors[(item as MarketGolem).rarity.toLowerCase()] || "bg-gray-500" : "bg-primary"
 
   return (
     <motion.div
@@ -139,7 +156,7 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
             alt={item.name}
             className="w-full h-full object-contain"
             onError={(e) => {
-              const img = e.currentTarget
+              const img = e.currentTarget as HTMLImageElement
               img.src = "/placeholder.svg?height=128&width=128"
             }}
           />
@@ -164,7 +181,7 @@ export function PurchaseAnimation({ item, onClose }: PurchaseAnimationProps): JS
           <span
             className={`inline-block ${rarityClass} font-luckiest text-surface rounded-full px-3 py-1 text-sm mb-3`}
           >
-            {(item as Golem).rarity}
+            {(item as MarketGolem).rarity}
           </span>
         )}
 

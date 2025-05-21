@@ -1,14 +1,22 @@
 import { motion } from "framer-motion"
 import { MapCard } from "./MapCard"
-import type { Map } from "../../../components/types/map"
 
-interface MapGridProps {
-  maps: Map[]
-  coins: number
-  onPurchase: (map: Map) => void
+interface MarketMap {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  theme: string;
+  price: number;
+  unlocked: boolean;
 }
 
-export function MapGrid({ maps, coins, onPurchase }: MapGridProps) {
+interface MapGridProps {
+  maps: MarketMap[]
+  onPurchase: (map: MarketMap) => void
+}
+
+export function MapGrid({ maps, onPurchase }: MapGridProps) {
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -26,7 +34,6 @@ export function MapGrid({ maps, coins, onPurchase }: MapGridProps) {
           <MapCard
             key={map.id}
             map={map}
-            canAfford={coins >= (map.price || 0)}
             onPurchase={() => onPurchase(map)}
           />
         ))}
@@ -34,5 +41,3 @@ export function MapGrid({ maps, coins, onPurchase }: MapGridProps) {
     </motion.div>
   )
 }
-
-export default MapGrid 

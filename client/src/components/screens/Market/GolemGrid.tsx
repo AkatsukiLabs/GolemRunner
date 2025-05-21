@@ -1,14 +1,23 @@
 import { motion } from "framer-motion"
 import { GolemCard } from "./GolemCard"
-import type { Golem } from "../../types/golem"
 
-interface GolemGridProps {
-  golems: Golem[]
-  coins: number
-  onPurchase: (golem: Golem) => void
+// Definir el tipo específico para el marketplace
+interface MarketGolem {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  rarity: string;
+  price: number;
+  owned: boolean;
 }
 
-export function GolemGrid({ golems, coins, onPurchase }: GolemGridProps) {
+interface GolemGridProps {
+  golems: MarketGolem[]
+  onPurchase: (golem: MarketGolem) => void
+}
+
+export function GolemGrid({ golems, onPurchase }: GolemGridProps) {
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -21,12 +30,11 @@ export function GolemGrid({ golems, coins, onPurchase }: GolemGridProps) {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-12">  {/* Remove mb-12 if PWA is not needed */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-12">
         {golems.map((golem) => (
           <GolemCard
             key={golem.id}
             golem={golem}
-            canAfford={coins >= golem.price}
             onPurchase={() => onPurchase(golem)}
           />
         ))}

@@ -1,21 +1,34 @@
 import { motion } from "framer-motion"
 import coinIcon from "../../../assets/icons/CoinIcon.png";
-import type { Golem } from "../../types/golem"
+import { useMarketStore } from "../../../dojo/hooks/useMarketStore";
+
+// Tipo específico para el marketplace
+interface MarketGolem {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  rarity: string;
+  price: number;
+  owned: boolean;
+}
 
 interface GolemCardProps {
-  golem: Golem
-  canAfford: boolean
+  golem: MarketGolem
   onPurchase: () => void
 }
 
 export function GolemCard({ golem, onPurchase }: GolemCardProps) {
-  const rarityColors = {
+  const { canAfford } = useMarketStore();
+  const isAffordable = canAfford(golem.price);
+  
+  const rarityColors: Record<string, string> = {
     Common: "bg-gray-500",
     Rare: "bg-blue-500",
     Epic: "bg-purple-500",
     Legendary: "bg-yellow-500",
   }
-  const rarityColor = rarityColors[golem.rarity]
+  const rarityColor = rarityColors[golem.rarity] || "bg-gray-500";
 
   const item = {
     hidden: { y: 20, opacity: 0 },
@@ -70,8 +83,11 @@ export function GolemCard({ golem, onPurchase }: GolemCardProps) {
       ) : (
         <motion.button
           onClick={onPurchase}
-          className="btn-cr-yellow w-full flex items-center justify-center gap-2"
-          whileTap={{ scale: 0.95 }}
+          disabled={!isAffordable}
+          className={`btn-cr-yellow w-full flex items-center justify-center gap-2 ${
+            !isAffordable ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          whileTap={{ scale: isAffordable ? 0.95 : 1 }}
         >
           <span>Buy</span>
           <img src={coinIcon} alt="Coin" className="h-5 w-5" />
