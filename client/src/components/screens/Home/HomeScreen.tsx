@@ -11,7 +11,7 @@ import { DropdownMenu } from "./DropDownMenu";
 import useAppStore from "../../../zustand/store";
 import toast, { Toaster } from 'react-hot-toast';
 
-// Tipo para un personaje con estado de desbloqueo
+// Type for a character with unlock status
 export type CharacterWithUnlockStatus = (typeof characters)[0] & {
   isUnlocked: boolean;
 };
@@ -41,7 +41,7 @@ export const HomeScreen = memo(function HomeScreen({
     error: state.error,
   }));
 
-  // Memoizamos arrays derivados
+  // Memoize derived arrays
   const unlockedGolems = useMemo(
     () => golems.filter(g => g.is_unlocked),
     [golems]
@@ -56,7 +56,7 @@ export const HomeScreen = memo(function HomeScreen({
     [golems]
   );
 
-  // Estado y utilidades
+  // State and utilities
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterWithUnlockStatus>(() => {
     if (unlockedGolems.length > 0) {
       const first = unlockedGolems[0];
@@ -72,13 +72,13 @@ export const HomeScreen = memo(function HomeScreen({
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 768);
 
-  // Posición del toast
+  // Toast position
   const position = useMemo(
     () => (isMobile ? 'bottom-center' : 'top-right'),
     [isMobile]
   );
 
-  // Effects de mouse y resize
+  // Mouse and resize effects
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
@@ -93,13 +93,13 @@ export const HomeScreen = memo(function HomeScreen({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Mantener seleccionado sincronizado con golems
+  // Keep selected character synchronized with golems
   useEffect(() => {
     if (!isLoading && golems.length > 0) {
-      // Si el golem actualmente seleccionado NO existe ya en la lista
+      // If the currently selected golem NO longer exists in the list
       const exists = golems.some(g => g.id === selectedCharacter.id);
       if (!exists) {
-        // Elegimos el primero desbloqueado o el primero en general
+        // Choose the first unlocked or the first in general
         const fallback = unlockedGolems.length > 0 ? unlockedGolems[0] : golems[0];
         setSelectedCharacter({
           id: fallback.id,
@@ -110,7 +110,7 @@ export const HomeScreen = memo(function HomeScreen({
     }
   }, [golems, unlockedGolems, isLoading]);
 
-  // Handlers de character seleccionado
+  // Handlers for selected character
   const handleCharacterSelect = useCallback(
     (character: CharacterWithUnlockStatus) => {
       setSelectedCharacter(character);
@@ -139,7 +139,7 @@ export const HomeScreen = memo(function HomeScreen({
   const openTalk = useCallback(() => setShowTalkModal(true), []);
   const closeTalk = useCallback(() => setShowTalkModal(false), []);
 
-  // Datos compartidos memoizados
+  // Shared memoized data
   const selectedGolemData = useMemo(
     () => ({
       name: selectedCharacter.name,

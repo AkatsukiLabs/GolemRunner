@@ -10,7 +10,7 @@ interface GolemEdge {
   node: RawGolemNode;
 }
 
-// Definimos una interfaz para los datos crudos de la API
+// Define the Golem interface 
 interface RawGolemNode {
   id: string;
   player_id: string;
@@ -77,14 +77,13 @@ const fetchGolemsData = async (playerAddress: string): Promise<Golem[]> => {
     return result.data.golemRunnerGolemModels.edges.map((edge: GolemEdge) => {
       const rawNode = edge.node;
       
-      // Convertir los valores hexadecimales a texto
       const convertHexToString = (hex: string): string => {
-        // Si no es un valor hexadecimal, devolverlo tal cual
+        // If not a hex string, return as is
         if (!hex || !hex.startsWith('0x')) {
           return hex;
         }
         
-        // Eliminar el prefijo 0x y convertir cada par de caracteres a un carácter
+        // Delete the '0x' prefix and convert hex to string
         const hexWithoutPrefix = hex.slice(2);
         let string = '';
         
@@ -97,7 +96,6 @@ const fetchGolemsData = async (playerAddress: string): Promise<Golem[]> => {
         return string;
       };
       
-      // Convertir el valor hexadecimal a entero
       const convertHexToInt = (hex: string): number => {
         if (!hex || !hex.startsWith('0x')) {
           return parseInt(hex, 10) || 0;
@@ -105,7 +103,7 @@ const fetchGolemsData = async (playerAddress: string): Promise<Golem[]> => {
         return parseInt(hex, 16) || 0;
       };
       
-      // Convertir el valor a booleano
+      // Convert boolean strings to boolean values
       const convertToBool = (value: boolean | string): boolean => {
         if (typeof value === 'boolean') return value;
         if (value === 'true') return true;
@@ -114,9 +112,8 @@ const fetchGolemsData = async (playerAddress: string): Promise<Golem[]> => {
         return Boolean(value);
       };
 
-      // Función para convertir string a CairoCustomEnum para Rarity
+      // Create a custom enum for rarity
       const convertToRarityEnum = (rarityString: string): CairoCustomEnum => {
-        // Creamos un nuevo CairoCustomEnum con todos los posibles valores
         return new CairoCustomEnum({
           Basic: rarityString === "Basic" ? rarityString : undefined,
           Common: rarityString === "Common" ? rarityString : undefined,
@@ -128,7 +125,7 @@ const fetchGolemsData = async (playerAddress: string): Promise<Golem[]> => {
         });
       };
       
-      // Generar un nuevo objeto con los valores convertidos
+      // Generate new Golem object with converted values
       const convertedGolem: Golem = {
         id: convertHexToInt(rawNode.id),
         player_id: rawNode.player_id,
