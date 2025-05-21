@@ -6,6 +6,7 @@ import { useDojoSDK } from "@dojoengine/sdk/react";
 import { useStarknetConnect } from "./useStarknetConnect";
 import { usePlayer } from "./usePlayer";
 import { useGolems } from "./useGolem";
+import { useMaps } from "./useMaps";
 import useAppStore from "../../zustand/store";
 
 // Types
@@ -32,6 +33,7 @@ export const useSpawnPlayer = () => {
   const { status } = useStarknetConnect();
   const { player, isLoading: playerLoading, refetch: refetchPlayer } = usePlayer();
   const { refetch: refetchGolems } = useGolems();
+  const { refetch: refetchMaps } = useMaps();
   const { setLoading } = useAppStore();
 
   // Local state
@@ -127,6 +129,7 @@ export const useSpawnPlayer = () => {
         }));
 
         await refetchGolems();
+        await refetchMaps();
         
         setIsInitializing(false);
         return { 
@@ -173,6 +176,7 @@ export const useSpawnPlayer = () => {
           console.log("🔄 Refetching player data after spawn...");
           await refetchPlayer();
           await refetchGolems();
+          await refetchMaps();
           
           setInitState(prev => ({ 
             ...prev, 
@@ -228,7 +232,7 @@ export const useSpawnPlayer = () => {
       setIsInitializing(false);
       return { success: false, playerExists: false, error: errorMessage };
     }
-  }, [status, account, refetchPlayer, player, isInitializing, refetchGolems]); 
+  }, [status, account, refetchPlayer, player, isInitializing, refetchGolems, refetchMaps]); 
 
   /**
    * Reset initialization state
