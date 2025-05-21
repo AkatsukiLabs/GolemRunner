@@ -46,6 +46,15 @@ a:focus {
     background-image: linear-gradient(to bottom, #FF6B00, #FF6B00);
   }
 
+  .btn-cr-gray {
+    @apply relative inline-flex items-center justify-center
+           px-6 py-2 rounded-lg font-bold text-white font-luckiest tracking-wide
+           shadow-[0_4px_0_rgba(0,0,0,0.2)]
+           rounded-[6px]
+           opacity-80;
+    background-image: linear-gradient(to bottom, #8D8D8D, #6D6D6D);
+  }
+
   /* Blue button styled as "Party!" */
   .btn-cr-blue {
     @apply relative inline-flex items-center justify-center

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { TopBar } from "../../layout/TopBar"
 import { ProfileGolemCard } from "./ProfileGolemCard";
 import { ProfileMapGrid } from "./MapProfileCard";
-import { BackgroundParticles } from "../../shared/BackgroundParticles"
+import BackgroundParticles from "../../shared/BackgroundParticles"
 import { GolemDetailModal } from "./GolemDetailModal"
 import type { Golem } from "../../types/golem"
 import type { Map } from "../../types/map"

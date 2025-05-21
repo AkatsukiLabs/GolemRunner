@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { TopBar } from "../../layout/TopBar"
-import { BackgroundParticles } from "../../shared/BackgroundParticles"
+import BackgroundParticles from "../../shared/BackgroundParticles"
 import { RankingTable } from "./RankingTable"
 import rankingGolemIcon from "../../../assets/icons/RankingGolem.png"
 import { defaultMaps } from "../../../constants/maps"

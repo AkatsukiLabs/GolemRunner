@@ -8,10 +8,10 @@ import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig(({ mode }) => ({
    server: {
     port: 3001,
-    //  https: {
-    //    key: fs.readFileSync("mkcert+1-key.pem"), // Path to private key file
-    //    cert: fs.readFileSync("mkcert+1.pem"),   // Path to certificate file
-    //  },
+      // https: {
+      //   key: fs.readFileSync("mkcert+1-key.pem"), // Path to private key file
+      //   cert: fs.readFileSync("mkcert+1.pem"),   // Path to certificate file
+      // },
    },
   plugins: [
     react(),
