@@ -12,8 +12,15 @@ import useAppStore from "../../../zustand/store";
 import toast, { Toaster } from "react-hot-toast";
 import { getGolemVisualDataById } from "../../../constants/characters";
 import { getMapVisualDataById } from "../../../constants/mapVisualData";
-// 1. Importar los tipos de MarketGolem y MarketMap
+// Importar los tipos de MarketGolem y MarketMap
 import { MarketGolem, MarketMap } from "../../types/marketTypes";
+
+// Helper function to truncate hash
+const truncateHash = (hash: string, startLength = 6, endLength = 4) => {
+  if (!hash) return '';
+  if (hash.length <= startLength + endLength) return hash;
+  return `${hash.slice(0, startLength)}...${hash.slice(-endLength)}`;
+};
 
 interface MarketScreenProps {
   // Podemos dejarlo vacío si no necesitas props
@@ -26,11 +33,13 @@ export function MarketScreen({}: MarketScreenProps) {
   // Get market store functionality
   const { 
     isProcessing, 
+    txHash,
+    txStatus,
     purchaseGolem, 
     purchaseWorld
   } = useMarketStore();
   
-  // 2. Actualizar la declaración del estado selectedItem
+  // Estado para los componentes del market
   const [selectedItem, setSelectedItem] = useState<MarketGolem | MarketMap | null>(null);
   const [showPurchaseAnimation, setShowPurchaseAnimation] = useState(false);
   const [showInsufficientBalance, setShowInsufficientBalance] = useState(false);
@@ -46,7 +55,46 @@ export function MarketScreen({}: MarketScreenProps) {
   // Toast position based on screen size
   const position = isMobile ? 'bottom-center' : 'top-right';
 
-  // 3. Usar los tipos correctos en la transformación de datos
+  useEffect(() => {
+    if (txHash) {
+      // Mostrar toast con hash y link
+      toast(
+        <span className="text-dark font-luckiest">
+          Tx {txStatus}: {truncateHash(txHash)}
+          <br />
+          <a
+            href={`https://sepolia.starkscan.co/tx/${txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            View on StarkScan
+          </a>
+        </span>,
+        { id: 'tx-toast', position }
+      );
+  
+      // Toast de éxito cuando la transacción se completa
+      if (txStatus === 'SUCCESS') {
+        toast.success('Purchase successful!', {
+          id: 'success-toast',
+          position,
+          duration: 2000,
+        });
+      }
+  
+      // Toast de error si la transacción falla
+      if (txStatus === 'REJECTED') {
+        toast.error('Transaction failed', {
+          id: 'tx-error-toast',
+          position,
+          duration: 3000,
+        });
+      }
+    }
+  }, [txHash, txStatus, position]);
+
+  // Transform blockchain data to UI format
   const golemItems: MarketGolem[] = golems.map(golem => {
     const visualData = getGolemVisualDataById(golem.id);
     return {
@@ -90,24 +138,21 @@ export function MarketScreen({}: MarketScreenProps) {
     
     // Process the purchase
     try {
+      // Intentar comprar
+      let result;
       if (isGolem) {
-        const result = await purchaseGolem(item.id);
-        
-        if (result.success) {
-          setSelectedItem(item);
-          setShowPurchaseAnimation(true);
-        } else {
-          toast.error(result.error || "Failed to purchase golem", { position });
-        }
+        result = await purchaseGolem(item.id);
       } else {
-        const result = await purchaseWorld(item.id);
-        
-        if (result.success) {
-          setSelectedItem(item);
-          setShowPurchaseAnimation(true);
-        } else {
-          toast.error(result.error || "Failed to purchase map", { position });
-        }
+        result = await purchaseWorld(item.id);
+      }
+      
+      // Si es exitoso, mostrar animación
+      if (result.success) {
+        setSelectedItem(item);
+        setShowPurchaseAnimation(true);
+      } else {
+        // Si hay un mensaje de error específico, mostrarlo
+        toast.error(result.error || `Failed to purchase ${isGolem ? 'golem' : 'map'}`, { position });
       }
     } catch (error) {
       console.error("Purchase error:", error);
@@ -122,7 +167,7 @@ export function MarketScreen({}: MarketScreenProps) {
   };
 
   return (
-    <div className="relative h-screen w-full bg-screen overflow-hidden font-luckiest">
+    <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik">
       <BackgroundParticles />
       
       {/* Top Bar */}

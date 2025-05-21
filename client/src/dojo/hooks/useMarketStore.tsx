@@ -97,6 +97,10 @@ export const useMarketStore = () => {
       
       // Execute transaction
       console.log(`📤 Executing unlock_golem_store transaction for golemId ${golemId}...`);
+      console.log("📦 Sending tx with params:", {
+        accountAddress: account.address,
+        golemId,
+      });
       const tx = await client.game.unlockGolemStore(account as Account, golemId);
       
       console.log("📥 Transaction response:", tx);
@@ -186,6 +190,11 @@ export const useMarketStore = () => {
       
       // Execute transaction
       console.log(`📤 Executing unlock_world_store transaction for worldId ${worldId}...`);
+      console.log("📦 Sending tx with params:", {
+        accountAddress: account.address,
+        worldId,
+      });
+      
       const tx = await client.game.unlockWorldStore(account as Account, worldId);
       
       console.log("📥 Transaction response:", tx);

@@ -137,6 +137,7 @@ const fetchGolemsData = async (playerAddress: string): Promise<Golem[]> => {
         is_unlocked: convertToBool(rawNode.is_unlocked)
       };
       
+      console.log("[useGolem] Converted Golem:", convertedGolem);
       return convertedGolem;
     });
   } catch (error) {
