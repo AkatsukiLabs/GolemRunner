@@ -19,7 +19,7 @@ export function CharacterCard({ character, onSelect, isUnlocked }: CharacterCard
   const rarityColors = {
     Common: "bg-gray-500",
     Rare: "bg-blue-500",
-    Epic: "bg-purple-500",
+    Uncommon: "bg-purple-500",
     Legendary: "bg-yellow-500",
   }
 

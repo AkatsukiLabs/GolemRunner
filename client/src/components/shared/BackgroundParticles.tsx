@@ -1,25 +1,23 @@
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import type {
   Engine,
-  Container,
   IOptions,
   RecursivePartial,
 } from "@tsparticles/engine";
 import { MoveDirection } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
 
-export function BackgroundParticles(): JSX.Element | null {
+function BackgroundParticles(): JSX.Element | null {
   const [engineLoaded, setEngineLoaded] = useState(false);
 
-  // 1) Initialize particles engine
+  // 1) Inicializar el engine solo una vez
   useEffect(() => {
-    initParticlesEngine(async (engine: Engine) => {
-      await loadSlim(engine);
-    }).then(() => setEngineLoaded(true));
+    initParticlesEngine((engine: Engine) => loadSlim(engine))
+      .then(() => setEngineLoaded(true));
   }, []);
 
-  // 2) Memoize options to avoid re-creating them on every render
+  // 2) Memoizar opciones para evitar recrearlas
   const options = useMemo<RecursivePartial<IOptions>>(
     () => ({
       fullScreen: { enable: false },
@@ -36,7 +34,7 @@ export function BackgroundParticles(): JSX.Element | null {
         },
         move: {
           enable: true,
-          direction: MoveDirection.none, // using an enum for better type safety
+          direction: MoveDirection.none,
           random: true,
           speed: 0.5,
           straight: false,
@@ -71,12 +69,7 @@ export function BackgroundParticles(): JSX.Element | null {
     []
   );
 
-  // 3) Callback async to handle when particles are loaded
-  const particlesLoaded = async (container?: Container): Promise<void> => {
-    console.log("Particles loaded:", container);
-  };
-
-  // 4) Wait for engine to load before rendering
+  // 3) Solo renderizar cuando el engine esté listo
   if (!engineLoaded) return null;
 
   return (
@@ -85,10 +78,10 @@ export function BackgroundParticles(): JSX.Element | null {
         id="tsparticles"
         className="w-full h-full"
         options={options}
-        particlesLoaded={particlesLoaded}
       />
     </div>
   );
 }
 
-export default BackgroundParticles;
+// 4) React.memo evita re-renderizar el componente
+export default React.memo(BackgroundParticles);

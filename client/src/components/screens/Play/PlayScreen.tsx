@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import CloseIcon from "../../../assets/icons/CloseIcon.png"; 
 import { motion } from "framer-motion";
-import { BackgroundParticles } from "../../shared/BackgroundParticles"; 
+import BackgroundParticles from "../../shared/BackgroundParticles"; 
 import { MapCarousel } from "./MapCarousel"; 
 import { defaultMaps } from "../../../constants/maps"; 
 import type { Map as MapDataType } from '../../types/map'; 

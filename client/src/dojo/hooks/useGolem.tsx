@@ -153,7 +153,7 @@ export const useGolems = (): UseGolemsReturn => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const { account } = useAccount();
-  const { golems: storeGolems, setGolems } = useAppStore();
+  const { golems: storeGolems, setGolems, setLoading, setError: setStoreError } = useAppStore();
 
   // Memoize the formatted user address
   const userAddress = useMemo(() => 
@@ -175,22 +175,21 @@ export const useGolems = (): UseGolemsReturn => {
   // Function to fetch and update golems data
   const refetch = async () => {
     if (!userAddress) {
-      setIsLoading(false);
+      setLoading(false);
       return;
     }
 
     try {
-      setIsLoading(true);
-      setError(null);
+      setLoading(true);  
+      setStoreError(null); 
       
       const golemsData = await fetchGolemsData(userAddress);
       setGolems(golemsData);
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error occurred');
-      setError(error);
+      setStoreError(err instanceof Error ? err.message : String(err));
       setGolems([]);
     } finally {
-      setIsLoading(false);
+      setLoading(false);    
     }
   };
 

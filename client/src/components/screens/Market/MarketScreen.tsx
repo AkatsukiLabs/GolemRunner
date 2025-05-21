@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { TopBar } from "../../layout/TopBar"
-import { BackgroundParticles } from "../../shared/BackgroundParticles"
+import BackgroundParticles from "../../shared/BackgroundParticles"
 import { GolemGrid } from "./GolemGrid"
 import { PurchaseAnimation } from "./PurchaseAnimation"
 import { InsufficientBalanceAnimation } from "./InsufficientBalanceAnimation" // Nuevo componente
