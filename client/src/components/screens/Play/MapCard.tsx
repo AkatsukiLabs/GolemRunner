@@ -1,5 +1,4 @@
 import { motion } from "framer-motion"
-import coinIcon from "../../../assets/icons/CoinIcon.png";
 import type { Map } from "../../types/map"
 
 interface MapCardProps {
@@ -9,14 +8,14 @@ interface MapCardProps {
   onSelect: () => void
 }
 
-export function MapCard({ map, coins, onUnlock, onSelect }: MapCardProps) {
-  const canUnlock = map.price !== undefined && coins >= map.price
+export function MapCard({ map, onSelect }: MapCardProps) {
+  const isUnlocked = map.unlocked;
 
   return (
     <motion.div
-    className="bg-surface rounded-xl shadow-md flex-shrink-0 w-full mx-auto p-4
-    flex flex-col justify-between items-center
-    border-2 border-primary/20 z-10"
+      className="bg-surface rounded-xl shadow-md flex-shrink-0 w-full mx-auto p-4
+      flex flex-col justify-between items-center
+      border-2 border-primary/20 z-10"
       whileHover={{ y: -5 }}
       transition={{ type: "spring", stiffness: 300 }}
       style={{ 
@@ -24,16 +23,23 @@ export function MapCard({ map, coins, onUnlock, onSelect }: MapCardProps) {
         marginBottom: '10px' 
       }}
     >
-      {/* Imagen del mapa */}
+      {/* Map image */}
       <div className="relative w-full h-36 rounded-lg overflow-hidden mb-3">
         <img
           src={map.image}
           alt={`${map.name} map`}
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover ${!isUnlocked ? 'opacity-50 grayscale' : ''}`}
         />
+        {!isUnlocked && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="bg-dark bg-opacity-60 rounded-full p-2">
+              <span className="text-cream text-2xl">🔒</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Nombre y descripción */}
+      {/* Name and description */}
       <h3 className="font-luckiest text-lg text-primary mt-2">
         {map.name}
       </h3>
@@ -41,23 +47,23 @@ export function MapCard({ map, coins, onUnlock, onSelect }: MapCardProps) {
         {map.description}
       </p>
 
-      {/* Botones de Play o Unlock */}
-      {map.unlocked ? (
+      {isUnlocked ? (
         <button
-          onClick={onSelect}
+          onClick={() => {
+            onSelect();
+          }}
           className="btn-cr-yellow mt-auto text-center"
         >
           Select
         </button>
       ) : (
         <button
-          onClick={onUnlock}
-          disabled={!canUnlock}
-          className="btn-cr-yellow mt-auto inline-flex items-center justify-center gap-2"
+          className="btn-cr-gray mt-auto text-center"
+          onClick={() => {
+            onSelect(); 
+          }}
         >
-          <span>Unlock</span>
-          <img src={coinIcon} alt="Coin" className="h-5 w-5" />
-          <span>{map.price}</span>
+          Locked
         </button>
       )}
     </motion.div>

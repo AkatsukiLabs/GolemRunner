@@ -57,26 +57,9 @@ import LavaJump0 from "../assets/LavaGolem/Jump/0_Golem_Jump Loop_000.png"
 export const defaultGolems: Golem[] = [
   {
     id: 1,
-    name: "Ice Golem",
-    rarity: "Epic",
-    description: "A frosty brute with a heart of ice",
-    image: IceIdle0,
-    price: 250,
-    owned: false,
-    animations: {
-      run: [
-        IceRun0, IceRun1, IceRun2, IceRun3,
-        IceRun4, IceRun5, IceRun6, IceRun7,
-        IceRun8, IceRun9, IceRun10, IceRun11
-      ],
-      jump: [IceJump0]
-    }
-  },
-  {
-    id: 2,
-    name: "Mossy Golem",
-    rarity: "Rare",
-    description: "Overgrown with ancient moss",
+    name: "Stone Golem",
+    rarity: "Common",
+    description: "A sturdy elemental being",
     image: MossyIdle0,
     price: 100,
     owned: false,
@@ -90,12 +73,12 @@ export const defaultGolems: Golem[] = [
     }
   },
   {
-    id: 3,
-    name: "Lava Golem",
-    rarity: "Epic",
-    description: "Born in the molten core",
+    id: 2,
+    name: "Fire Golem",
+    rarity: "Uncommon",
+    description: "A fiery elemental being",
     image: LavaIdle0,
-    price: 500,
+    price: 300,
     owned: false,
     animations: {
       run: [
@@ -107,16 +90,20 @@ export const defaultGolems: Golem[] = [
     }
   },
   {
-    id: 4,
-    name: "Stone Golem",
-    rarity: "Common",
-    description: "Unbreakable rock shield",
-    image: LavaIdle0, // placeholder, ajustar luego
-    price: 100,
-    owned: true,
+    id: 3,
+    name: "Ice Golem",
+    rarity: "Rare",
+    description: "A frosty elemental being",
+    image: IceIdle0,
+    price: 500,
+    owned: false,
     animations: {
-      run: [],
-      jump: []
+      run: [
+        IceRun0, IceRun1, IceRun2, IceRun3,
+        IceRun4, IceRun5, IceRun6, IceRun7,
+        IceRun8, IceRun9, IceRun10, IceRun11
+      ],
+      jump: [IceJump0]
     }
   }
 ]

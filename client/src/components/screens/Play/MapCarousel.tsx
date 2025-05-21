@@ -6,11 +6,11 @@ import type { Map } from "../../types/map"
 interface MapCarouselProps {
   maps: Map[]
   coins: number
-  onUnlock: (mapId: number, price: number) => void
+  onUnlock: () => void 
   onSelect: (mapId: number) => void
 }
 
-export function MapCarousel({ maps, coins, onUnlock, onSelect }: MapCarouselProps) {
+export function MapCarousel({ maps, onSelect }: MapCarouselProps) {
   const [activeSlide, setActiveSlide] = useState(0)
 
   // Custom dot component for the carousel
@@ -57,9 +57,11 @@ export function MapCarousel({ maps, coins, onUnlock, onSelect }: MapCarouselProp
           >
             <MapCard
               map={map}
-              coins={coins}
-              onUnlock={() => map.price !== undefined && onUnlock(map.id, map.price)}
-              onSelect={() => onSelect(map.id)}
+              coins={0}
+              onUnlock={() => {}}
+              onSelect={() => {
+                onSelect(map.id);
+              }}
             />
           </div>
         ))}
