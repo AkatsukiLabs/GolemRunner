@@ -6,7 +6,7 @@ import { constants } from "starknet";
 
 const { VITE_PUBLIC_DEPLOY_TYPE } = import.meta.env;
 
-const CONTRACT_ADDRESS_GAME = '0x4b50da4ab0c14714f89a80a6d8d10fc7e80e80e2f616021f456452ef27b18f4'
+const CONTRACT_ADDRESS_GAME = '0xc37bb05a701c11762bda23438041343f173e98b028b5aa7fad879be3c2db61'
 
 const policies: SessionPolicies = {
   contracts: {
@@ -15,6 +15,8 @@ const policies: SessionPolicies = {
         { name: "spawn_player", entrypoint: "spawn_player" },
         { name: "reward_player", entrypoint: "reward_player" },
         { name: "update_player_ranking", entrypoint: "update_player_ranking" },
+        { name: "update_player_daily_streak", entrypoint: "update_player_daily_streak" },
+        { name: "update_golem_name", entrypoint: "update_golem_name" },
         { name: "unlock_golem_store", entrypoint: "unlock_golem_store" },
         { name: "unlock_world_store", entrypoint: "unlock_world_store" },
       ],

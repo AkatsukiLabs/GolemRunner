@@ -87,6 +87,48 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_game_updateGolemName_calldata = (golemId: number, name: number): DojoCall => {
+		return {
+			contractName: "game",
+			entrypoint: "update_golem_name",
+			calldata: [golemId, name],
+		};
+	};
+
+	const game_updateGolemName = async (snAccount: Account | AccountInterface, golemId: number, name: number) => {
+		try {
+			return await provider.execute(
+				snAccount as any,
+				build_game_updateGolemName_calldata(golemId, name),
+				"golem_runner",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_updatePlayerDailyStreak_calldata = (): DojoCall => {
+		return {
+			contractName: "game",
+			entrypoint: "update_player_daily_streak",
+			calldata: [],
+		};
+	};
+
+	const game_updatePlayerDailyStreak = async (snAccount: Account | AccountInterface) => {
+		try {
+			return await provider.execute(
+				snAccount as any,
+				build_game_updatePlayerDailyStreak_calldata(),
+				"golem_runner",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_game_updatePlayerRanking_calldata = (worldId: number, points: number): DojoCall => {
 		return {
 			contractName: "game",
@@ -120,6 +162,10 @@ export function setupWorld(provider: DojoProvider) {
 			buildUnlockGolemStoreCalldata: build_game_unlockGolemStore_calldata,
 			unlockWorldStore: game_unlockWorldStore,
 			buildUnlockWorldStoreCalldata: build_game_unlockWorldStore_calldata,
+			updateGolemName: game_updateGolemName,
+			buildUpdateGolemNameCalldata: build_game_updateGolemName_calldata,
+			updatePlayerDailyStreak: game_updatePlayerDailyStreak,
+			buildUpdatePlayerDailyStreakCalldata: build_game_updatePlayerDailyStreak_calldata,
 			updatePlayerRanking: game_updatePlayerRanking,
 			buildUpdatePlayerRankingCalldata: build_game_updatePlayerRanking_calldata,
 		},

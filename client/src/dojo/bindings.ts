@@ -29,6 +29,8 @@ export interface Player {
 	address: string;
 	coins: number;
 	total_points: number;
+	daily_streak: number;
+	last_active_day: number;
 	level: number;
 	experience: number;
 	creation_day: number;
@@ -39,6 +41,8 @@ export interface PlayerValue {
 	coins: number;
 	total_points: number;
 	level: number;
+	daily_streak: number;
+	last_active_day: number;
 	experience: number;
 	creation_day: number;
 }
@@ -196,6 +200,8 @@ export const schema: SchemaType = {
 			address: "",
 			coins: 0,
 			total_points: 0,
+			daily_streak: 0,
+			last_active_day: 0,
 			level: 0,
 			experience: 0,
 			creation_day: 0,
@@ -203,6 +209,8 @@ export const schema: SchemaType = {
 		PlayerValue: {
 			coins: 0,
 			total_points: 0,
+			daily_streak: 0,
+			last_active_day: 0,
 			level: 0,
 			experience: 0,
 			creation_day: 0,
