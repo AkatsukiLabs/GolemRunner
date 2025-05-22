@@ -39,7 +39,7 @@ const options: ControllerOptions = {
   theme,
   colorMode,
   namespace: "golem_runner", 
-  slot: "golem", 
+  slot: "golem1", 
 };
 
 const cartridgeConnector = new ControllerConnector(
