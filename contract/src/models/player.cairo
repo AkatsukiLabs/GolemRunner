@@ -17,6 +17,8 @@ pub struct Player {
     pub address: ContractAddress,
     pub coins: u64,
     pub total_points: u64,
+    pub daily_streak: u16,
+    pub last_active_day: u32,
     pub level: u8, 
     pub experience: u16,
     pub creation_day: u32,
@@ -29,6 +31,8 @@ pub impl PlayerImpl of PlayerTrait {
         address: ContractAddress,
         coins: u64,
         total_points: u64,
+        daily_streak: u16,
+        last_active_day: u32,
         level: u8, 
         experience: u16,
         creation_day: u32,
@@ -37,10 +41,28 @@ pub impl PlayerImpl of PlayerTrait {
             address,
             coins,
             total_points,
+            daily_streak,
+            last_active_day,
             level,
             experience,
             creation_day,
         }
+    }
+
+    fn update_daily_streak(ref self: Player, current_timestamp: u64) {
+        let current_day: u32 = Timestamp::unix_timestamp_to_day(current_timestamp);
+
+        if current_day == self.last_active_day {
+            return;
+        }
+        if current_day == self.last_active_day + 1 {
+            self.daily_streak += 1;
+        } 
+        else {
+            self.daily_streak = 0;
+        }
+
+        self.last_active_day = current_day;
     }
    
     fn add_coins(ref self: Player, amount: u64) {
@@ -105,6 +127,8 @@ pub impl ZeroablePlayerTrait of Zero<Player> {
             address: constants::ZERO_ADDRESS(),
             coins: 0,
             total_points: 0,
+            daily_streak: 0,
+            last_active_day: 0,
             level: 1,
             experience: 0,
             creation_day: 0,
@@ -141,6 +165,8 @@ mod tests {
             mock_address,
             100,  // coins
             200,  // total_points
+            1,    // daily_streak
+            1,    // last_active_day
             2,    // level
             50,   // experience
             42,   // creation_day
@@ -168,6 +194,8 @@ mod tests {
             address: mock_address,
             coins: 0,
             total_points: 0,
+            daily_streak: 0,
+            last_active_day: 0,
             level: 1,
             experience: 0,
             creation_day: 1,
@@ -217,6 +245,8 @@ mod tests {
             mock_address,
             0,    // coins
             0,    // total_points
+            0,    // daily_streak
+            0,    // last_active_day
             1,    // level
             0,    // experience
             1,    // creation_day
@@ -247,6 +277,8 @@ mod tests {
             mock_address,
             0,    // coins
             0,    // total_points
+            0,    // daily_streak
+            0,    // last_active_day
             1,    // level
             0,    // experience
             1,    // creation_day
@@ -282,6 +314,8 @@ mod tests {
             mock_address,
             0,    // coins
             0,    // total_points
+            0,    // daily_streak
+            0,    // last_active_day
             1,    // level
             0,    // experience
             1,    // creation_day
@@ -312,6 +346,8 @@ mod tests {
             mock_address,
             50,   // coins
             0,    // total_points
+            0,    // daily_streak
+            0,    // last_active_day
             2,    // level
             15,   // experience
             10,   // creation_day

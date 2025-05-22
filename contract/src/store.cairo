@@ -82,8 +82,10 @@ pub impl StoreImpl of StoreTrait {
 
         let new_player = PlayerTrait::new(
             caller, 
-            0, // coins
+            100000, // coins
             0, // total points
+            0, // daily streak
+            0, // last active day
             1, // level
             0, // experience
             Timestamp::unix_timestamp_to_day(current_timestamp), // creation_day

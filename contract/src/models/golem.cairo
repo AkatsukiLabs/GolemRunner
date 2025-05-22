@@ -46,6 +46,17 @@ pub impl GolemImpl of GolemTrait {
             is_unlocked,
         }
     }
+
+
+    fn set_golem_name(ref self: Golem, name: felt252) {
+        if name == '' {
+            self.name = self.name;
+        }
+        else {
+            self.name = name;
+        } 
+    }
+
 }
 
 pub impl ZeroableGolemTrait of Zero<Golem> {
