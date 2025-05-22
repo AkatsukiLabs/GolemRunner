@@ -1,9 +1,9 @@
 import { motion } from "framer-motion"
-import type { Map } from "../../types/map"
 import GoldenTrophyIcon from "../../../assets/icons/GoldenTrophyIcon.png"
+import { ProfileMap } from "../../../dojo/hooks/useProfileData";
 
 interface ProfileMapGridProps {
-  maps: Map[]
+  maps: ProfileMap[] 
 }
 
 export function ProfileMapGrid({ maps }: ProfileMapGridProps) {
