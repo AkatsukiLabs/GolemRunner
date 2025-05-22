@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x7c9469d45a9cdbab775035afb48e1fa73fb35ab059fcb9dfb0a301aa973e783",
-    "address": "0x7293e0d29ad517a34379faef457009e0325840fa6f7bd6b782a5473fa4663e3",
-    "seed": "golem_runner1",
+    "address": "0x3c474324444d2175ac37002bb0867ef5855e8bedac92d2bddee8285e24712c6",
+    "seed": "golem_runner2",
     "name": "Golem Runner",
     "entrypoints": [
       "uuid",
@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x4b50da4ab0c14714f89a80a6d8d10fc7e80e80e2f616021f456452ef27b18f4",
-      "class_hash": "0x3d9ec29aadbd49cd8bc0dce64a35e8967c1b26ef53e0785cced2ba13b74f508",
+      "address": "0xc37bb05a701c11762bda23438041343f173e98b028b5aa7fad879be3c2db61",
+      "class_hash": "0x4721e86a88dc0c67deda1c66548f4b6d0357e7bcda8d2a144876ef1286113f0",
       "abi": [
         {
           "type": "impl",
@@ -1443,6 +1443,29 @@
                 {
                   "name": "points",
                   "type": "core::integer::u64"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "update_player_daily_streak",
+              "inputs": [],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "update_golem_name",
+              "inputs": [
+                {
+                  "name": "golem_id",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "name",
+                  "type": "core::felt252"
                 }
               ],
               "outputs": [],
@@ -1609,6 +1632,8 @@
         "spawn_player",
         "reward_player",
         "update_player_ranking",
+        "update_player_daily_streak",
+        "update_golem_name",
         "unlock_golem_store",
         "unlock_world_store",
         "upgrade"
@@ -1625,7 +1650,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x7741012875486cc728a9d0298943de6e477d0e9f08a7aa77a918803a3e92150",
+      "class_hash": "0x3f2287ca0736b645e3c9b3b4a09d1b15c1637debf3ccfbfd180aafe43f75d27",
       "tag": "golem_runner-Player",
       "selector": "0x7b397b18887d22d521f615e145249e315d8f45e9a432af240d7432791cb9f49"
     },

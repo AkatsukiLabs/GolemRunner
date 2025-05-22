@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useAccount } from "@starknet-react/core";
 import { addAddressPadding } from "starknet";
 import { dojoConfig } from "../dojoConfig";
-import { Player } from '../bindings';
+import { Player } from '../../dojo/bindings';
 import useAppStore from '../../zustand/store';
 
 // Types
@@ -23,6 +23,8 @@ const PLAYER_QUERY = `
           address
           coins
           total_points
+          daily_streak
+          last_active_day
           level
           experience
           creation_day
@@ -64,6 +66,8 @@ const fetchPlayerData = async (playerAddress: string): Promise<Player | null> =>
       address: rawPlayerData.address,
       coins: hexToNumber(rawPlayerData.coins),
       //coins: 999999,
+      daily_streak: hexToNumber(rawPlayerData.daily_streak),
+      last_active_day: hexToNumber(rawPlayerData.last_active_day),
       total_points: hexToNumber(rawPlayerData.total_points),
       level: hexToNumber(rawPlayerData.level),
       experience: hexToNumber(rawPlayerData.experience),
