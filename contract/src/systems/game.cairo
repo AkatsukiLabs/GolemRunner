@@ -5,6 +5,8 @@ pub trait IGame<T> {
     fn spawn_player(ref self: T);
     fn reward_player(ref self: T, points: u64, coins_collected: u64);
     fn update_player_ranking(ref self: T, world_id: u256, points: u64);
+    fn update_player_daily_streak(ref self: T);
+    fn update_golem_name(ref self: T, golem_id: u256, name: felt252);
     // --------- Unlock Items ---------
     fn unlock_golem_store(ref self: T, golem_id: u256) -> bool;
     fn unlock_world_store(ref self: T, world_id: u256) -> bool;
@@ -14,6 +16,7 @@ pub trait IGame<T> {
 pub mod game {
     // Local import
     use super::super::super::models::player::PlayerTrait;
+    use super::super::super::models::golem::{Golem, GolemTrait};
     use super::{IGame};
 
     // Achievement import
@@ -170,6 +173,32 @@ pub mod game {
                 achievement_store.progress(player.address.into(), task_identifier, 1, get_block_timestamp());
                 achievement_id += 1;
             };
+        }
+
+        // Method to update the daily streak of the player
+        fn update_player_daily_streak(ref self: ContractState) {
+            let mut world = self.world(@"golem_runner");
+            let store = StoreTrait::new(world);
+
+            let current_timestamp = get_block_timestamp();
+
+            let mut player: Player = store.read_player();
+            player.assert_exists();
+
+            player.update_daily_streak(current_timestamp);
+
+            store.write_player(@player);
+        }
+
+        // Method to update the name of the golem
+        fn update_golem_name(ref self: ContractState, golem_id: u256, name: felt252) {
+            let mut world = self.world(@"golem_runner");
+            let store = StoreTrait::new(world);
+
+            let mut golem: Golem = store.read_golem(golem_id);
+            golem.set_golem_name(name);
+            
+            store.write_golem(@golem);
         }
 
         // --------- Unlock Player Items ---------
