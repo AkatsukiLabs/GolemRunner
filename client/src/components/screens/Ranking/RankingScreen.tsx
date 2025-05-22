@@ -3,8 +3,12 @@ import { motion } from "framer-motion"
 import { TopBar } from "../../layout/TopBar"
 import BackgroundParticles from "../../shared/BackgroundParticles"
 import { RankingTable } from "./RankingTable"
-import rankingGolemIcon from "../../../assets/icons/RankingGolem.png"
 import { defaultMaps } from "../../../constants/maps"
+// Importar las imágenes de los gólems con trofeos
+import globalRankingGolem from "../../../assets/Ranking/global-ranking-golem.png"
+import forestRankingGolem from "../../../assets/Ranking/forest-ranking-golem.png"
+import iceRankingGolem from "../../../assets/Ranking/ice-ranking-golem.png"
+import lavaRankingGolem from "../../../assets/Ranking/lava-ranking-golem.png"
 
 interface RankingScreenProps {
   coins: number
@@ -62,12 +66,38 @@ export function RankingScreen({
     ? "Top runners worldwide."
     : `Top runners on the ${map.name} map.`
 
+  // Get the appropriate golem image based on the active index
+  const getGolemImage = () => {
+    if (activeIndex === 0) return globalRankingGolem
+    
+    const mapName = map.name.toLowerCase()
+    if (mapName.includes("forest")) return forestRankingGolem
+    if (mapName.includes("ice")) return iceRankingGolem
+    if (mapName.includes("volcano")) return lavaRankingGolem
+    
+    // Fallback to global if no match (shouldn't happen)
+    return globalRankingGolem
+  }
+  
+  // Get the appropriate gradient based on the active index
+  const getGradientClass = () => {
+    if (activeIndex === 0) return "bg-golem-gradient" // Default gold gradient
+    
+    const mapName = map.name.toLowerCase()
+    if (mapName.includes("forest")) return "bg-gradient-to-r from-green-900 to-emerald-700"
+    if (mapName.includes("ice")) return "bg-gradient-to-r from-blue-700 to-cyan-500"
+    if (mapName.includes("volcano")) return "bg-gradient-to-r from-red-800 to-amber-600"
+    
+    // Fallback to default if no match
+    return "bg-golem-gradient"
+  }
+
   return (
     <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik">
       <BackgroundParticles />
 
       {/* Top Bar */}
-      <TopBar coins={coins} level={level} title="RANKING" screen="ranking" />
+      <TopBar coins={coins} level={level} title="RANKING" />
 
       {/* Clash Royale style banner animado */}
       <motion.div
@@ -84,7 +114,7 @@ export function RankingScreen({
           transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
         >
           <img
-            src={rankingGolemIcon}
+            src={getGolemImage()}
             alt="Ranking Golem"
             className="object-contain"
             onError={(e) => {
@@ -96,7 +126,7 @@ export function RankingScreen({
 
         {/* Banner */}
         <div
-          className="bg-golem-gradient py-3 px-4 pl-40 relative rounded-[10px] mx-4 shadow-md"
+          className={`${getGradientClass()} py-3 px-4 pl-40 relative rounded-[10px] mx-4 shadow-md`}
           style={{ height: '96px' }}
         >
           <div className="flex flex-col sm:flex-row items-center justify-between">

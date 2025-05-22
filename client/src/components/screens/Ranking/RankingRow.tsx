@@ -2,6 +2,7 @@ import { motion } from "framer-motion"
 import GoldenTrophyIcon from "../../../assets/icons/GoldenTrophyIcon.png"
 import SilverTrophyIcon from "../../../assets/icons/SilverTrophyIcon.png"
 import BronzeTrophyIcon from "../../../assets/icons/BronzeTrophyIcon.png"
+import { defaultMaps } from "../../../constants/maps"
 
 interface RankingRowProps {
   rank: number
@@ -10,6 +11,7 @@ interface RankingRowProps {
   isTop3: boolean
   isCurrentUser: boolean
   index: number
+  mapId?: number
 }
 
 export function RankingRow({
@@ -19,6 +21,7 @@ export function RankingRow({
   isTop3,
   isCurrentUser,
   index,
+  mapId,
 }: RankingRowProps) {
   const rowVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -35,7 +38,25 @@ export function RankingRow({
     return "border-surface-dark/10"
   }
 
-  const gradientText = "bg-clip-text text-transparent bg-golem-gradient"
+  // Get the appropriate gradient for text based on the map ID
+  const getGradientTextClass = () => {
+    if (!mapId) return "bg-golem-gradient" // Default gold gradient for global ranking
+    
+    const map = defaultMaps.find(m => m.id === mapId)
+    if (!map) return "bg-golem-gradient"
+    
+    const mapName = map.name.toLowerCase()
+    if (mapName.includes("forest")) return "bg-gradient-to-r from-green-900 to-emerald-700"
+    if (mapName.includes("ice")) return "bg-gradient-to-r from-blue-700 to-cyan-500"
+    if (mapName.includes("volcano")) return "bg-gradient-to-r from-red-800 to-amber-600"
+    
+    // Fallback to default if no match
+    return "bg-golem-gradient"
+  }
+
+  const gradientText = isCurrentUser ? 
+    `bg-clip-text text-transparent ${getGradientTextClass()}` : 
+    "text-text-primary"
   const defaultText = "text-text-primary"
 
   const renderTrophy = () => {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { RankingRow } from "./RankingRow"
+import { defaultMaps } from "../../../constants/maps"
 
 interface Player {
   id: string
@@ -22,6 +23,22 @@ export function RankingTable({ currentUser, mapId }: RankingTableProps) {
     const timer = setTimeout(() => setIsLoading(false), 500)
     return () => clearTimeout(timer)
   }, [])
+
+  // Get the appropriate gradient class based on the map ID
+  const getGradientClass = () => {
+    if (!mapId) return "bg-golem-gradient" // Default gold gradient for global ranking
+    
+    const map = defaultMaps.find(m => m.id === mapId)
+    if (!map) return "bg-golem-gradient"
+    
+    const mapName = map.name.toLowerCase()
+    if (mapName.includes("forest")) return "bg-gradient-to-r from-green-900 to-emerald-700"
+    if (mapName.includes("ice")) return "bg-gradient-to-r from-blue-700 to-cyan-500"
+    if (mapName.includes("volcano")) return "bg-gradient-to-r from-red-800 to-amber-600"
+    
+    // Fallback to default if no match
+    return "bg-golem-gradient"
+  }
 
   // Generate placeholder data for top 20 players, adjusted per map
   const generatePlaceholderData = (): Player[] => {
@@ -66,7 +83,7 @@ export function RankingTable({ currentUser, mapId }: RankingTableProps) {
       animate={isLoading ? "hidden" : "visible"}
     > {/* Remove mb-12 if PWA is not needed */}
       {/* Table Header */}
-      <div className="flex justify-between items-center p-3 bg-golem-gradient border-b border-primary/30">
+      <div className={`flex justify-between items-center p-3 ${getGradientClass()} border-b border-primary/30`}>
         <div className="font-bangers text-xl text-cream w-16 text-center drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">Rank</div>
         <div className="font-bangers text-xl text-cream flex-1 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">Player</div>
         <div className="font-bangers text-xl text-cream w-24 text-right drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] tracking-wide">Score</div>
@@ -85,6 +102,7 @@ export function RankingTable({ currentUser, mapId }: RankingTableProps) {
                 isTop3={player.rank <= 3}
                 isCurrentUser={isCurrent}
                 index={idx}
+                mapId={mapId}
               />
             </div>
           )
