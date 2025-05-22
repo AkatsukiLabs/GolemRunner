@@ -1,20 +1,21 @@
 import { motion } from "framer-motion";
-import type { Golem } from "../../types/golem";
+import { ProfileGolem } from "../../../dojo/hooks/useProfileData";
 import EyeIcon from "../../../assets/icons/EyeIcon.png";
 
 interface ProfileGolemCardProps {
-  golem: Golem;
+  golem: ProfileGolem;
   onView: () => void;
 }
 
 export function ProfileGolemCard({ golem, onView }: ProfileGolemCardProps) {
-  const rarityColors: Record<string, string> = {
+  const rarityColors = {
     Common: "bg-gray-500",
-    Rare: "bg-blue-500",
-    Epic: "bg-purple-500",
+    Rare: "bg-blue-500", 
+    Uncommon: "bg-purple-500",
     Legendary: "bg-yellow-500",
   };
-  const rarityColor = rarityColors[golem.rarity] || "bg-gray-500";
+
+  const rarityColor = rarityColors[golem.rarity as keyof typeof rarityColors] || "bg-gray-500";
 
   return (
     <motion.div
@@ -38,6 +39,7 @@ export function ProfileGolemCard({ golem, onView }: ProfileGolemCardProps) {
       <h3 className="font-luckiest text-lg text-primary mb-1">
         {golem.name}
       </h3>
+      
       <span
         className={`inline-block ${rarityColor} text-cream font-luckiest tracking-wide rounded-full px-2 py-0.5 text-sm mb-2`}
       >
@@ -46,10 +48,10 @@ export function ProfileGolemCard({ golem, onView }: ProfileGolemCardProps) {
 
       <motion.button
         onClick={onView}
-        className="btn-cr-yellow w-full flex items-center justify-center"
+        className="btn-cr-yellow w-full flex items-center justify-center gap-2"
         whileTap={{ scale: 1 }}
       >
-        <img src={EyeIcon} alt="Coin" className="h-8 w-8"/>
+        <img src={EyeIcon} alt="View" className="h-6 w-6"/>
         <span>View</span>
       </motion.button>
     </motion.div>
