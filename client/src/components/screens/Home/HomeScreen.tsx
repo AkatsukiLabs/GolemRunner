@@ -5,9 +5,8 @@ import { CharacterCard } from "./CharacterCard";
 import BackgroundParticles from "../../shared/BackgroundParticles";
 import { characters, getGolemVisualDataById } from "../../../constants/characters";
 import { TopBar } from "../../layout/TopBar";
-import TalkIconButton from "../../../assets/icons/TalkIconButton.png";
+import bannerImg from "../../../assets/icons/banner.png";
 import { GolemTalkModal } from "./GolemTalkModal";
-import { DropdownMenu } from "./DropDownMenu";
 import useAppStore from "../../../zustand/store";
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -161,20 +160,42 @@ export const HomeScreen = memo(function HomeScreen({
       />
 
       <div className="relative z-10 flex flex-col flex-1">
-        <TopBar coins={coins} level={level} title="GOLEM RUNNER" screen="home" />
-
-        <div className="w-full flex justify-between items-center px-6 mt-6">
-          <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}>
-            <motion.button onClick={openTalk} title="Talk to Lord Golem" className="transform-none relative" whileHover={{ scale: 1.1 }} animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 1.5, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}>
-              <img src={TalkIconButton} alt="Talk to Golem" className="w-12 h-12" />
-              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">1</div>
-            </motion.button>
+        <TopBar 
+          coins={coins} 
+          level={level} 
+          title="HOME" 
+          onNavigateLogin={onNavigateLogin}
+          selectedGolemData={selectedGolemData}
+          onOpenTalk={openTalk}
+        />
+        
+        {/* Banner positioned below TopBar */}
+        <motion.div 
+          className="w-full flex flex-col items-start px-1 -mt-1 mb-4"
+          initial={{ y: -10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          <img 
+            src={bannerImg} 
+            alt="Banner" 
+            className="h-[100px] max-h-[150px] object-contain mb-1"
+          />
+          
+          {/* Player name section */}
+          <motion.div 
+            className="ml-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
+            <div className="bg-screen/60 backdrop-blur-sm px-4 py-1.5 rounded-md shadow-md ring-1 ring-surface/10">
+              <p className="text-sm font-rubik text-cream font-medium">
+                marcox
+              </p>
+            </div>
           </motion.div>
-
-          <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}>
-            <DropdownMenu onNavigateLogin={onNavigateLogin} selectedGolem={selectedGolemData} />
-          </motion.div>
-        </div>
+        </motion.div>
 
         <div className="flex-1 flex flex-col items-center justify-center px-4 space-y-8 pb-20 w-full">
           {isLoading ? (
