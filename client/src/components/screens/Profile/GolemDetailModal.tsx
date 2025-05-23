@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
-import CloseIcon from "../../../assets/icons/CloseIcon.png"
+import CloseIcon from "../../../assets/icons/CloseIcon.webp"
 import { ProfileGolem } from "../../../dojo/hooks/useProfileData";
 
 interface GolemDetailModalProps {

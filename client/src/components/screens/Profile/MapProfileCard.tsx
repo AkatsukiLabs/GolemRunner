@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import GoldenTrophyIcon from "../../../assets/icons/GoldenTrophyIcon.png"
+import GoldenTrophyIcon from "../../../assets/icons/GoldenTrophyIcon.webp"
 import { ProfileMap } from "../../../dojo/hooks/useProfileData";
 
 interface ProfileMapGridProps {

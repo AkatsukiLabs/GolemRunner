@@ -6,7 +6,7 @@ import { GolemGrid } from "./GolemGrid";
 import { MapGrid } from "./MapGrid";
 import { PurchaseAnimation } from "./PurchaseAnimation";
 import { InsufficientBalanceAnimation } from "./InsufficientBalanceAnimation";
-import golemSellerIcon from "../../../assets/icons/GolemSellerV2.png";
+import golemSellerIcon from "../../../assets/icons/GolemSellerV2.webp";
 import { useMarketStore } from "../../../dojo/hooks/useMarketStore";
 import useAppStore from "../../../zustand/store";
 import toast, { Toaster } from "react-hot-toast";

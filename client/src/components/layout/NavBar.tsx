@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-import MarketIcon  from '../../assets/icons/MarketIcon.png';
-import PlayIcon    from '../../assets/icons/HomeIcon.png';
-import RankingIcon from '../../assets/icons/RankingIcon.png';
-import ProfileIcon from '../../assets/icons/ProfileIcon.png';
+import MarketIcon  from '../../assets/icons/MarketIcon.webp';
+import PlayIcon    from '../../assets/icons/HomeIcon.webp';
+import RankingIcon from '../../assets/icons/RankingIcon.webp';
+import ProfileIcon from '../../assets/icons/ProfileIcon.webp';
 
 type Screen = 'market' | 'home' | 'ranking' | 'profile';
 

@@ -5,7 +5,7 @@ import { CharacterCard } from "./CharacterCard";
 import BackgroundParticles from "../../shared/BackgroundParticles";
 import { characters, getGolemVisualDataById } from "../../../constants/characters";
 import { TopBar } from "../../layout/TopBar";
-import bannerImg from "../../../assets/icons/banner.png";
+import bannerImg from "../../../assets/icons/banner.webp";
 import { GolemTalkModal } from "./GolemTalkModal";
 import useAppStore from "../../../zustand/store";
 import toast, { Toaster } from 'react-hot-toast';

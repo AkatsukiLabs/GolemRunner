@@ -3,19 +3,19 @@ import GameCanvas from './GameCanvas';
 import GameOverModal from './GameOverModal'; 
 import type { GameThemeAssets, GamePhysics, GameDifficultyConfig, MapTheme, ObstacleConfig } from '../../types/game';
 
-import forestBG from '../../../assets/Maps/Forest/ForestMap.png'; 
-import iceBG from '../../../assets/Maps/Ice/IceMap.png';
-import volcanoBG from '../../../assets/Maps/Volcano/VolcanoMap.png';
+import forestBG from '../../../assets/Maps/Forest/ForestMap.webp'; 
+import iceBG from '../../../assets/Maps/Ice/IceMap.webp';
+import volcanoBG from '../../../assets/Maps/Volcano/VolcanoMap.webp';
 
-import forestStumpAsset from '../../../assets/Maps/Forest/rock.png'; 
-import forestRockAsset from '../../../assets/Maps/Forest/forestLog.png';     
-import iceCrystalAsset from '../../../assets/Maps/Ice/stalagmite.png';      
-import iceSpikeAsset from '../../../assets/Maps/Ice/IceBlock.png';        
-import volcanoRockAsset from '../../../assets/Maps/Volcano/VolcanicRock.png';   
-import lavaPuddleAsset from '../../../assets/Maps/Volcano/geyser.png';   
-import forestGround from '../../../assets/Maps/Forest/ground.png'; 
-import iceGround from '../../../assets/Maps/Ice/ground.png';
-import volcanoGround from '../../../assets/Maps/Volcano/ground.png';
+import forestStumpAsset from '../../../assets/Maps/Forest/rock.webp'; 
+import forestRockAsset from '../../../assets/Maps/Forest/forestLog.webp';     
+import iceCrystalAsset from '../../../assets/Maps/Ice/stalagmite.webp';      
+import iceSpikeAsset from '../../../assets/Maps/Ice/IceBlock.webp';        
+import volcanoRockAsset from '../../../assets/Maps/Volcano/VolcanicRock.webp';   
+import lavaPuddleAsset from '../../../assets/Maps/Volcano/geyser.webp';   
+import forestGround from '../../../assets/Maps/Forest/ground.webp'; 
+import iceGround from '../../../assets/Maps/Ice/ground.webp';
+import volcanoGround from '../../../assets/Maps/Volcano/ground.webp';
 
 const THEME_MAP_CONFIGS: Record<MapTheme, {
   assets: {

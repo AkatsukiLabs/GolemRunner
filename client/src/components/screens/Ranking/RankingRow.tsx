@@ -1,7 +1,7 @@
 import { motion } from "framer-motion"
-import GoldenTrophyIcon from "../../../assets/icons/GoldenTrophyIcon.png"
-import SilverTrophyIcon from "../../../assets/icons/SilverTrophyIcon.png"
-import BronzeTrophyIcon from "../../../assets/icons/BronzeTrophyIcon.png"
+import GoldenTrophyIcon from "../../../assets/icons/GoldenTrophyIcon.webp"
+import SilverTrophyIcon from "../../../assets/icons/SilverTrophyIcon.webp"
+import BronzeTrophyIcon from "../../../assets/icons/BronzeTrophyIcon.webp"
 import { defaultMaps } from "../../../constants/maps"
 
 interface RankingRowProps {

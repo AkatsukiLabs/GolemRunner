@@ -1,7 +1,7 @@
 import type { Map } from "../components/types/map"
-import ForestMap   from "../assets/Maps/Forest/ForestMap.png"
-import IceMap from "../assets/Maps/Ice/IceMap.png"
-import VolcanoMap  from "../assets/Maps/Volcano/VolcanoMap.png"
+import ForestMap   from "../assets/Maps/Forest/ForestMap.webp"
+import IceMap from "../assets/Maps/Ice/IceMap.webp"
+import VolcanoMap  from "../assets/Maps/Volcano/VolcanoMap.webp"
 
 export const defaultMaps: Map[] = [
   {

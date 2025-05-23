@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { motion } from "framer-motion"
-import coinIcon from "../../../assets/icons/CoinIcon.png"
+import coinIcon from "../../../assets/icons/CoinIcon.webp"
 
 interface MarketItem {
   id: number;

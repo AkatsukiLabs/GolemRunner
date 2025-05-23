@@ -1,9 +1,9 @@
 import { motion } from "framer-motion"
-import coinIcon from "../../assets/icons/CoinIcon.png";
-import levelIcon from "../../assets/icons/levelicon2.png";
+import coinIcon from "../../assets/icons/CoinIcon.webp";
+import levelIcon from "../../assets/icons/levelicon2.webp";
 import { DropdownMenu } from "../screens/Home/DropDownMenu";
-import TalkIconButton from "../../assets/icons/TalkIconButton.png";
-import strikeIcon from "../../assets/icons/strike.png";
+import TalkIconButton from "../../assets/icons/TalkIconButton.webp";
+import strikeIcon from "../../assets/icons/strike.webp";
 
 interface TopBarProps {
   coins: number

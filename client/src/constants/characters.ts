@@ -1,6 +1,6 @@
-import IceIdle0 from "../assets/IceGolem/0_Golem_Idle_000.png";
-import FireIdle0 from "../assets/LavaGolem/0_Golem_Idle_000.png";
-import StoneIdle0 from "../assets/MossyGolem/0_Golem_Idle_000.png";
+import IceIdle0 from "../assets/IceGolem/0_Golem_Idle_000.webp";
+import FireIdle0 from "../assets/LavaGolem/0_Golem_Idle_000.webp";
+import StoneIdle0 from "../assets/MossyGolem/0_Golem_Idle_000.webp";
 
 export const golemVisualData: Record<number, {
   name: string;

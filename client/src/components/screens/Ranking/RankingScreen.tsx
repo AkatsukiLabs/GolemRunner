@@ -5,10 +5,10 @@ import BackgroundParticles from "../../shared/BackgroundParticles"
 import { RankingTable } from "./RankingTable"
 import { defaultMaps } from "../../../constants/maps"
 // Importar las imágenes de los gólems con trofeos
-import globalRankingGolem from "../../../assets/Ranking/global-ranking-golem.png"
-import forestRankingGolem from "../../../assets/Ranking/forest-ranking-golem.png"
-import iceRankingGolem from "../../../assets/Ranking/ice-ranking-golem.png"
-import lavaRankingGolem from "../../../assets/Ranking/lava-ranking-golem.png"
+import globalRankingGolem from "../../../assets/Ranking/global-ranking-golem.webp"
+import forestRankingGolem from "../../../assets/Ranking/forest-ranking-golem.webp"
+import iceRankingGolem from "../../../assets/Ranking/ice-ranking-golem.webp"
+import lavaRankingGolem from "../../../assets/Ranking/lava-ranking-golem.webp"
 
 interface RankingScreenProps {
   coins: number
