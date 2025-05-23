@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import CoverImgMobile from "../../../assets/cover-mobile.png"
-import CoverImgWeb from "../../../assets/cover-web.png"
+import CoverImgMobile from "../../../assets/cover-mobile.webp"
+import CoverImgWeb from "../../../assets/cover-web.webp"
 
 
 interface CoverScreenProps {

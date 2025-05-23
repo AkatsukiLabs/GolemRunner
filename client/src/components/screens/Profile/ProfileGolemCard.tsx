@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ProfileGolem } from "../../../dojo/hooks/useProfileData";
-import EyeIcon from "../../../assets/icons/EyeIcon.png";
+import EyeIcon from "../../../assets/icons/EyeIcon.webp";
 
 interface ProfileGolemCardProps {
   golem: ProfileGolem;

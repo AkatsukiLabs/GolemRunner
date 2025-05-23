@@ -1,6 +1,6 @@
 import { motion } from "framer-motion"
 import { useEffect, useState, useRef } from "react"
-import GolemTalkIcon from "../../../assets/icons/GolemTalkIcon.png"
+import GolemTalkIcon from "../../../assets/icons/GolemTalkIcon.webp"
 import { AIAgentService } from "../../../services/aiAgent"
 
 interface GolemTalkModalProps {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import CloseIcon from "../../../assets/icons/CloseIcon.png"; 
+import CloseIcon from "../../../assets/icons/CloseIcon.webp"; 
 import { motion } from "framer-motion";
 import BackgroundParticles from "../../shared/BackgroundParticles"; 
 import { MapCarousel } from "./MapCarousel"; 

@@ -4,8 +4,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import { useStarknetConnect } from '../../../dojo/hooks/useStarknetConnect';
 import { useSpawnPlayer } from '../../../dojo/hooks/useSpawn';
 import useAppStore from '../../../zustand/store';
-import desktopBg from '../../../assets/login-desktop.png';
-import mobileBg from '../../../assets/login-mobile.png';
+import desktopBg from '../../../assets/login-desktop.webp';
+import mobileBg from '../../../assets/login-mobile.webp';
 interface LoginScreenProps {
   onLoginSuccess: () => void;
 }

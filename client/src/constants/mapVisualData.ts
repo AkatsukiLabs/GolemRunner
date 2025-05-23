@@ -1,6 +1,6 @@
-import ForestMap from "../assets/Maps/Forest/ForestMap.png";
-import IceMap from "../assets/Maps/Ice/IceMap.png";
-import VolcanoMap from "../assets/Maps/Volcano/VolcanoMap.png";
+import ForestMap from "../assets/Maps/Forest/ForestMap.webp";
+import IceMap from "../assets/Maps/Ice/IceMap.webp";
+import VolcanoMap from "../assets/Maps/Volcano/VolcanoMap.webp";
 import type { MapTheme } from "../components/types/game";
 
 export const mapVisualData: Record<number, {
