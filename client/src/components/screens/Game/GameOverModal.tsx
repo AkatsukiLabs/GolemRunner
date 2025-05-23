@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import audioManager from './AudioManager';
+import { useCoinReward } from './CoinsRewardCalculator';
+import coinIcon from "../../assets/icons/CoinIcon.png";
 
 interface GameOverModalProps {
   score: number;
@@ -18,6 +20,9 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
   isOpen,
 }) => {
   const isNewRecord = score > record;
+  
+  // Calculate coin reward based on score
+  const coinReward = useCoinReward(score);
 
   const handleRestartClick = () => {
     audioManager.playClickSound();
@@ -59,7 +64,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
               </div>
 
               {/* High Score */}
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center mb-3">
                 <span className="font-luckiest text-dark text-xl">RECORD</span>
                 <motion.span
                   className={`font-luckiest text-2xl ${
@@ -74,7 +79,64 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
                 </motion.span>
               </div>
 
-              {/*Is New Record*/}
+              {/* Coins Earned */}
+              <motion.div 
+                className="flex justify-between items-center mb-3"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <span className="font-luckiest text-dark text-xl">COINS</span>
+                <motion.div 
+                  className="flex items-center gap-2"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.5, type: 'spring', stiffness: 300 }}
+                >
+                  <span className="font-luckiest text-yellow-500 text-2xl">
+                    +{coinReward.coins}
+                  </span>
+                  <img 
+                    src={coinIcon} 
+                    alt="Coin" 
+                    className="w-6 h-6"
+                  />
+                </motion.div>
+              </motion.div>
+
+              {/* Tier Badge */}
+              <motion.div
+                className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-dark text-center py-1 px-3 rounded-lg mb-3"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <span className="font-luckiest text-sm">{coinReward.range.label}</span>
+              </motion.div>
+
+              {/* Progress to next tier (if not max tier) */}
+              {!coinReward.isMaxTier && (
+                <motion.div
+                  className="text-center text-xs text-dark/70 mb-3"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <div className="mb-1">
+                    {coinReward.pointsToNextTier} points to {coinReward.nextTier?.label}
+                  </div>
+                  <div className="w-full bg-dark/20 rounded-full h-2">
+                    <motion.div
+                      className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${coinReward.percentage}%` }}
+                      transition={{ delay: 0.7, duration: 0.8, ease: "easeOut" }}
+                    />
+                  </div>
+                </motion.div>
+              )}
+
+              {/* New Record Banner */}
               {isNewRecord && (
                 <motion.div
                   className="bg-golem-gradient text-cream text-center py-2 rounded-lg mt-4 font-luckiest"
