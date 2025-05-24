@@ -7,6 +7,7 @@ import BackgroundParticles from "../../shared/BackgroundParticles"
 import { GolemDetailModal } from "./GolemDetailModal"
 import { useProfileData } from "../../../dojo/hooks/useProfileData";
 
+// ProfileScreen now uses Zustand data - no props needed except navigation
 interface ProfileScreenProps {
   onNavigation: (screen: "home" | "play" | "market" | "profile" | "ranking") => void
 }
@@ -15,7 +16,7 @@ export function ProfileScreen({ onNavigation }: ProfileScreenProps) {
   const [activeTab, setActiveTab] = useState<"golems" | "maps">("golems")
   const [selectedGolemId, setSelectedGolemId] = useState<number | null>(null)
 
-  // Custom hook
+  // Custom hook that gets all data from Zustand store
   const {
     player,
     ownedGolems,
@@ -77,12 +78,11 @@ export function ProfileScreen({ onNavigation }: ProfileScreenProps) {
     <div className="relative h-screen w-full bg-screen overflow-hidden">
       <BackgroundParticles />
 
-      {/* Top Bar with player data */}
+      {/* Top Bar with player data from Zustand */}
       <TopBar 
         coins={player?.coins || 0} 
         level={player?.level || 1} 
         title="PROFILE" 
-        screen="profile" 
       />
 
       {/* Stats Bar */}
@@ -100,6 +100,10 @@ export function ProfileScreen({ onNavigation }: ProfileScreenProps) {
             <div className="text-center">
               <div className="text-lg">{player?.total_points || 0}</div>
               <div className="text-xs opacity-75">Total Points</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg">{player?.experience || 0}</div>
+              <div className="text-xs opacity-75">Experience</div>
             </div>
           </div>
         </div>

@@ -8,10 +8,6 @@ import { ProfileScreen } from "../components/screens/Profile/ProfileScreen";
 import { RankingScreen } from "../components/screens/Ranking/RankingScreen";
 import { LoginScreen } from "../components/screens/Login/LoginScreen"
 import { NavBar } from "../components/layout/NavBar"
-import type { Golem } from "../components/types/golem";
-import type { Map } from "../components/types/map";
-import { defaultGolems } from "../constants/golems";
-import { defaultMaps } from "../constants/maps";
 import { MusicProvider, useMusic } from "../context/MusicContext";
 
 type Screen = "login" | "cover" | "home" | "play" | "market" | "ranking" | "profile";
@@ -22,25 +18,8 @@ function AppContent() {
   const [currentScreen, setCurrentScreenState] = useState<Screen>("login");
   const [coins, setCoins] = useState(385);
   const [level] = useState(3);
-  const [experience] = useState(75);
-  const [nextLevelExperience] = useState(100);
   const [playerAddress] = useState("0x123"); // Temporal address for testing
-  const [ownedGolems, setOwnedGolems] = useState<Golem[]>([
-    defaultGolems[0],
-    defaultGolems[2],
-  ]);
-  const [unlockedMaps] = useState<Map[]>([
-    defaultMaps[0],
-    defaultMaps[1],
-  ]);
   const [selectedGolemId, setSelectedGolemId] = useState<number | null>(null)
-
-  const currentUser = {
-    id: "current-user",
-    name: "YourUsername",
-    score: 7850,
-    rank: 24,
-  };
 
   // Add effect to handle disconnection
   useEffect(() => {
@@ -61,12 +40,6 @@ function AppContent() {
     }
     return false;
   };
-  const handleAddGolem = (golem: Golem) =>
-    setOwnedGolems((prev) =>
-      prev.some((g) => g.id === golem.id)
-        ? prev
-        : [...prev, { ...golem, owned: true }]
-    );
 
   const handleLoadingComplete = useCallback(
     () => {
@@ -113,38 +86,17 @@ function AppContent() {
       )}
 
       {currentScreen === "market" && (
-        <MarketScreen
-          coins={coins}
-          level={level}
-          onCoinsChange={handleSpendCoins}
-          onGolemPurchase={handleAddGolem}
-          onMapPurchase={(map) => {
-            // Actualizar el estado de desbloqueo en defaultMaps
-            const mapIndex = defaultMaps.findIndex(m => m.id === map.id);
-            if (mapIndex !== -1) {
-              defaultMaps[mapIndex].unlocked = true;
-            }
-          }}
-        />
+        <MarketScreen />
       )}
 
       {currentScreen === "profile" && (
-        <ProfileScreen
-          coins={coins}
-          level={level}
-          experience={experience}
-          nextLevelExperience={nextLevelExperience}
-          ownedGolems={ownedGolems}
-          unlockedMaps={unlockedMaps}
-          onNavigation={handleNavigation}
-        />
+              <ProfileScreen
+                onNavigation={handleNavigation}
+              />
       )}
 
       {currentScreen === "ranking" && (
         <RankingScreen
-          coins={coins}
-          level={level}
-          currentUser={currentUser}
           onNavigation={handleNavigation}
         />
       )}

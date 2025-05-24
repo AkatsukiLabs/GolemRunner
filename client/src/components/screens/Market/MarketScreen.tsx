@@ -171,7 +171,6 @@ export function MarketScreen({}: MarketScreenProps) {
         coins={player?.coins || 0} 
         level={player?.level || 1} 
         title="MARKET" 
-        screen="market" 
       />
 
       {/* Clash Royale style animated banner */}

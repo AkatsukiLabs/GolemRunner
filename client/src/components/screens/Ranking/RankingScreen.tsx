@@ -5,23 +5,23 @@ import BackgroundParticles from "../../shared/BackgroundParticles"
 import { RankingTable } from "./RankingTable"
 import { defaultMaps } from "../../../constants/maps"
 import { useRankings } from "../../../dojo/hooks/useRankings" 
+import useAppStore from "../../../zustand/store";
 // Importar las imágenes de los gólems con trofeos
 import globalRankingGolem from "../../../assets/Ranking/global-ranking-golem.webp"
 import forestRankingGolem from "../../../assets/Ranking/forest-ranking-golem.webp"
 import iceRankingGolem from "../../../assets/Ranking/ice-ranking-golem.webp"
 import lavaRankingGolem from "../../../assets/Ranking/lava-ranking-golem.webp"
 
+// RankingScreen now uses Zustand data - only onNavigation prop needed
 interface RankingScreenProps {
-  coins: number
-  level: number
   onNavigation: (screen: "home" | "play" | "market" | "profile" | "ranking") => void
 }
 
-export function RankingScreen({
-  coins,
-  level,
-}: RankingScreenProps) {
-  // Usar nuestro hook personalizado
+export function RankingScreen({ }: RankingScreenProps) {
+  // Get player data from Zustand store
+  const { player } = useAppStore();
+  
+  // Usar nuestro hook personalizado para rankings
   const { 
     globalRankings, 
     mapRankings, 
@@ -130,8 +130,12 @@ export function RankingScreen({
     <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik">
       <BackgroundParticles />
 
-      {/* Top Bar */}
-      <TopBar coins={coins} level={level} title="RANKING" />
+      {/* Top Bar with player data from Zustand */}
+      <TopBar 
+        coins={player?.coins || 0} 
+        level={player?.level || 1} 
+        title="RANKING" 
+      />
 
       {/* Clash Royale style banner animado */}
       <motion.div
