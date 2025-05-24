@@ -3,11 +3,12 @@ import { useAccount } from "@starknet-react/core";
 import { addAddressPadding } from "starknet";
 import { dojoConfig } from "../dojoConfig";
 import { Ranking } from '../bindings';
+import { lookupAddresses } from '@cartridge/controller';
 
 // Estructura para el jugador formateado en el ranking
 export interface RankingPlayer {
   id: string;        // Dirección del jugador (address)
-  name: string;      // Nombre para mostrar (derivado de la dirección)
+  name: string;      // Nombre real obtenido de Cartridge Controller
   score: number;     // Puntos del jugador
   rank: number;      // Posición en el ranking
   isCurrentUser: boolean; // Indica si es el usuario actual
@@ -19,14 +20,28 @@ interface UseRankingsReturn {
   mapRankings: Record<number, RankingPlayer[]>;
   currentUserRanking: RankingPlayer | null;
   isLoading: boolean;
-  isLoadingMap: Record<number, boolean>; // Estado de carga por mapa
+  isLoadingMap: Record<number, boolean>;
   error: Error | null;
   refetch: () => Promise<void>;
-  fetchRankingForMap: (mapId: number) => Promise<void>; // Nueva función para cargar un mapa específico
+  fetchRankingForMap: (mapId: number) => Promise<void>;
 }
 
 // URL de Torii GraphQL
 const TORII_URL = dojoConfig.toriiUrl + "/graphql";
+
+/**
+ * Normaliza una dirección para comparación consistente
+ */
+const normalizeAddress = (address: string): string => {
+  if (!address) return '';
+  
+  // Agregar padding si es necesario y convertir a minúsculas
+  const paddedAddress = address.startsWith('0x') 
+    ? addAddressPadding(address) 
+    : addAddressPadding(`0x${address}`);
+  
+  return paddedAddress.toLowerCase();
+};
 
 /**
  * Convierte un valor hexadecimal a número
@@ -52,13 +67,146 @@ const numberToHex = (num: number): string => {
 };
 
 /**
- * Formatea una dirección a un nombre de usuario corto
+ * Formatea una dirección a un nombre de usuario corto (fallback)
  */
 const formatAddressToName = (address: string): string => {
   if (!address || address.length < 10) return "Unknown";
   const start = address.slice(0, 6);
   const end = address.slice(-4);
   return `${start}...${end}`;
+};
+
+/**
+ * Obtiene los nombres reales de los usuarios usando Cartridge Controller
+ */
+const getUserNames = async (addresses: string[]): Promise<Map<string, string>> => {
+  try {
+    // Filtrar direcciones únicas y válidas
+    const uniqueAddresses = addresses.filter((address, index, self) =>
+      address && 
+      address.length > 0 && 
+      self.indexOf(address) === index
+    );
+
+    if (uniqueAddresses.length === 0) {
+      return new Map();
+    }
+
+    console.log("🔍 Looking up usernames for addresses:", uniqueAddresses);
+    
+    // Usar lookupAddresses de Cartridge Controller
+    const addressMap = await lookupAddresses(uniqueAddresses);
+    
+    console.log("📋 Username lookup results:", Object.fromEntries(addressMap));
+    return addressMap;
+  } catch (error) {
+    console.error("❌ Error looking up usernames:", error);
+    // Retornar un Map vacío en caso de error para usar fallbacks
+    return new Map();
+  }
+};
+
+/**
+ * Procesa los rankings y asigna nombres de usuario
+ */
+const processRankingsWithUsernames = async (
+  rankingsByWorldId: Record<number, Ranking[]>,
+  userAddress: string
+): Promise<Record<number, RankingPlayer[]>> => {
+  try {
+    console.log("🎯 Processing rankings with usernames for user:", userAddress);
+    
+    // Normalizar la dirección del usuario para comparaciones
+    const normalizedUserAddress = normalizeAddress(userAddress);
+    console.log("🎯 Normalized user address:", normalizedUserAddress);
+
+    // Extraer todas las direcciones únicas de todos los rankings
+    const allAddresses: string[] = [];
+    Object.values(rankingsByWorldId).forEach(rankings => {
+      rankings.forEach(ranking => {
+        if (ranking.player && !allAddresses.includes(ranking.player)) {
+          allAddresses.push(ranking.player);
+        }
+      });
+    });
+
+    console.log("📝 All addresses found in rankings:", allAddresses);
+
+    // Normalizar todas las direcciones para el lookup
+    const normalizedAddresses = allAddresses.map(addr => normalizeAddress(addr));
+    console.log("📝 Normalized addresses for lookup:", normalizedAddresses);
+
+    // Obtener nombres de usuario
+    const usernameMap = await getUserNames(normalizedAddresses);
+
+    // Procesar cada world_id
+    const result: Record<number, RankingPlayer[]> = {};
+    
+    Object.keys(rankingsByWorldId).forEach(worldIdStr => {
+      const worldId = parseInt(worldIdStr);
+      const rankings = rankingsByWorldId[worldId] || [];
+      
+      console.log(`🌍 Processing world ${worldId} with ${rankings.length} rankings`);
+      
+      result[worldId] = rankings.map((ranking, index) => {
+        // Normalizar la dirección del ranking para comparación
+        const normalizedRankingAddress = normalizeAddress(ranking.player);
+        
+        // Verificar si es el usuario actual
+        const isCurrentUser = normalizedRankingAddress === normalizedUserAddress;
+        
+        // Intentar obtener el nombre real
+        const realName = usernameMap.get(normalizedRankingAddress);
+        const displayName = realName || formatAddressToName(ranking.player);
+        
+        console.log(`👤 Player ${index + 1}:`, {
+          originalAddress: ranking.player,
+          normalizedAddress: normalizedRankingAddress,
+          realName,
+          displayName,
+          isCurrentUser,
+          userAddressMatch: normalizedUserAddress
+        });
+        
+        return {
+          id: ranking.player, // Mantener la dirección original como ID
+          name: displayName,
+          score: ranking.points,
+          rank: index + 1,
+          isCurrentUser
+        };
+      });
+    });
+    
+    console.log("✅ Processed rankings result:", result);
+    return result;
+  } catch (error) {
+    console.error("❌ Error processing rankings with usernames:", error);
+    
+    // En caso de error, procesar sin nombres reales pero con identificación correcta del usuario
+    const normalizedUserAddress = normalizeAddress(userAddress);
+    const result: Record<number, RankingPlayer[]> = {};
+    
+    Object.keys(rankingsByWorldId).forEach(worldIdStr => {
+      const worldId = parseInt(worldIdStr);
+      const rankings = rankingsByWorldId[worldId] || [];
+      
+      result[worldId] = rankings.map((ranking, index) => {
+        const normalizedRankingAddress = normalizeAddress(ranking.player);
+        const isCurrentUser = normalizedRankingAddress === normalizedUserAddress;
+        
+        return {
+          id: ranking.player,
+          name: formatAddressToName(ranking.player),
+          score: ranking.points,
+          rank: index + 1,
+          isCurrentUser
+        };
+      });
+    });
+    
+    return result;
+  }
 };
 
 /**
@@ -174,13 +322,37 @@ export const useRankings = (): UseRankingsReturn => {
   const [isLoadingMap, setIsLoadingMap] = useState<Record<number, boolean>>({});
   const [error, setError] = useState<Error | null>(null);
   const [rankingsByWorldId, setRankingsByWorldId] = useState<Record<number, Ranking[]>>({});
+  const [processedRankings, setProcessedRankings] = useState<Record<number, RankingPlayer[]>>({});
   const { account } = useAccount();
   
-  // Dirección del usuario actual formateada
-  const userAddress = useMemo(() => 
-    account ? addAddressPadding(account.address).toLowerCase() : '', 
-    [account]
-  );
+  // Dirección del usuario actual formateada y normalizada
+  const userAddress = useMemo(() => {
+    if (!account?.address) return '';
+    
+    const normalizedAddr = normalizeAddress(account.address);
+    console.log("🎯 Current user address:", {
+      original: account.address,
+      normalized: normalizedAddr
+    });
+    return normalizedAddr;
+  }, [account]);
+
+  // Procesar rankings con nombres de usuario cuando cambien los datos
+  useEffect(() => {
+    const processRankings = async () => {
+      if (Object.keys(rankingsByWorldId).length === 0 || !userAddress) {
+        setProcessedRankings({});
+        return;
+      }
+
+      console.log("🔄 Processing rankings with usernames...");
+      const processed = await processRankingsWithUsernames(rankingsByWorldId, userAddress);
+      setProcessedRankings(processed);
+      console.log("✅ Rankings processed with usernames:", processed);
+    };
+
+    processRankings();
+  }, [rankingsByWorldId, userAddress]);
 
   // Función para obtener todos los rankings
   const refetch = useCallback(async () => {
@@ -193,17 +365,17 @@ export const useRankings = (): UseRankingsReturn => {
       setIsLoading(true);
       setError(null);
       
-      console.log("Fetching all rankings data...");
+      console.log("📥 Fetching all rankings data...");
       const rankings = await fetchAllRankings();
-      console.log("All rankings data fetched:", rankings);
+      console.log("📋 All rankings data fetched:", rankings);
       
-      // Actualizar el estado con los nuevos rankings
+      // Actualizar el estado con los nuevos rankings (sin procesar aún)
       setRankingsByWorldId(prevRankings => ({
         ...prevRankings,
         ...rankings
       }));
     } catch (err) {
-      console.error("Error fetching all rankings:", err);
+      console.error("❌ Error fetching all rankings:", err);
       const error = err instanceof Error ? err : new Error('Error desconocido al obtener rankings');
       setError(error);
     } finally {
@@ -219,9 +391,9 @@ export const useRankings = (): UseRankingsReturn => {
       // Marcar este mapa específico como cargando
       setIsLoadingMap(prev => ({ ...prev, [mapId]: true }));
       
-      console.log(`Fetching rankings for map ID ${mapId}...`);
+      console.log(`📥 Fetching rankings for map ID ${mapId}...`);
       const mapRankings = await fetchRankingsByWorldId(mapId);
-      console.log(`Rankings for map ID ${mapId} fetched:`, mapRankings);
+      console.log(`📋 Rankings for map ID ${mapId} fetched:`, mapRankings);
       
       // Actualizar solo los rankings de este mapa
       setRankingsByWorldId(prevRankings => ({
@@ -229,7 +401,7 @@ export const useRankings = (): UseRankingsReturn => {
         ...mapRankings
       }));
     } catch (err) {
-      console.error(`Error fetching rankings for map ID ${mapId}:`, err);
+      console.error(`❌ Error fetching rankings for map ID ${mapId}:`, err);
       // No actualizamos el error global para no interrumpir la UI completa
     } finally {
       // Marcar como ya no cargando
@@ -248,38 +420,22 @@ export const useRankings = (): UseRankingsReturn => {
 
   // Procesar los rankings globales (world_id = 1, que es 0x1 en hex)
   const globalRankings = useMemo((): RankingPlayer[] => {
-    const rankings = rankingsByWorldId[1] || []; // Usamos 1 porque 0x1 es el global
-    
-    return rankings.map((ranking, index) => ({
-      id: ranking.player,
-      name: formatAddressToName(ranking.player),
-      score: ranking.points,
-      rank: index + 1,
-      isCurrentUser: ranking.player.toLowerCase() === userAddress.toLowerCase()
-    }));
-  }, [rankingsByWorldId, userAddress]);
+    return processedRankings[1] || [];
+  }, [processedRankings]);
 
   // Procesar los rankings por mapa
   const mapRankings = useMemo((): Record<number, RankingPlayer[]> => {
     const result: Record<number, RankingPlayer[]> = {};
     
-    Object.keys(rankingsByWorldId).forEach(worldIdStr => {
+    Object.keys(processedRankings).forEach(worldIdStr => {
       const worldId = parseInt(worldIdStr);
       if (worldId === 1) return; // Omitir el ranking global
       
-      const rankings = rankingsByWorldId[worldId] || [];
-      
-      result[worldId] = rankings.map((ranking, index) => ({
-        id: ranking.player,
-        name: formatAddressToName(ranking.player),
-        score: ranking.points,
-        rank: index + 1,
-        isCurrentUser: ranking.player.toLowerCase() === userAddress.toLowerCase()
-      }));
+      result[worldId] = processedRankings[worldId] || [];
     });
     
     return result;
-  }, [rankingsByWorldId, userAddress]);
+  }, [processedRankings]);
 
   // Obtener el ranking del usuario actual
   const currentUserRanking = useMemo((): RankingPlayer | null => {
@@ -297,7 +453,7 @@ export const useRankings = (): UseRankingsReturn => {
     if (userAddress) {
       return {
         id: userAddress,
-        name: formatAddressToName(userAddress),
+        name: formatAddressToName(userAddress), // Usar fallback para el usuario actual
         score: 0,
         rank: globalRankings.length + 1, // Último lugar
         isCurrentUser: true
