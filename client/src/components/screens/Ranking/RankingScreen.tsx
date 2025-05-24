@@ -4,6 +4,7 @@ import { TopBar } from "../../layout/TopBar"
 import BackgroundParticles from "../../shared/BackgroundParticles"
 import { RankingTable } from "./RankingTable"
 import { defaultMaps } from "../../../constants/maps"
+import { useRankings } from "../../../dojo/hooks/useRankings" 
 // Importar las imágenes de los gólems con trofeos
 import globalRankingGolem from "../../../assets/Ranking/global-ranking-golem.webp"
 import forestRankingGolem from "../../../assets/Ranking/forest-ranking-golem.webp"
@@ -13,20 +14,23 @@ import lavaRankingGolem from "../../../assets/Ranking/lava-ranking-golem.webp"
 interface RankingScreenProps {
   coins: number
   level: number
-  currentUser: {
-    id: string
-    name: string
-    score: number
-    rank: number
-  }
   onNavigation: (screen: "home" | "play" | "market" | "profile" | "ranking") => void
 }
 
 export function RankingScreen({
   coins,
   level,
-  currentUser,
 }: RankingScreenProps) {
+  // Usar nuestro hook personalizado
+  const { 
+    globalRankings, 
+    mapRankings, 
+    currentUserRanking, 
+    isLoading,
+    isLoadingMap,
+    refetch,
+    fetchRankingForMap
+  } = useRankings();
   
   const bannerVariant = {
     hidden: { opacity: 0, y: -30 },
@@ -45,6 +49,27 @@ export function RankingScreen({
   // Carousel state
   const carouselRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [previousActiveIndex, setPreviousActiveIndex] = useState(0)
+
+  // Re-fetch al entrar a la pantalla
+  useEffect(() => {
+    // Cargar rankings globales al iniciar
+    refetch();
+  }, [refetch]);
+
+  // Cargar rankings específicos del mapa al cambiar el índice activo
+  useEffect(() => {
+    if (activeIndex === 0) return; // No hacer nada si es el global
+    
+    // Si hemos cambiado a un nuevo mapa, cargar sus rankings
+    if (activeIndex !== previousActiveIndex) {
+      const mapId = defaultMaps[activeIndex - 1]?.id;
+      if (mapId) {
+        fetchRankingForMap(mapId);
+      }
+      setPreviousActiveIndex(activeIndex);
+    }
+  }, [activeIndex, previousActiveIndex, fetchRankingForMap]);
 
   // Update active index on scroll
   useEffect(() => {
@@ -58,24 +83,33 @@ export function RankingScreen({
     return () => el.removeEventListener("scroll", onScroll)
   }, [])
 
+  // Crear usuario por defecto si no hay ranking del usuario
+  const fallbackUser = currentUserRanking || {
+    id: "current-user",
+    name: "You",
+    score: 0,
+    rank: globalRankings.length + 1,
+    isCurrentUser: true
+  };
+
   // Determine dynamic title and subtitle
   const isGlobal = activeIndex === 0
   const map = defaultMaps[activeIndex - 1]
-  const title = isGlobal ? "Global Ranking" : `${map.name} Ranking`
+  const title = isGlobal ? "Global Ranking" : `${map?.name || 'Map'} Ranking`
   const subtitle = isGlobal
     ? "Top runners worldwide."
-    : `Top runners on the ${map.name} map.`
+    : `Top runners on the ${map?.name || 'selected'} map.`
 
   // Get the appropriate golem image based on the active index
   const getGolemImage = () => {
     if (activeIndex === 0) return globalRankingGolem
     
-    const mapName = map.name.toLowerCase()
+    const mapName = map?.name.toLowerCase() || '';
     if (mapName.includes("forest")) return forestRankingGolem
     if (mapName.includes("ice")) return iceRankingGolem
     if (mapName.includes("volcano")) return lavaRankingGolem
     
-    // Fallback to global if no match (shouldn't happen)
+    // Fallback to global if no match
     return globalRankingGolem
   }
   
@@ -83,7 +117,7 @@ export function RankingScreen({
   const getGradientClass = () => {
     if (activeIndex === 0) return "bg-golem-gradient" // Default gold gradient
     
-    const mapName = map.name.toLowerCase()
+    const mapName = map?.name.toLowerCase() || '';
     if (mapName.includes("forest")) return "bg-gradient-to-r from-green-900 to-emerald-700"
     if (mapName.includes("ice")) return "bg-gradient-to-r from-blue-700 to-cyan-500"
     if (mapName.includes("volcano")) return "bg-gradient-to-r from-red-800 to-amber-600"
@@ -161,15 +195,31 @@ export function RankingScreen({
         >
           {/* General Ranking */}
           <div className="snap-center flex-shrink-0 w-full px-4 h-full overflow-y-auto">
-            <RankingTable currentUser={currentUser} />
+            <RankingTable 
+              currentUser={fallbackUser} 
+              rankings={globalRankings}
+              isLoading={isLoading}
+            />
           </div>
 
           {/* Map-specific Rankings */}
-          {defaultMaps.map((m) => (
-            <div key={m.id} className="snap-center flex-shrink-0 w-full px-4 h-full overflow-y-auto">
-              <RankingTable currentUser={currentUser} mapId={m.id} />
-            </div>
-          ))}
+          {defaultMaps.map((m) => {
+            // Determinar si este mapa específico está cargando
+            const mapLoading = isLoadingMap[m.id] || false;
+            // Obtener rankings para este mapa
+            const mapSpecificRankings = mapRankings[m.id] || [];
+            
+            return (
+              <div key={m.id} className="snap-center flex-shrink-0 w-full px-4 h-full overflow-y-auto">
+                <RankingTable 
+                  currentUser={fallbackUser} 
+                  rankings={mapSpecificRankings}
+                  mapId={m.id}
+                  isLoading={mapLoading}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -5,7 +5,7 @@ import VolcanoMap  from "../assets/Maps/Volcano/VolcanoMap.webp"
 
 export const defaultMaps: Map[] = [
   {
-    id: 1,
+    id: 3,
     name: "Ice",
     image: IceMap,
     unlocked: true,
@@ -25,7 +25,7 @@ export const defaultMaps: Map[] = [
     theme: "volcano"
   },
   {
-    id: 3,
+    id: 1,
     name: "Forest",
     image: ForestMap,
     unlocked: false,
