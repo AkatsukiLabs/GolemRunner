@@ -175,7 +175,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     height: window.innerHeight,
   });
   
-  // Obtener el hook de recompensas
+  // Get game rewards from hook
   const { 
     submitGameResults, 
     isProcessing: isProcessingReward, 
@@ -183,13 +183,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
     txStatus: rewardTxStatus 
   } = useGameRewards();
   
-  // Estado para controlar si ya se ha enviado la recompensa
+  //State to track if the reward has been submitted
   const [rewardSubmitted, setRewardSubmitted] = useState(false);
   
-  // Calcular las monedas a recompensar usando el hook existente
+  // Get coin reward based on score from the hook
   const coinReward = useCoinReward(currentScore);
   
-  // Convertir el tema en worldId
+  // Convert theme to worldId
   const worldId = useMemo(() => {
     switch(theme) {
       case 'forest': return 1;
@@ -219,7 +219,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     setHighScore(parseInt(localStorage.getItem(`golemRunner_${theme}_highscore`) || '0', 10));
   }, [theme]);
   
-  // Enviar recompensas cuando se muestra el modal
+  // Send rewards when modal is shown
   useEffect(() => {
     if (showGameOverModal && !rewardSubmitted && currentScore > 0) {
       console.log(`Submitting game results: score=${currentScore}, coins=${coinReward.coins}, worldId=${worldId}`);
@@ -236,7 +236,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
   }, [showGameOverModal, rewardSubmitted, currentScore, coinReward.coins, worldId, submitGameResults]);
 
   const finalAssetsForGameCanvas: GameThemeAssets = useMemo(() => {
-    // Sin cambios...
     const runFrames = selectedPlayerRunFrames.length > 0 ? selectedPlayerRunFrames : [];
     const jumpFrames = selectedPlayerJumpFrames.length > 0 ? selectedPlayerJumpFrames : [];
 
@@ -262,7 +261,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       localStorage.setItem(`golemRunner_${theme}_highscore`, finalScore.toString());
     }
     setShowGameOverModal(true);
-    setRewardSubmitted(false); // Resetear el estado de envío
+    setRewardSubmitted(false); // Reset game state
   };
 
   const handleRestartGame = () => {

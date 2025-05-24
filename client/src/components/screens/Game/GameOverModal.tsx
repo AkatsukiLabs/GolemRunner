@@ -11,7 +11,7 @@ interface GameOverModalProps {
   onExit: () => void;
   onRestart: () => void;
   isOpen: boolean;
-  // Props para el estado de la transacción
+  // Props for transaction state
   isProcessingReward?: boolean;
   rewardError?: string | null;
   rewardTxStatus?: 'PENDING' | 'SUCCESS' | 'REJECTED' | null;
@@ -29,18 +29,18 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
 }) => {
   const isNewRecord = score > record;
   
-  // Añadir hook usePlayer para poder refrescar los datos
+  // Add usePlayer hook to refresh data
   const { refetch: refetchPlayer } = usePlayer();
   
   // Calculate coin reward based on score
   const coinReward = useCoinReward(score);
   console.log('Coin Reward:', coinReward);
 
-  // Función para manejar el clic en Restart
+  // Function to handle Restart click
   const handleRestartClick = async () => {
     audioManager.playClickSound();
     
-    // Solo hacer fetch si la transacción fue exitosa
+    // Only fetch if the transaction was successful
     if (rewardTxStatus === 'SUCCESS') {
       try {
         console.log('Refreshing player data before restart...');
@@ -51,15 +51,15 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
       }
     }
     
-    // Llamar al handler de restart del componente padre
+    // Call the restart handler from the parent component
     onRestart();
   };
 
-  // Función para manejar el clic en Exit
+  // Function to handle Exit click
   const handleExitClick = async () => {
     audioManager.playClickSound();
     
-    // Solo hacer fetch si la transacción fue exitosa
+    // Only fetch if the transaction was successful
     if (rewardTxStatus === 'SUCCESS') {
       try {
         console.log('Refreshing player data before exit...');
@@ -70,11 +70,11 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
       }
     }
     
-    // Llamar al handler de exit del componente padre
+    // Call the exit handler from the parent component
     onExit();
   };
 
-  // Determinar el mensaje de estado de la transacción
+  // Determine the transaction status message
   const getTransactionStatusMessage = () => {
     if (rewardError) {
       return `Error: ${rewardError}`;
@@ -96,7 +96,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
     return null;
   };
   
-  // Determinar el color del estado de la transacción
+  // Determine the color of the transaction status
   const getStatusColor = () => {
     if (rewardError) return 'bg-red-500 text-white';
     if (rewardTxStatus === 'SUCCESS') return 'bg-green-500 text-white';
