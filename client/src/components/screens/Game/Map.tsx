@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import GameCanvas from './GameCanvas';
 import GameOverModal from './GameOverModal'; 
+import { useGameRewards } from '../../../dojo/hooks/useGameRewards'; 
+import { useCoinReward } from './CoinsRewardCalculator';
 import type { GameThemeAssets, GamePhysics, GameDifficultyConfig, MapTheme, ObstacleConfig } from '../../types/game';
 
 import forestBG from '../../../assets/Maps/Forest/ForestMap.webp'; 
@@ -172,6 +174,30 @@ const MapComponent: React.FC<MapComponentProps> = ({
     width: window.innerWidth,
     height: window.innerHeight,
   });
+  
+  // Get game rewards from hook
+  const { 
+    submitGameResults, 
+    isProcessing: isProcessingReward, 
+    error: rewardError, 
+    txStatus: rewardTxStatus 
+  } = useGameRewards();
+  
+  //State to track if the reward has been submitted
+  const [rewardSubmitted, setRewardSubmitted] = useState(false);
+  
+  // Get coin reward based on score from the hook
+  const coinReward = useCoinReward(currentScore);
+  
+  // Convert theme to worldId
+  const worldId = useMemo(() => {
+    switch(theme) {
+      case 'forest': return 1;
+      case 'ice': return 2;
+      case 'volcano': return 3;
+      default: return 1;
+    }
+  }, [theme]);
 
   useEffect(() => {
     const updateDimensions = () =>
@@ -192,6 +218,22 @@ const MapComponent: React.FC<MapComponentProps> = ({
   useEffect(() => {
     setHighScore(parseInt(localStorage.getItem(`golemRunner_${theme}_highscore`) || '0', 10));
   }, [theme]);
+  
+  // Send rewards when modal is shown
+  useEffect(() => {
+    if (showGameOverModal && !rewardSubmitted && currentScore > 0) {
+      console.log(`Submitting game results: score=${currentScore}, coins=${coinReward.coins}, worldId=${worldId}`);
+      submitGameResults(currentScore, coinReward.coins, worldId)
+        .then(result => {
+          if (result.success) {
+            console.log("Game rewards processed successfully");
+            setRewardSubmitted(true);
+          } else {
+            console.error("Failed to process game rewards:", result.error);
+          }
+        });
+    }
+  }, [showGameOverModal, rewardSubmitted, currentScore, coinReward.coins, worldId, submitGameResults]);
 
   const finalAssetsForGameCanvas: GameThemeAssets = useMemo(() => {
     const runFrames = selectedPlayerRunFrames.length > 0 ? selectedPlayerRunFrames : [];
@@ -219,6 +261,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       localStorage.setItem(`golemRunner_${theme}_highscore`, finalScore.toString());
     }
     setShowGameOverModal(true);
+    setRewardSubmitted(false); // Reset game state
   };
 
   const handleRestartGame = () => {
@@ -251,6 +294,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
           record={highScore}
           onExit={handleExitAndCloseModal}
           onRestart={handleRestartGame}
+          isProcessingReward={isProcessingReward}
+          rewardError={rewardError}
+          rewardTxStatus={rewardTxStatus}
         />
       )}
     </div>

@@ -13,7 +13,6 @@ import {
 } from '../../types/game'; 
 import audioManager from './AudioManager'; 
 import ScoreDisplay from './ScoreDisplay';
-import GameOverModal from './GameOverModal';
 
 interface GameCanvasProps {
   assetsConfig: GameThemeAssets;
@@ -64,8 +63,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<GameState>('idle');
   const [score, setScore] = useState(0);
-  const [showGameOverModal, setShowGameOverModal] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
 
   const speedScaleRef = useRef(1); 
   const currentActualSpeedRef = useRef(physicsConfig.baseSpeed);
@@ -439,8 +436,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         audioManager.stopBackgroundMusic();
         audioManager.playGameOverSound();
         const final = Math.floor(scoreRef.current);
-        setFinalScore(final);
-        setShowGameOverModal(true);
         onGameOver(final); 
         return;
       }
@@ -607,20 +602,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       {gameState !== 'gameOver' && score > 0 && (
         <ScoreDisplay score={score} highScore={initialHighScore} />
       )}
-  
-      <GameOverModal
-        score={finalScore}
-        record={initialHighScore}
-        isOpen={showGameOverModal}
-        onExit={() => {
-          setShowGameOverModal(false);
-          onGameOver(finalScore);
-        }}
-        onRestart={() => {
-          setShowGameOverModal(false);
-          resetGame();
-        }}
-      />
     </div>
   );
   
