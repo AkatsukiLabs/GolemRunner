@@ -1,28 +1,21 @@
-import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { RankingRow } from "./RankingRow"
 import { defaultMaps } from "../../../constants/maps"
-
-interface Player {
-  id: string
-  name: string
-  score: number
-  rank: number
-}
+import { RankingPlayer } from "../../../dojo/hooks/useRankings"
 
 export interface RankingTableProps {
-  currentUser: Player
-  mapId?: number
+  currentUser: RankingPlayer;
+  rankings?: RankingPlayer[];
+  mapId?: number;
+  isLoading?: boolean;
 }
 
-export function RankingTable({ currentUser, mapId }: RankingTableProps) {
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Simulate loading data
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 500)
-    return () => clearTimeout(timer)
-  }, [])
+export function RankingTable({ 
+  currentUser, 
+  rankings = [], 
+  mapId, 
+  isLoading = false 
+}: RankingTableProps) {
 
   // Get the appropriate gradient class based on the map ID
   const getGradientClass = () => {
@@ -40,34 +33,11 @@ export function RankingTable({ currentUser, mapId }: RankingTableProps) {
     return "bg-golem-gradient"
   }
 
-  // Generate placeholder data for top 20 players, adjusted per map
-  const generatePlaceholderData = (): Player[] => {
-    const names = [
-      "StoneBreaker", "LavaLord", "IceMaster", "MossyKing", "GolemHunter",
-      "RunnerPro", "MagicStone", "CrystalRunner", "EarthShaker", "FireWalker",
-      "ShadowGolem", "RockSmasher", "GemCollector", "SpeedDemon", "MountainKing",
-      "ValleyRunner", "DesertStrider", "ForestJumper", "CaveExplorer", "RuinRaider",
-    ]
-    // Base score modified by mapId (global = 0)
-    const base = mapId ? 100000 - (mapId - 1) * 20000 : 120000
-
-    return names.map((name, idx) => ({
-      id: `player-${mapId ?? 0}-${idx + 1}`,
-      name,
-      score: base - idx * 3000 + Math.floor(Math.random() * 1000),
-      rank: idx + 1,
-    }))
-  }
-
-  
-  // Prepare data: show top 10, plus current user if not in top 10
-  const topPlayers = generatePlaceholderData()
-  const MAX_TOP = 10
-  const topTen = topPlayers.slice(0, MAX_TOP)
-  const isUserInTop = topTen.some(p => p.id === currentUser.id)
-  const displayPlayers: Player[] = isUserInTop
-    ? topTen
-    : [...topTen, { ...currentUser }]
+  // Prepare data: show all rankings, plus current user if not in rankings
+  const isUserInRankings = rankings.some(p => p.id === currentUser.id);
+  const displayPlayers: RankingPlayer[] = isUserInRankings
+    ? rankings
+    : [...rankings, { ...currentUser }];
 
   // Animation container variants
   const containerVariants = {
@@ -81,7 +51,7 @@ export function RankingTable({ currentUser, mapId }: RankingTableProps) {
       variants={containerVariants}
       initial="hidden"
       animate={isLoading ? "hidden" : "visible"}
-    > {/* Remove mb-12 if PWA is not needed */}
+    >
       {/* Table Header */}
       <div className={`flex justify-between items-center p-3 ${getGradientClass()} border-b border-primary/30`}>
         <div className="font-bangers text-xl text-cream w-16 text-center drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">Rank</div>
@@ -89,25 +59,44 @@ export function RankingTable({ currentUser, mapId }: RankingTableProps) {
         <div className="font-bangers text-xl text-cream w-24 text-right drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] tracking-wide">Score</div>
       </div>
 
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex justify-center items-center p-8">
+          <motion.div 
+            className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!isLoading && displayPlayers.length === 0 && (
+        <div className="text-center py-8 text-dark font-luckiest">
+          No rankings available yet.
+          <br />
+          <span className="text-sm font-rubik mt-2 block">Be the first to set a high score!</span>
+        </div>
+      )}
+
       {/* Table Rows */}
-      <div className="flex flex-col">
-        {displayPlayers.map((player, idx) => {
-          const isCurrent = player.id === currentUser.id
-          return (
-            <div key={player.id}>
+      {!isLoading && displayPlayers.length > 0 && (
+        <div className="flex flex-col">
+          {displayPlayers.map((player, idx) => (
+            <div key={`${player.id}-${idx}`}>
               <RankingRow
                 rank={player.rank}
                 name={player.name}
                 score={player.score}
                 isTop3={player.rank <= 3}
-                isCurrentUser={isCurrent}
+                isCurrentUser={player.isCurrentUser}
                 index={idx}
                 mapId={mapId}
               />
             </div>
-          )
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </motion.div>
   )
 }
