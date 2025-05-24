@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import GameCanvas from './GameCanvas';
 import GameOverModal from './GameOverModal'; 
-import { useGameRewards } from '../../../dojo/hooks/useGameRewards';
+import { useGameRewards } from '../../../dojo/hooks/useGameRewards'; 
 import { useCoinReward } from './CoinsRewardCalculator';
 import type { GameThemeAssets, GamePhysics, GameDifficultyConfig, MapTheme, ObstacleConfig } from '../../types/game';
 

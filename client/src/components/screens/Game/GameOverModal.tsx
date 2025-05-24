@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import audioManager from './AudioManager';
 import { useCoinReward } from './CoinsRewardCalculator';
+import { usePlayer } from '../../../dojo/hooks/usePlayer';
 import coinIcon from "../../../assets/icons/CoinIcon.webp";
 
 interface GameOverModalProps {
@@ -28,17 +29,48 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
 }) => {
   const isNewRecord = score > record;
   
+  // Añadir hook usePlayer para poder refrescar los datos
+  const { refetch: refetchPlayer } = usePlayer();
+  
   // Calculate coin reward based on score
   const coinReward = useCoinReward(score);
   console.log('Coin Reward:', coinReward);
 
-  const handleRestartClick = () => {
+  // Función para manejar el clic en Restart
+  const handleRestartClick = async () => {
     audioManager.playClickSound();
+    
+    // Solo hacer fetch si la transacción fue exitosa
+    if (rewardTxStatus === 'SUCCESS') {
+      try {
+        console.log('Refreshing player data before restart...');
+        await refetchPlayer();
+        console.log('Player data refreshed successfully');
+      } catch (err) {
+        console.error('Error refreshing player data:', err);
+      }
+    }
+    
+    // Llamar al handler de restart del componente padre
     onRestart();
   };
 
-  const handleExitClick = () => {
+  // Función para manejar el clic en Exit
+  const handleExitClick = async () => {
     audioManager.playClickSound();
+    
+    // Solo hacer fetch si la transacción fue exitosa
+    if (rewardTxStatus === 'SUCCESS') {
+      try {
+        console.log('Refreshing player data before exit...');
+        await refetchPlayer();
+        console.log('Player data refreshed successfully');
+      } catch (err) {
+        console.error('Error refreshing player data:', err);
+      }
+    }
+    
+    // Llamar al handler de exit del componente padre
     onExit();
   };
 
@@ -73,6 +105,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
   };
 
   const transactionStatusMessage = getTransactionStatusMessage();
+
 
   return (
     <AnimatePresence>
