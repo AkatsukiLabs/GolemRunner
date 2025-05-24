@@ -81,7 +81,7 @@ const formatAddressToName = (address: string): string => {
  */
 const getUserNames = async (addresses: string[]): Promise<Map<string, string>> => {
   try {
-    // Filtrar direcciones únicas y válidas
+    // Filtrar direcciones únicas y válidas (usar las direcciones ORIGINALES)
     const uniqueAddresses = addresses.filter((address, index, self) =>
       address && 
       address.length > 0 && 
@@ -92,9 +92,9 @@ const getUserNames = async (addresses: string[]): Promise<Map<string, string>> =
       return new Map();
     }
 
-    console.log("🔍 Looking up usernames for addresses:", uniqueAddresses);
+    console.log("🔍 Looking up usernames for addresses (original format):", uniqueAddresses);
     
-    // Usar lookupAddresses de Cartridge Controller
+    // Usar lookupAddresses de Cartridge Controller con direcciones ORIGINALES
     const addressMap = await lookupAddresses(uniqueAddresses);
     
     console.log("📋 Username lookup results:", Object.fromEntries(addressMap));
@@ -115,12 +115,8 @@ const processRankingsWithUsernames = async (
 ): Promise<Record<number, RankingPlayer[]>> => {
   try {
     console.log("🎯 Processing rankings with usernames for user:", userAddress);
-    
-    // Normalizar la dirección del usuario para comparaciones
-    const normalizedUserAddress = normalizeAddress(userAddress);
-    console.log("🎯 Normalized user address:", normalizedUserAddress);
 
-    // Extraer todas las direcciones únicas de todos los rankings
+    // Extraer todas las direcciones únicas de todos los rankings (SIN normalizar)
     const allAddresses: string[] = [];
     Object.values(rankingsByWorldId).forEach(rankings => {
       rankings.forEach(ranking => {
@@ -130,14 +126,15 @@ const processRankingsWithUsernames = async (
       });
     });
 
-    console.log("📝 All addresses found in rankings:", allAddresses);
+    console.log("📝 All addresses found in rankings (original):", allAddresses);
 
-    // Normalizar todas las direcciones para el lookup
-    const normalizedAddresses = allAddresses.map(addr => normalizeAddress(addr));
-    console.log("📝 Normalized addresses for lookup:", normalizedAddresses);
+    // Obtener nombres de usuario usando las direcciones ORIGINALES
+    const usernameMap = await getUserNames(allAddresses);
+    console.log("📋 Username map from Cartridge:", Object.fromEntries(usernameMap));
 
-    // Obtener nombres de usuario
-    const usernameMap = await getUserNames(normalizedAddresses);
+    // Normalizar SOLO la dirección del usuario para comparaciones
+    const normalizedUserAddress = normalizeAddress(userAddress);
+    console.log("🎯 Normalized user address for comparison:", normalizedUserAddress);
 
     // Procesar cada world_id
     const result: Record<number, RankingPlayer[]> = {};
@@ -149,23 +146,21 @@ const processRankingsWithUsernames = async (
       console.log(`🌍 Processing world ${worldId} with ${rankings.length} rankings`);
       
       result[worldId] = rankings.map((ranking, index) => {
-        // Normalizar la dirección del ranking para comparación
-        const normalizedRankingAddress = normalizeAddress(ranking.player);
-        
-        // Verificar si es el usuario actual
-        const isCurrentUser = normalizedRankingAddress === normalizedUserAddress;
-        
-        // Intentar obtener el nombre real
-        const realName = usernameMap.get(normalizedRankingAddress);
+        // Obtener nombre real usando la dirección ORIGINAL del ranking
+        const realName = usernameMap.get(ranking.player);
         const displayName = realName || formatAddressToName(ranking.player);
+        
+        // Para comparación del usuario actual, normalizar ambas direcciones
+        const normalizedRankingAddress = normalizeAddress(ranking.player);
+        const isCurrentUser = normalizedRankingAddress === normalizedUserAddress;
         
         console.log(`👤 Player ${index + 1}:`, {
           originalAddress: ranking.player,
-          normalizedAddress: normalizedRankingAddress,
           realName,
           displayName,
           isCurrentUser,
-          userAddressMatch: normalizedUserAddress
+          normalizedRankingAddress,
+          normalizedUserAddress
         });
         
         return {
