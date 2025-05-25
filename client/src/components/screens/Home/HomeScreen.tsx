@@ -19,8 +19,6 @@ export interface HomeScreenProps {
   playerAddress: string;
   onPlayClick: (character: typeof characters[0]) => void;
   onMarketClick: () => void;
-  coins: number;
-  level: number;
   onNavigation: (
     screen: "home" | "play" | "market" | "ranking" | "profile"
   ) => void;
@@ -30,15 +28,19 @@ export interface HomeScreenProps {
 export const HomeScreen = memo(function HomeScreen({
   playerAddress,
   onPlayClick,
-  coins,
-  level,
   onNavigateLogin,
 }: HomeScreenProps) {
-  const { golems, isLoading, error } = useAppStore(state => ({
+  // ✅ Get player data directly from Zustand store
+  const { player, golems, isLoading, error } = useAppStore(state => ({
+    player: state.player,
     golems: state.golems,
     isLoading: state.isLoading,
     error: state.error,
   }));
+
+  // ✅ Extract coins and level from player data
+  const coins = player?.coins || 0;
+  const level = player?.level || 1;
 
   // Memoize derived arrays
   const unlockedGolems = useMemo(
@@ -148,6 +150,16 @@ export const HomeScreen = memo(function HomeScreen({
     [selectedCharacter, level]
   );
 
+  // ✅ Get player name from blockchain data or fallback
+  const playerName = useMemo(() => {
+    // You can enhance this later to get real player names from Cartridge Controller
+    // For now, use a simple fallback
+    if (player?.address) {
+      return player.address.slice(0, 6) + '...' + player.address.slice(-4);
+    }
+    return 'Player';
+  }, [player]);
+
   return (
     <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik flex flex-col">
       <BackgroundParticles />
@@ -160,6 +172,7 @@ export const HomeScreen = memo(function HomeScreen({
       />
 
       <div className="relative z-10 flex flex-col flex-1">
+        {/* ✅ TopBar now gets data from Zustand */}
         <TopBar 
           coins={coins} 
           level={level} 
@@ -182,7 +195,7 @@ export const HomeScreen = memo(function HomeScreen({
             className="h-[100px] max-h-[150px] object-contain mb-1"
           />
           
-          {/* Player name section */}
+          {/* ✅ Player name section - now uses data from Zustand */}
           <motion.div 
             className="ml-3"
             initial={{ opacity: 0 }}
@@ -191,7 +204,7 @@ export const HomeScreen = memo(function HomeScreen({
           >
             <div className="bg-screen/60 backdrop-blur-sm px-4 py-1.5 rounded-md shadow-md ring-1 ring-surface/10">
               <p className="text-sm font-rubik text-cream font-medium">
-                marcox
+                {playerName}
               </p>
             </div>
           </motion.div>

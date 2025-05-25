@@ -21,15 +21,14 @@ export function RankingScreen({ }: RankingScreenProps) {
   // Get player data from Zustand store
   const { player } = useAppStore();
   
-  // Usar nuestro hook personalizado para rankings
+  // Use simplified hook
   const { 
     globalRankings, 
     mapRankings, 
     currentUserRanking, 
     isLoading,
-    isLoadingMap,
-    refetch,
-    fetchRankingForMap
+    hasData,
+    refetch
   } = useRankings();
   
   const bannerVariant = {
@@ -49,27 +48,26 @@ export function RankingScreen({ }: RankingScreenProps) {
   // Carousel state
   const carouselRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
-  const [previousActiveIndex, setPreviousActiveIndex] = useState(0)
 
-  // Re-fetch al entrar a la pantalla
+  // Single refetch on component mount
   useEffect(() => {
-    // Cargar rankings globales al iniciar
     refetch();
   }, [refetch]);
 
-  // Cargar rankings específicos del mapa al cambiar el índice activo
+  // ✅ DEBUG: Log mapRankings to see what data we actually have
   useEffect(() => {
-    if (activeIndex === 0) return; // No hacer nada si es el global
+    console.log("🎮 [RankingScreen] Current mapRankings:", mapRankings);
+    console.log("🎮 [RankingScreen] Available world IDs:", Object.keys(mapRankings));
+    console.log("🎮 [RankingScreen] defaultMaps IDs:", defaultMaps.map(m => ({ id: m.id, name: m.name })));
     
-    // Si hemos cambiado a un nuevo mapa, cargar sus rankings
-    if (activeIndex !== previousActiveIndex) {
-      const mapId = defaultMaps[activeIndex - 1]?.id;
-      if (mapId) {
-        fetchRankingForMap(mapId);
+    defaultMaps.forEach(map => {
+      const hasRankingData = mapRankings[map.id] && mapRankings[map.id].length > 0;
+      console.log(`🎮 [RankingScreen] Map "${map.name}" (ID: ${map.id}) has data: ${hasRankingData}`);
+      if (hasRankingData) {
+        console.log(`  └── ${mapRankings[map.id].length} rankings`);
       }
-      setPreviousActiveIndex(activeIndex);
-    }
-  }, [activeIndex, previousActiveIndex, fetchRankingForMap]);
+    });
+  }, [mapRankings]);
 
   // Update active index on scroll
   useEffect(() => {
@@ -83,7 +81,7 @@ export function RankingScreen({ }: RankingScreenProps) {
     return () => el.removeEventListener("scroll", onScroll)
   }, [])
 
-  // Crear usuario por defecto si no hay ranking del usuario
+  // Create fallback user if no ranking exists
   const fallbackUser = currentUserRanking || {
     id: "current-user",
     name: "You",
@@ -197,7 +195,7 @@ export function RankingScreen({ }: RankingScreenProps) {
           ref={carouselRef}
           className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth h-full"
         >
-          {/* General Ranking */}
+          {/* Global Ranking */}
           <div className="snap-center flex-shrink-0 w-full px-4 h-full overflow-y-auto">
             <RankingTable 
               currentUser={fallbackUser} 
@@ -206,20 +204,36 @@ export function RankingScreen({ }: RankingScreenProps) {
             />
           </div>
 
-          {/* Map-specific Rankings */}
+          {/* ✅ DEBUG: Map-specific Rankings with detailed logging */}
           {defaultMaps.map((m) => {
-            // Determinar si este mapa específico está cargando
-            const mapLoading = isLoadingMap[m.id] || false;
-            // Obtener rankings para este mapa
+            // Get rankings for this specific map
             const mapSpecificRankings = mapRankings[m.id] || [];
+            
+            // Show loading only if we're still loading and no data exists yet
+            const showLoading = isLoading && !hasData;
+            
+            // ✅ DEBUG: Log what we're showing for each map
+            console.log(`🎮 [RankingScreen] Rendering map ${m.name} (ID: ${m.id}):`);
+            console.log(`  └── Rankings found: ${mapSpecificRankings.length}`);
+            console.log(`  └── Show loading: ${showLoading}`);
+            if (mapSpecificRankings.length > 0) {
+              console.log(`  └── Top player: ${mapSpecificRankings[0].name} with ${mapSpecificRankings[0].score} points`);
+            }
             
             return (
               <div key={m.id} className="snap-center flex-shrink-0 w-full px-4 h-full overflow-y-auto">
+                {/* ✅ DEBUG: Show data availability in UI temporarily */}
+                {/* <div className="mb-4 p-2 bg-red-100 text-red-800 rounded text-sm">
+                  DEBUG: Map {m.name} (ID: {m.id}) - 
+                  Rankings: {mapSpecificRankings.length} - 
+                  Available World IDs: {Object.keys(mapRankings).join(', ')}
+                </div> */}
+                
                 <RankingTable 
                   currentUser={fallbackUser} 
                   rankings={mapSpecificRankings}
                   mapId={m.id}
-                  isLoading={mapLoading}
+                  isLoading={showLoading}
                 />
               </div>
             );
