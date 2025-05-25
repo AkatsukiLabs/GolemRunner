@@ -33,11 +33,37 @@ export function RankingTable({
     return "bg-golem-gradient"
   }
 
-  // Prepare data: show all rankings, plus current user if not in rankings
-  const isUserInRankings = rankings.some(p => p.id === currentUser.id);
-  const displayPlayers: RankingPlayer[] = isUserInRankings
-    ? rankings
-    : [...rankings, { ...currentUser }];
+  // ✅ FIXED: Only show currentUser if there are actual rankings OR it's the global ranking (no mapId)
+  const shouldShowCurrentUser = () => {
+    // For global ranking (no mapId), always show current user if not in rankings
+    if (!mapId) {
+      const isUserInRankings = rankings.some(p => p.id === currentUser.id);
+      return !isUserInRankings;
+    }
+    
+    // For specific maps, only show current user if there are rankings AND user is not in them
+    if (rankings.length > 0) {
+      const isUserInRankings = rankings.some(p => p.id === currentUser.id);
+      return !isUserInRankings;
+    }
+    
+    // If no rankings for this map, don't show current user
+    return false;
+  };
+
+  // ✅ FIXED: Prepare data with correct fallback logic
+  const displayPlayers: RankingPlayer[] = shouldShowCurrentUser() 
+    ? [...rankings, { ...currentUser }]
+    : rankings;
+
+  // ✅ DEBUG: Log what we're displaying
+  console.log(`🎮 [RankingTable] Map ${mapId || 'Global'}:`);
+  console.log(`  └── Input rankings: ${rankings.length}`);
+  console.log(`  └── Should show current user: ${shouldShowCurrentUser()}`);
+  console.log(`  └── Display players: ${displayPlayers.length}`);
+  if (displayPlayers.length > 0) {
+    console.log(`  └── Players: ${displayPlayers.map(p => `${p.name}(${p.score})`).join(', ')}`);
+  }
 
   // Animation container variants
   const containerVariants = {
@@ -70,12 +96,22 @@ export function RankingTable({
         </div>
       )}
 
-      {/* Empty State */}
+      {/* ✅ FIXED: Empty State - Only show when not loading AND no display players */}
       {!isLoading && displayPlayers.length === 0 && (
         <div className="text-center py-8 text-dark font-luckiest">
-          No rankings available yet.
-          <br />
-          <span className="text-sm font-rubik mt-2 block">Be the first to set a high score!</span>
+          {mapId ? (
+            <>
+              No rankings available for this map yet.
+              <br />
+              <span className="text-sm font-rubik mt-2 block">Be the first to set a high score!</span>
+            </>
+          ) : (
+            <>
+              No rankings available yet.
+              <br />
+              <span className="text-sm font-rubik mt-2 block">Be the first to set a high score!</span>
+            </>
+          )}
         </div>
       )}
 

@@ -7,11 +7,11 @@ import { lookupAddresses } from '@cartridge/controller';
 
 // Structure for a formatted player in the ranking
 export interface RankingPlayer {
-    id: string;        // Player's address
-    name: string;      // Real name obtained from Cartridge Controller
-    score: number;     // Player's points
-    rank: number;      // Position in the ranking
-    isCurrentUser: boolean; // Indicates if it's the current user
+    id: string;       
+    name: string;      
+    score: number;     
+    rank: number;      
+    isCurrentUser: boolean;
 }
 
 // Hook return structure
@@ -20,10 +20,9 @@ interface UseRankingsReturn {
     mapRankings: Record<number, RankingPlayer[]>;
     currentUserRanking: RankingPlayer | null;
     isLoading: boolean;
-    isLoadingMap: Record<number, boolean>;
     error: Error | null;
     refetch: () => Promise<void>;
-    fetchRankingForMap: (mapId: number) => Promise<void>;
+    hasData: boolean;
 }
 
 // Torii GraphQL URL
@@ -35,7 +34,6 @@ const TORII_URL = dojoConfig.toriiUrl + "/graphql";
 const normalizeAddress = (address: string): string => {
     if (!address) return '';
     
-    // Add padding if necessary and convert to lowercase
     const paddedAddress = address.startsWith('0x') 
         ? addAddressPadding(address) 
         : addAddressPadding(`0x${address}`);
@@ -47,23 +45,19 @@ const normalizeAddress = (address: string): string => {
  * Converts a hexadecimal value to a number
  */
 const hexToNumber = (hexValue: string): number => {
-    if (!hexValue || !hexValue.startsWith('0x')) {
-        return 0;
-    }
+    if (!hexValue) return 0;
     
-    try {
-        return parseInt(hexValue, 16);
-    } catch (error) {
-        console.error(`Error converting hex value ${hexValue} to number:`, error);
-        return 0;
+    // Handle both hex and decimal strings
+    if (hexValue.startsWith('0x')) {
+        try {
+            return parseInt(hexValue, 16);
+        } catch (error) {
+            console.error(`Error converting hex value ${hexValue}:`, error);
+            return 0;
+        }
+    } else {
+        return parseInt(hexValue, 10) || 0;
     }
-};
-
-/**
- * Converts a number to its hexadecimal representation
- */
-const numberToHex = (num: number): string => {
-    return `0x${num.toString(16)}`;
 };
 
 /**
@@ -81,7 +75,6 @@ const formatAddressToName = (address: string): string => {
  */
 const getUserNames = async (addresses: string[]): Promise<Map<string, string>> => {
     try {
-        // Filter unique and valid addresses (use ORIGINAL addresses)
         const uniqueAddresses = addresses.filter((address, index, self) =>
             address && 
             address.length > 0 && 
@@ -92,122 +85,24 @@ const getUserNames = async (addresses: string[]): Promise<Map<string, string>> =
             return new Map();
         }
 
-        console.log("🔍 Looking up usernames for addresses (original format):", uniqueAddresses);
+        console.log("🔍 Looking up usernames for addresses:", uniqueAddresses);
         
-        // Use lookupAddresses from Cartridge Controller with ORIGINAL addresses
         const addressMap = await lookupAddresses(uniqueAddresses);
         
         console.log("📋 Username lookup results:", Object.fromEntries(addressMap));
         return addressMap;
     } catch (error) {
         console.error("❌ Error looking up usernames:", error);
-        // Return an empty Map in case of error to use fallbacks
         return new Map();
     }
 };
 
 /**
- * Processes rankings and assigns usernames
+ * ✅ SIMPLIFIED: Single fetch for ALL ranking data
  */
-const processRankingsWithUsernames = async (
-    rankingsByWorldId: Record<number, Ranking[]>,
-    userAddress: string
-): Promise<Record<number, RankingPlayer[]>> => {
-    try {
-        console.log("🎯 Processing rankings with usernames for user:", userAddress);
-
-        // Extract all unique addresses from all rankings (WITHOUT normalizing)
-        const allAddresses: string[] = [];
-        Object.values(rankingsByWorldId).forEach(rankings => {
-            rankings.forEach(ranking => {
-                if (ranking.player && !allAddresses.includes(ranking.player)) {
-                    allAddresses.push(ranking.player);
-                }
-            });
-        });
-
-        console.log("📝 All addresses found in rankings (original):", allAddresses);
-
-        // Retrieve usernames using ORIGINAL addresses
-        const usernameMap = await getUserNames(allAddresses);
-        console.log("📋 Username map from Cartridge:", Object.fromEntries(usernameMap));
-
-        // Normalize ONLY the user's address for comparisons
-        const normalizedUserAddress = normalizeAddress(userAddress);
-        console.log("🎯 Normalized user address for comparison:", normalizedUserAddress);
-
-        // Process each world_id
-        const result: Record<number, RankingPlayer[]> = {};
-        
-        Object.keys(rankingsByWorldId).forEach(worldIdStr => {
-            const worldId = parseInt(worldIdStr);
-            const rankings = rankingsByWorldId[worldId] || [];
-            
-            console.log(`🌍 Processing world ${worldId} with ${rankings.length} rankings`);
-            
-            result[worldId] = rankings.map((ranking, index) => {
-                // Retrieve real name using the ORIGINAL address from the ranking
-                const realName = usernameMap.get(ranking.player);
-                const displayName = realName || formatAddressToName(ranking.player);
-                
-                // For current user comparison, normalize both addresses
-                const normalizedRankingAddress = normalizeAddress(ranking.player);
-                const isCurrentUser = normalizedRankingAddress === normalizedUserAddress;
-                
-                console.log(`👤 Player ${index + 1}:`, {
-                    originalAddress: ranking.player,
-                    realName,
-                    displayName,
-                    isCurrentUser,
-                    normalizedRankingAddress,
-                    normalizedUserAddress
-                });
-                
-                return {
-                    id: ranking.player, // Keep the original address as ID
-                    name: displayName,
-                    score: ranking.points,
-                    rank: index + 1,
-                    isCurrentUser
-                };
-            });
-        });
-        
-        console.log("✅ Processed rankings result:", result);
-        return result;
-    } catch (error) {
-        console.error("❌ Error processing rankings with usernames:", error);
-        
-        // In case of error, process without real names but with correct user identification
-        const normalizedUserAddress = normalizeAddress(userAddress);
-        const result: Record<number, RankingPlayer[]> = {};
-        
-        Object.keys(rankingsByWorldId).forEach(worldIdStr => {
-            const worldId = parseInt(worldIdStr);
-            const rankings = rankingsByWorldId[worldId] || [];
-            
-            result[worldId] = rankings.map((ranking, index) => {
-                const normalizedRankingAddress = normalizeAddress(ranking.player);
-                const isCurrentUser = normalizedRankingAddress === normalizedUserAddress;
-                
-                return {
-                    id: ranking.player,
-                    name: formatAddressToName(ranking.player),
-                    score: ranking.points,
-                    rank: index + 1,
-                    isCurrentUser
-                };
-            });
-        });
-        
-        return result;
-    }
-};
-
-/**
- * Fetches all rankings
- */
-const fetchAllRankings = async (): Promise<Record<number, Ranking[]>> => {
+const fetchAllRankingsData = async (): Promise<Ranking[]> => {
+    console.log("📥 Fetching ALL rankings data with single query...");
+    
     const query = `
         query GetAllRankings {
             golemRunnerRankingModels(first: 1000) {
@@ -223,41 +118,6 @@ const fetchAllRankings = async (): Promise<Record<number, Ranking[]>> => {
         }
     `;
     
-    return executeRankingQuery(query);
-};
-
-/**
- * Fetches rankings for a specific map
- */
-const fetchRankingsByWorldId = async (worldId: number): Promise<Record<number, Ranking[]>> => {
-    // Convert the ID to hexadecimal format for the query
-    const worldIdHex = numberToHex(worldId);
-    
-    const query = `
-        query GetRankingsForWorld {
-            golemRunnerRankingModels(
-                where: { world_id: "${worldIdHex}" }
-                first: 100
-            ) {
-                edges {
-                    node {
-                        world_id
-                        player
-                        points
-                    }
-                }
-                totalCount
-            }
-        }
-    `;
-    
-    return executeRankingQuery(query);
-};
-
-/**
- * Executes a GraphQL query and processes the results
- */
-const executeRankingQuery = async (query: string): Promise<Record<number, Ranking[]>> => {
     try {
         const response = await fetch(TORII_URL, {
             method: "POST",
@@ -265,62 +125,212 @@ const executeRankingQuery = async (query: string): Promise<Record<number, Rankin
             body: JSON.stringify({ query }),
         });
 
-        const result = await response.json();
-        
-        if (!result.data?.golemRunnerRankingModels?.edges) {
-            console.log("No ranking data found in query result");
-            return {};
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        // Group rankings by world_id
-        const rankingsByWorldId: Record<number, Ranking[]> = {};
+        const result = await response.json();
         
-        // Process each ranking
-        result.data.golemRunnerRankingModels.edges.forEach((edge: any) => {
+        if (result.errors) {
+            console.error("GraphQL errors:", result.errors);
+            throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+        }
+        
+        if (!result.data?.golemRunnerRankingModels?.edges) {
+            console.log("No ranking data found");
+            return [];
+        }
+
+        console.log(`📊 Found ${result.data.golemRunnerRankingModels.edges.length} total rankings`);
+
+        // Convert all raw data to Ranking objects
+        const rankings: Ranking[] = result.data.golemRunnerRankingModels.edges.map((edge: any, index: number) => {
             const node = edge.node;
             
-            // Convert world_id and points from hex to number
             const worldId = hexToNumber(node.world_id);
             const points = hexToNumber(node.points);
             
-            // Create ranking object
-            const ranking: Ranking = {
+            console.log(`📄 Ranking ${index + 1}: World ${worldId} (hex: ${node.world_id}), Player ${node.player}, Points ${points} (hex: ${node.points})`);
+            
+            return {
                 world_id: worldId,
                 player: node.player,
                 points: points
             };
-            
-            // Group by world_id
-            if (!rankingsByWorldId[worldId]) {
-                rankingsByWorldId[worldId] = [];
-            }
-            
-            rankingsByWorldId[worldId].push(ranking);
         });
         
-        // Sort each group by points (descending)
-        Object.keys(rankingsByWorldId).forEach((worldIdStr) => {
-            const numWorldId = parseInt(worldIdStr);
-            rankingsByWorldId[numWorldId].sort((a, b) => b.points - a.points);
-        });
+        // ✅ DEBUG: Group by world_id to see distribution
+        const worldDistribution = rankings.reduce((acc, ranking) => {
+            acc[ranking.world_id] = (acc[ranking.world_id] || 0) + 1;
+            return acc;
+        }, {} as Record<number, number>);
         
-        return rankingsByWorldId;
+        console.log("🌍 World distribution:", worldDistribution);
+        console.log(`✅ Processed ${rankings.length} rankings successfully`);
+        
+        return rankings;
+        
     } catch (error) {
-        console.error("Error executing ranking query:", error);
+        console.error("❌ Error fetching rankings:", error);
         throw error;
     }
+};
+
+/**
+ * ✅ FIXED: Properly group rankings by world_id and process with usernames
+ */
+const processAllRankings = async (
+    allRankings: Ranking[],
+    userAddress: string
+): Promise<{
+    byWorldId: Record<number, RankingPlayer[]>;
+    globalRankings: RankingPlayer[];
+}> => {
+    console.log("🔄 Processing all rankings...");
+    console.log("📊 Input rankings:", allRankings);
+    
+    if (allRankings.length === 0) {
+        console.log("❌ No rankings to process");
+        return { byWorldId: {}, globalRankings: [] };
+    }
+    
+    // Get all unique addresses for username lookup
+    const allAddresses = [...new Set(allRankings.map(r => r.player))];
+    console.log("👥 Unique addresses found:", allAddresses);
+    
+    const usernameMap = await getUserNames(allAddresses);
+    const normalizedUserAddress = normalizeAddress(userAddress);
+    
+    // ✅ FIXED: Group rankings by world_id with better debugging
+    const rankingsByWorld: Record<number, Ranking[]> = {};
+    
+    allRankings.forEach((ranking, index) => {
+        console.log(`🔗 Processing ranking ${index + 1}: World ${ranking.world_id}, Player ${ranking.player}, Points ${ranking.points}`);
+        
+        if (!rankingsByWorld[ranking.world_id]) {
+            rankingsByWorld[ranking.world_id] = [];
+            console.log(`📁 Created new group for world ${ranking.world_id}`);
+        }
+        
+        rankingsByWorld[ranking.world_id].push(ranking);
+        console.log(`➕ Added to world ${ranking.world_id}, now has ${rankingsByWorld[ranking.world_id].length} rankings`);
+    });
+    
+    // Sort each world's rankings by points (descending)
+    Object.keys(rankingsByWorld).forEach(worldIdStr => {
+        const worldId = parseInt(worldIdStr);
+        const before = rankingsByWorld[worldId].length;
+        rankingsByWorld[worldId].sort((a, b) => b.points - a.points);
+        console.log(`🏆 Sorted world ${worldId}: ${before} rankings (highest: ${rankingsByWorld[worldId][0]?.points || 0})`);
+    });
+    
+    console.log("🌍 Final rankings grouped by world:", Object.keys(rankingsByWorld).map(k => {
+        const worldId = parseInt(k);
+        const count = rankingsByWorld[worldId].length;
+        const topScore = rankingsByWorld[worldId][0]?.points || 0;
+        return `World ${worldId}: ${count} rankings (top: ${topScore})`;
+    }));
+    
+    // ✅ FIXED: Convert to RankingPlayer format by world - ONLY for worlds that have data
+    const byWorldId: Record<number, RankingPlayer[]> = {};
+    
+    Object.keys(rankingsByWorld).forEach(worldIdStr => {
+        const worldId = parseInt(worldIdStr);
+        const worldRankings = rankingsByWorld[worldId];
+        
+        console.log(`🗺️ Processing world ${worldId} with ${worldRankings.length} rankings`);
+        
+        // ✅ IMPORTANT: Only process worlds that actually have data
+        if (worldRankings.length > 0) {
+            byWorldId[worldId] = worldRankings.map((ranking, index) => {
+                const realName = usernameMap.get(ranking.player);
+                const displayName = realName || formatAddressToName(ranking.player);
+                
+                const normalizedRankingAddress = normalizeAddress(ranking.player);
+                const isCurrentUser = normalizedRankingAddress === normalizedUserAddress;
+                
+                const playerRanking = {
+                    id: ranking.player,
+                    name: displayName,
+                    score: ranking.points,
+                    rank: index + 1,
+                    isCurrentUser
+                };
+                
+                console.log(`👤 World ${worldId} - Player ${index + 1}: ${displayName} (${ranking.points} pts)`);
+                
+                return playerRanking;
+            });
+            
+            console.log(`✅ World ${worldId}: ${byWorldId[worldId].length} processed rankings`);
+        } else {
+            console.log(`⚠️ World ${worldId}: No rankings to process`);
+        }
+    });
+    
+    // ✅ FIXED: Create global rankings by combining best scores from all worlds (only worlds with data)
+    const playerBestScores: Record<string, { score: number; name: string; isCurrentUser: boolean }> = {};
+    
+    Object.entries(byWorldId).forEach(([worldIdStr, worldRankings]) => {
+        const worldId = parseInt(worldIdStr);
+        console.log(`🏆 Processing world ${worldId} for global rankings: ${worldRankings.length} players`);
+        
+        worldRankings.forEach(ranking => {
+            const existing = playerBestScores[ranking.id];
+            if (!existing || ranking.score > existing.score) {
+                console.log(`🔥 New/better score for ${ranking.name}: ${ranking.score} (was: ${existing?.score || 0})`);
+                playerBestScores[ranking.id] = {
+                    score: ranking.score,
+                    name: ranking.name,
+                    isCurrentUser: ranking.isCurrentUser
+                };
+            }
+        });
+    });
+    
+    // Convert to global rankings array and sort
+    const globalRankings: RankingPlayer[] = Object.entries(playerBestScores)
+        .map(([playerId, data]) => ({
+            id: playerId,
+            name: data.name,
+            score: data.score,
+            rank: 0, // Will be set below
+            isCurrentUser: data.isCurrentUser
+        }))
+        .sort((a, b) => b.score - a.score)
+        .map((ranking, index) => ({
+            ...ranking,
+            rank: index + 1
+        }));
+    
+    console.log(`🏆 Global rankings: ${globalRankings.length} unique players`);
+    console.log("🎯 Top 3 global:", globalRankings.slice(0, 3).map(p => `${p.name}: ${p.score}`));
+    
+    // ✅ DEBUG: Show final result structure
+    console.log("📋 Final result by world:");
+    Object.entries(byWorldId).forEach(([worldId, rankings]) => {
+        console.log(`  World ${worldId}: ${rankings.length} players`);
+        if (rankings.length > 0) {
+            console.log(`    Top player: ${rankings[0].name} with ${rankings[0].score} points`);
+        }
+    });
+    
+    return { byWorldId, globalRankings };
 };
 
 // Main hook
 export const useRankings = (): UseRankingsReturn => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [isLoadingMap, setIsLoadingMap] = useState<Record<number, boolean>>({});
     const [error, setError] = useState<Error | null>(null);
-    const [rankingsByWorldId, setRankingsByWorldId] = useState<Record<number, Ranking[]>>({});
-    const [processedRankings, setProcessedRankings] = useState<Record<number, RankingPlayer[]>>({});
+    const [allRankingsData, setAllRankingsData] = useState<Ranking[]>([]);
+    const [processedData, setProcessedData] = useState<{
+        byWorldId: Record<number, RankingPlayer[]>;
+        globalRankings: RankingPlayer[];
+    }>({ byWorldId: {}, globalRankings: [] });
+    
     const { account } = useAccount();
     
-    // Current user's formatted and normalized address
+    // Current user's normalized address
     const userAddress = useMemo(() => {
         if (!account?.address) return '';
         
@@ -332,24 +342,7 @@ export const useRankings = (): UseRankingsReturn => {
         return normalizedAddr;
     }, [account]);
 
-    // Process rankings with usernames when data changes
-    useEffect(() => {
-        const processRankings = async () => {
-            if (Object.keys(rankingsByWorldId).length === 0 || !userAddress) {
-                setProcessedRankings({});
-                return;
-            }
-
-            console.log("🔄 Processing rankings with usernames...");
-            const processed = await processRankingsWithUsernames(rankingsByWorldId, userAddress);
-            setProcessedRankings(processed);
-            console.log("✅ Rankings processed with usernames:", processed);
-        };
-
-        processRankings();
-    }, [rankingsByWorldId, userAddress]);
-
-    // Function to fetch all rankings
+    // ✅ SIMPLIFIED: Single fetch function
     const refetch = useCallback(async () => {
         if (!account) {
             setIsLoading(false);
@@ -360,51 +353,54 @@ export const useRankings = (): UseRankingsReturn => {
             setIsLoading(true);
             setError(null);
             
-            console.log("📥 Fetching all rankings data...");
-            const rankings = await fetchAllRankings();
-            console.log("📋 All rankings data fetched:", rankings);
+            console.log("🔄 Starting rankings fetch...");
             
-            // Update state with new rankings (not processed yet)
-            setRankingsByWorldId(prevRankings => ({
-                ...prevRankings,
-                ...rankings
-            }));
+            // Single fetch for all data
+            const allRankings = await fetchAllRankingsData();
+            setAllRankingsData(allRankings);
+            
+            console.log("✅ Rankings fetch completed");
+            
         } catch (err) {
-            console.error("❌ Error fetching all rankings:", err);
+            console.error("❌ Error in refetch:", err);
             const error = err instanceof Error ? err : new Error('Unknown error fetching rankings');
             setError(error);
+            setAllRankingsData([]);
         } finally {
             setIsLoading(false);
         }
     }, [account]);
 
-    // Function to fetch rankings for a specific map
-    const fetchRankingForMap = useCallback(async (mapId: number) => {
-        if (!account) return;
+    // Process data whenever raw data or user address changes
+    useEffect(() => {
+        const processData = async () => {
+            if (allRankingsData.length === 0 || !userAddress) {
+                console.log("⚠️ No data to process or no user address");
+                setProcessedData({ byWorldId: {}, globalRankings: [] });
+                return;
+            }
 
-        try {
-            // Mark this specific map as loading
-            setIsLoadingMap(prev => ({ ...prev, [mapId]: true }));
-            
-            console.log(`📥 Fetching rankings for map ID ${mapId}...`);
-            const mapRankings = await fetchRankingsByWorldId(mapId);
-            console.log(`📋 Rankings for map ID ${mapId} fetched:`, mapRankings);
-            
-            // Update only the rankings for this map
-            setRankingsByWorldId(prevRankings => ({
-                ...prevRankings,
-                ...mapRankings
-            }));
-        } catch (err) {
-            console.error(`❌ Error fetching rankings for map ID ${mapId}:`, err);
-            // Do not update the global error to avoid interrupting the entire UI
-        } finally {
-            // Mark as no longer loading
-            setIsLoadingMap(prev => ({ ...prev, [mapId]: false }));
-        }
-    }, [account]);
+            try {
+                console.log("🔄 Processing rankings data...");
+                const processed = await processAllRankings(allRankingsData, userAddress);
+                setProcessedData(processed);
+                console.log("✅ Rankings processing completed");
+                
+                // ✅ DEBUG: Final processed data
+                console.log("📊 Final processed data structure:");
+                console.log("Global Rankings:", processed.globalRankings.length);
+                console.log("Map Rankings:", Object.keys(processed.byWorldId).map(k => `World ${k}: ${processed.byWorldId[parseInt(k)].length}`));
+                
+            } catch (error) {
+                console.error("❌ Error processing rankings:", error);
+                setProcessedData({ byWorldId: {}, globalRankings: [] });
+            }
+        };
 
-    // Effect to load initial rankings
+        processData();
+    }, [allRankingsData, userAddress]);
+
+    // Load data on mount
     useEffect(() => {
         if (userAddress) {
             refetch();
@@ -413,59 +409,50 @@ export const useRankings = (): UseRankingsReturn => {
         }
     }, [userAddress, refetch]);
 
-    // Process global rankings (world_id = 1, which is 0x1 in hex)
-    const globalRankings = useMemo((): RankingPlayer[] => {
-        return processedRankings[1] || [];
-    }, [processedRankings]);
-
-    // Process rankings by map
-    const mapRankings = useMemo((): Record<number, RankingPlayer[]> => {
-        const result: Record<number, RankingPlayer[]> = {};
-        
-        Object.keys(processedRankings).forEach(worldIdStr => {
-            const worldId = parseInt(worldIdStr);
-            if (worldId === 1) return; // Skip global ranking
-            
-            result[worldId] = processedRankings[worldId] || [];
-        });
-        
-        return result;
-    }, [processedRankings]);
-
-    // Get the current user's ranking
+    // Get current user's ranking (from global rankings)
     const currentUserRanking = useMemo((): RankingPlayer | null => {
-        // First look in the global ranking
-        const globalUser = globalRankings.find(r => r.isCurrentUser);
-        if (globalUser) return globalUser;
+        const globalUser = processedData.globalRankings.find(r => r.isCurrentUser);
         
-        // If not in the global ranking, look in the maps
-        for (const worldId in mapRankings) {
-            const mapUser = mapRankings[worldId].find(r => r.isCurrentUser);
-            if (mapUser) return mapUser;
+        if (globalUser) {
+            return globalUser;
         }
         
-        // If the user has no ranking, create a default one
+        // If user has no ranking, create a fallback
         if (userAddress) {
             return {
                 id: userAddress,
-                name: formatAddressToName(userAddress), // Use fallback for the current user
+                name: "You",
                 score: 0,
-                rank: globalRankings.length + 1, // Last place
+                rank: processedData.globalRankings.length + 1,
                 isCurrentUser: true
             };
         }
         
         return null;
-    }, [globalRankings, mapRankings, userAddress]);
+    }, [processedData.globalRankings, userAddress]);
+
+    // Check if we have any data
+    const hasData = processedData.globalRankings.length > 0 || Object.keys(processedData.byWorldId).length > 0;
+
+    // ✅ DEBUG: Log final hook return values
+    useEffect(() => {
+        console.log("🎮 Hook return values:");
+        console.log("  Global Rankings:", processedData.globalRankings.length);
+        console.log("  Map Rankings:");
+        Object.entries(processedData.byWorldId).forEach(([worldId, rankings]) => {
+            console.log(`    World ${worldId}: ${rankings.length} players`);
+        });
+        console.log("  Has Data:", hasData);
+        console.log("  Is Loading:", isLoading);
+    }, [processedData, hasData, isLoading]);
 
     return {
-        globalRankings,
-        mapRankings,
+        globalRankings: processedData.globalRankings,
+        mapRankings: processedData.byWorldId,
         currentUserRanking,
         isLoading,
-        isLoadingMap,
         error,
         refetch,
-        fetchRankingForMap
+        hasData
     };
 };
