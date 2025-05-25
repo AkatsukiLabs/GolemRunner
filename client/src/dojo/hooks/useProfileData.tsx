@@ -5,6 +5,7 @@ import { getMapVisualDataById } from '../../constants/mapVisualData';
 import { defaultGolems } from '../../constants/golems'; 
 import { CairoCustomEnum } from 'starknet';
 import type { MapTheme } from '../../components/types/game';
+import { useRankings } from './useRankings';
 
 // Helper to extract string from CairoCustomEnum
 const extractRarityString = (rarity: CairoCustomEnum | string): string => {
@@ -43,8 +44,10 @@ export interface ProfileMap {
   is_unlocked: boolean;
   // Added visual data
   image: string;
-  theme: MapTheme; // Use the correct type
-  highScore: number; // TODO: Implement from blockchain
+  theme: MapTheme;
+  // ✅ Enhanced: Now includes user's actual high score from rankings
+  highScore: number;
+  userRank?: number; // ✅ New: User's rank in this map
 }
 
 interface UseProfileDataReturn {
@@ -81,6 +84,10 @@ interface UseProfileDataReturn {
   // Actions
   getGolemById: (id: number) => ProfileGolem | undefined;
   getMapById: (id: number) => ProfileMap | undefined;
+  
+  // ✅ New: Rankings data
+  getUserScoreForMap: (mapId: number) => number;
+  getUserRankForMap: (mapId: number) => number | undefined;
 }
 
 export const useProfileData = (): UseProfileDataReturn => {
@@ -89,8 +96,8 @@ export const useProfileData = (): UseProfileDataReturn => {
     player, 
     golems, 
     worlds, 
-    isLoading, 
-    error 
+    isLoading: storeLoading, 
+    error: storeError 
   } = useAppStore(state => ({
     player: state.player,
     golems: state.golems,
@@ -98,6 +105,37 @@ export const useProfileData = (): UseProfileDataReturn => {
     isLoading: state.isLoading,
     error: state.error
   }));
+
+  // ✅ Get rankings data
+  const { 
+    mapRankings, 
+    isLoading: rankingsLoading, 
+    error: rankingsError,
+    hasData: hasRankingsData
+  } = useRankings();
+
+  // ✅ Helper functions to get user scores and ranks
+  const getUserScoreForMap = (mapId: number): number => {
+    const mapRankingData = mapRankings[mapId];
+    if (!mapRankingData || !player) return 0;
+    
+    const userRanking = mapRankingData.find(ranking => 
+      ranking.isCurrentUser
+    );
+    
+    return userRanking?.score || 0;
+  };
+
+  const getUserRankForMap = (mapId: number): number | undefined => {
+    const mapRankingData = mapRankings[mapId];
+    if (!mapRankingData || !player) return undefined;
+    
+    const userRanking = mapRankingData.find(ranking => 
+      ranking.isCurrentUser
+    );
+    
+    return userRanking?.rank;
+  };
 
   // Memoized owned golems with visual data AND real animations
   const ownedGolems = useMemo((): ProfileGolem[] => {
@@ -136,26 +174,35 @@ export const useProfileData = (): UseProfileDataReturn => {
       });
   }, [golems]);
 
-  // Memoized unlocked maps with visual data
+  // ✅ Enhanced: Memoized unlocked maps with visual data AND user scores
   const unlockedMaps = useMemo((): ProfileMap[] => {
+    console.log("🏆 [useProfileData] Processing unlocked maps with scores...");
+    
     return worlds
       .filter(world => world.is_unlocked)
       .map(world => {
         const visualData = getMapVisualDataById(world.id);
+        
+        // ✅ Get user's actual score for this map
+        const userScore = getUserScoreForMap(world.id);
+        const userRank = getUserRankForMap(world.id);
+        
+        console.log(`🗺️ [useProfileData] Map ${world.name} (ID: ${world.id}): Score ${userScore}, Rank ${userRank || 'Unranked'}`);
+        
         return {
           id: world.id,
           name: world.name,
           description: world.description,
           price: world.price,
           is_unlocked: world.is_unlocked,
-          // Visual data
           image: visualData.image,
           theme: visualData.theme,
-          highScore: 0, // TODO: Implement high scores from blockchain
+          highScore: userScore,
+          userRank: userRank,
         };
       })
       .sort((a, b) => a.id - b.id); // Sort by ID
-  }, [worlds]);
+  }, [worlds, mapRankings, player]); // ✅ Added mapRankings and player as dependencies
 
   // Memoized stats
   const stats = useMemo(() => {
@@ -185,8 +232,22 @@ export const useProfileData = (): UseProfileDataReturn => {
     return unlockedMaps.find(map => map.id === id);
   };
 
+  // ✅ Combined loading and error states
+  const isLoading = storeLoading || rankingsLoading;
+  const error = storeError || (rankingsError ? rankingsError.message : null);
+
   // Check if we have data
   const hasData = !isLoading && !error && (ownedGolems.length > 0 || unlockedMaps.length > 0);
+
+  // ✅ Debug logging
+  console.log("🎮 [useProfileData] Current state:", {
+    storeLoading,
+    rankingsLoading,
+    isLoading,
+    hasRankingsData,
+    unlockedMapsCount: unlockedMaps.length,
+    mapRankingsKeys: Object.keys(mapRankings)
+  });
 
   return {
     // Player data
@@ -207,5 +268,8 @@ export const useProfileData = (): UseProfileDataReturn => {
     // Actions
     getGolemById,
     getMapById,
+    
+    getUserScoreForMap,
+    getUserRankForMap,
   };
 };

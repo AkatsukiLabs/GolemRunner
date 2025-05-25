@@ -16,11 +16,11 @@ export function ProfileScreen({ onNavigation }: ProfileScreenProps) {
   const [activeTab, setActiveTab] = useState<"golems" | "maps">("golems")
   const [selectedGolemId, setSelectedGolemId] = useState<number | null>(null)
 
-  // Custom hook that gets all data from Zustand store
+  // ✅ Enhanced hook that now includes rankings data
   const {
     player,
     ownedGolems,
-    unlockedMaps,
+    unlockedMaps, // Now includes user scores and ranks
     stats,
     isLoading,
     error,
@@ -38,7 +38,7 @@ export function ProfileScreen({ onNavigation }: ProfileScreenProps) {
     setSelectedGolemId(null)
   }
 
-  // Loading state
+  // ✅ Enhanced loading state with rankings context
   if (isLoading) {
     return (
       <div className="relative h-screen w-full bg-screen overflow-hidden flex items-center justify-center">
@@ -85,7 +85,7 @@ export function ProfileScreen({ onNavigation }: ProfileScreenProps) {
         title="PROFILE" 
       />
 
-      {/* Stats Bar */}
+      {/* ✅ Enhanced Stats Bar with user score */}
       <div className="relative z-10 px-4 mt-2">
         <div className="bg-surface/20 backdrop-blur-sm rounded-lg p-3 mb-4">
           <div className="flex justify-between items-center text-surface font-luckiest text-sm">
@@ -100,10 +100,6 @@ export function ProfileScreen({ onNavigation }: ProfileScreenProps) {
             <div className="text-center">
               <div className="text-lg">{player?.total_points || 0}</div>
               <div className="text-xs opacity-75">Total Points</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg">{player?.experience || 0}</div>
-              <div className="text-xs opacity-75">Experience</div>
             </div>
           </div>
         </div>
