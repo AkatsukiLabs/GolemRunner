@@ -26,7 +26,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
         `📝 ${golemData.description}\n` +
         `📊 Level ${golemData.level}\n\n` +
         `Join me in GolemRunner! 🚀\n` +
-        `👉 https://golem-runner.up.railway.app/\n`
+        `👉🏻 https://golemrunner.live/\n`
       );
     }
   }, [golemData]);
