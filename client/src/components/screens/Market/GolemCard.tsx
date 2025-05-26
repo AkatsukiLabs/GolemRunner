@@ -1,6 +1,5 @@
 import { motion } from "framer-motion"
 import coinIcon from "../../../assets/icons/CoinIcon.webp";
-import { useMarketStore } from "../../../dojo/hooks/useMarketStore";
 
 // Specific type for the marketplace
 interface MarketGolem {
@@ -19,9 +18,6 @@ interface GolemCardProps {
 }
 
 export function GolemCard({ golem, onPurchase }: GolemCardProps) {
-  const { canAfford } = useMarketStore();
-  const isAffordable = canAfford(golem.price);
-  
   const rarityColors: Record<string, string> = {
     Common: "bg-gray-500",
     Rare: "bg-blue-500",
@@ -83,11 +79,10 @@ export function GolemCard({ golem, onPurchase }: GolemCardProps) {
       ) : (
         <motion.button
           onClick={onPurchase}
-          disabled={!isAffordable}
-          className={`btn-cr-yellow w-full flex items-center justify-center gap-2 ${
-            !isAffordable ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          whileTap={{ scale: isAffordable ? 0.95 : 1 }}
+          className="btn-cr-yellow w-full flex items-center justify-center gap-2"
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 300, damping: 15 }}
         >
           <span>Buy</span>
           <img src={coinIcon} alt="Coin" className="h-5 w-5" />

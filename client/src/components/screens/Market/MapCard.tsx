@@ -1,6 +1,5 @@
 import { motion } from "framer-motion"
 import coinIcon from "../../../assets/icons/CoinIcon.webp"
-import { useMarketStore } from "../../../dojo/hooks/useMarketStore";
 
 interface MarketMap {
   id: number;
@@ -18,9 +17,6 @@ interface MapCardProps {
 }
 
 export function MapCard({ map, onPurchase }: MapCardProps) {
-  const { canAfford } = useMarketStore();
-  const isAffordable = canAfford(map.price || 0);
-  
   return (
     <motion.div
       className="bg-surface p-5 rounded-xl shadow-md flex flex-col"
@@ -55,16 +51,15 @@ export function MapCard({ map, onPurchase }: MapCardProps) {
       {/* Purchase button */}
       {map.unlocked ? (
         <div className="btn-cr-yellow w-full flex items-center justify-center opacity-50 cursor-not-allowed">
-          Unlocked
+          Owned
         </div>
       ) : (
         <motion.button
           onClick={onPurchase}
-          disabled={!isAffordable}
-          className={`btn-cr-yellow w-full flex items-center justify-center gap-2 ${
-            !isAffordable ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          whileTap={{ scale: isAffordable ? 0.95 : 1 }}
+          className="btn-cr-yellow w-full flex items-center justify-center gap-2"
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 300, damping: 15 }}
         >
           <span>Buy</span>
           <img src={coinIcon} alt="Coin" className="h-5 w-5" />
