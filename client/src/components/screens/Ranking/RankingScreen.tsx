@@ -1,11 +1,11 @@
-import { useRef, useState, useEffect, useCallback } from "react"
+import { useRef, useState, useEffect, useCallback, useMemo } from "react"
 import { motion } from "framer-motion"
 import { TopBar } from "../../layout/TopBar"
 import BackgroundParticles from "../../shared/BackgroundParticles"
 import { RankingTable } from "./RankingTable"
-import { defaultMaps } from "../../../constants/maps"
 import { useRankings } from "../../../dojo/hooks/useRankings" 
 import { useGlobalRanking } from "../../../dojo/hooks/useGlobalRanking"
+import { getMapVisualDataById } from "../../../constants/mapVisualData"
 import useAppStore from "../../../zustand/store";
 
 import globalRankingGolem from "../../../assets/Ranking/global-ranking-golem.webp"
@@ -17,9 +17,24 @@ interface RankingScreenProps {
   onNavigation: (screen: "home" | "play" | "market" | "profile" | "ranking") => void
 }
 
+//Create interface for enriched maps
+interface EnrichedMap {
+  id: number;
+  name: string;
+  image: string;
+  description: string;
+  theme: string;
+  is_unlocked: boolean;
+  price: number;
+}
+
 export function RankingScreen({ }: RankingScreenProps) {
-  // Get player data from Zustand store
-  const { player } = useAppStore();
+  // Use blockchain worlds as source of truth
+  const { player, worlds, isLoading: worldsLoading } = useAppStore(state => ({
+    player: state.player,
+    worlds: state.worlds,
+    isLoading: state.isLoading
+  }));
   
   // Separate hook for Global Ranking (Player model data)
   const { 
@@ -38,9 +53,45 @@ export function RankingScreen({ }: RankingScreenProps) {
     refetch: refetchMaps,
     error: mapError
   } = useRankings();
+
+  // Process maps from blockchain with visual data
+  const enrichedMaps = useMemo((): EnrichedMap[] => {
+    if (!worlds || worlds.length === 0) {
+      console.log("⚠️ [RankingScreen] No worlds data available");
+      return [];
+    }
+
+    const maps = worlds.map(world => {
+      const visualData = getMapVisualDataById(world.id);
+      
+      return {
+        id: world.id,
+        name: world.name, 
+        image: visualData.image,
+        description: visualData.description,
+        theme: visualData.theme,
+        is_unlocked: world.is_unlocked,
+        price: world.price
+      };
+    });
+
+    // unlocked maps first, then by ID
+    const sortedMaps = maps.sort((a, b) => {
+      if (a.is_unlocked && !b.is_unlocked) return -1;
+      if (!a.is_unlocked && b.is_unlocked) return 1;
+      return a.id - b.id;
+    });
+
+    console.log("🗺️ [RankingScreen] Enriched maps:", sortedMaps.map(m => 
+      `${m.id}: ${m.name} (${m.is_unlocked ? 'unlocked' : 'locked'})`
+    ));
+
+    return sortedMaps;
+  }, [worlds]);
   
   // Loading and error states
   const hasError = globalError || mapError;
+  const isLoading = worldsLoading || isGlobalLoading || isMapLoading;
   
   // Animation variants
   const bannerVariant = {
@@ -91,14 +142,12 @@ export function RankingScreen({ }: RankingScreenProps) {
     return () => el.removeEventListener("scroll", onScroll)
   }, [])
 
-  // Smarter fallback users
-  const fallbackGlobalUser = useCallback(() => {
-    // If we already have the user in the rankings, don't create fallback
+  //Fallback for global user
+  const fallbackGlobalUser = useMemo(() => {
     if (currentUserGlobalRanking && globalRankings.some(r => r.isCurrentUser)) {
       return currentUserGlobalRanking;
     }
     
-    // Only create fallback if user is not in rankings
     return currentUserGlobalRanking || {
       id: "current-user-fallback-global",
       name: "You",
@@ -106,17 +155,16 @@ export function RankingScreen({ }: RankingScreenProps) {
       rank: globalRankings.length + 1,
       isCurrentUser: true
     };
-  }, [currentUserGlobalRanking, globalRankings])();
+  }, [currentUserGlobalRanking, globalRankings]);
 
+  //Fallback for map users
   const getFallbackMapUser = useCallback((mapId: number) => {
     const mapRankingsForMap = mapRankings[mapId] || [];
     
-    // If user is already in map rankings, don't create fallback
     if (mapRankingsForMap.some(r => r.isCurrentUser)) {
-      return null; // No fallback needed
+      return null;
     }
     
-    // Only create fallback if there are rankings but user is not in them
     if (mapRankingsForMap.length > 0) {
       return {
         id: `current-user-fallback-map-${mapId}`,
@@ -127,42 +175,95 @@ export function RankingScreen({ }: RankingScreenProps) {
       };
     }
     
-    return null; // No rankings = no fallback
+    return null;
   }, [mapRankings]);
 
-  // Determine dynamic title and subtitle with better mapping
+  // Use getMapVisualDataById directly
+  const getMapThemeForDisplay = (mapId: number): string => {
+    const visualData = getMapVisualDataById(mapId);
+    return visualData.theme;
+  };
+
+  //Get current map based on ALL available maps
   const isGlobal = activeIndex === 0
-  const map = isGlobal ? null : defaultMaps[activeIndex - 1]
+  const currentMapForAssets = isGlobal ? null : enrichedMaps[activeIndex - 1]
   
-  const title = isGlobal ? "Global Ranking" : `${map?.name || 'Map'} Ranking`
+  const title = isGlobal ? "Global Ranking" : `${currentMapForAssets?.name || 'Map'} Ranking`
   const subtitle = isGlobal
     ? "Top runners worldwide by total points."
-    : `Top runners on the ${map?.name || 'selected'} map.`
+    : `Top runners on the ${currentMapForAssets?.name || 'selected'} map.`
 
-  //  Get the appropriate golem image based on the active index
+  // Use currentMapForAssets for golem image
   const getGolemImage = () => {
     if (isGlobal) return globalRankingGolem
     
-    const mapName = map?.name.toLowerCase() || '';
-    if (mapName.includes("forest")) return forestRankingGolem
-    if (mapName.includes("ice")) return iceRankingGolem
-    if (mapName.includes("volcano")) return lavaRankingGolem
+    if (!currentMapForAssets) return globalRankingGolem;
     
-    // Fallback to global if no match
-    return globalRankingGolem
+    const mapTheme = getMapThemeForDisplay(currentMapForAssets.id);
+    
+    console.log(`🎨 [RankingScreen] Map ${currentMapForAssets.name} (ID: ${currentMapForAssets.id}) has theme: ${mapTheme}`);
+    
+    switch (mapTheme) {
+      case "forest": return forestRankingGolem;
+      case "ice": return iceRankingGolem;
+      case "volcano": return lavaRankingGolem;
+      default: return globalRankingGolem;
+    }
   }
   
-  // Get the appropriate gradient based on the active index
+  // Use currentMapForAssets for gradient
   const getGradientClass = () => {
-    if (isGlobal) return "bg-golem-gradient" // Default gold gradient
+    if (isGlobal) return "bg-golem-gradient"
     
-    const mapName = map?.name.toLowerCase() || '';
-    if (mapName.includes("forest")) return "bg-gradient-to-r from-green-900 to-emerald-700"
-    if (mapName.includes("ice")) return "bg-gradient-to-r from-blue-700 to-cyan-500"
-    if (mapName.includes("volcano")) return "bg-gradient-to-r from-red-800 to-amber-600"
+    if (!currentMapForAssets) return "bg-golem-gradient";
     
-    // Fallback to default if no match
-    return "bg-golem-gradient"
+    const mapTheme = getMapThemeForDisplay(currentMapForAssets.id);
+    
+    console.log(`🎨 [RankingScreen] Using gradient for theme: ${mapTheme}`);
+    
+    switch (mapTheme) {
+      case "forest": return "bg-gradient-to-r from-green-900 to-emerald-700";
+      case "ice": return "bg-gradient-to-r from-blue-700 to-cyan-500";
+      case "volcano": return "bg-gradient-to-r from-red-800 to-amber-600";
+      default: return "bg-golem-gradient";
+    }
+  }
+
+  // Show loading state if there are no worlds
+  if (worldsLoading && enrichedMaps.length === 0) {
+    return (
+      <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik">
+        <BackgroundParticles />
+        <TopBar 
+          coins={player?.coins || 0} 
+          level={player?.level || 1} 
+          title="RANKING" 
+        />
+        <div className="flex items-center justify-center h-full">
+          <div className="text-white font-luckiest text-xl">Loading maps...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show message only if there are no maps in blockchain
+  if (!isLoading && enrichedMaps.length === 0) {
+    return (
+      <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik">
+        <BackgroundParticles />
+        <TopBar 
+          coins={player?.coins || 0} 
+          level={player?.level || 1} 
+          title="RANKING" 
+        />
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center text-white font-luckiest">
+            <div className="text-xl mb-2">No Maps Available</div>
+            <div className="text-sm opacity-75">No worlds found in blockchain!</div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -250,7 +351,7 @@ export function RankingScreen({ }: RankingScreenProps) {
           ref={carouselRef}
           className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth h-full"
         >
-          {/* GLOBAL RANKING*/}
+          {/* ✅ GLOBAL RANKING (always first) */}
           <div className="snap-center flex-shrink-0 w-full px-4 h-full overflow-y-auto">
             <RankingTable 
               currentUser={fallbackGlobalUser}
@@ -259,18 +360,16 @@ export function RankingScreen({ }: RankingScreenProps) {
             />
           </div>
 
-          {/* 🗺️ MAP-SPECIFIC RANKINGS */}
-          {defaultMaps.map((m, mapIndex) => {
-            const mapSpecificRankings = mapRankings[m.id] || [];
-            // Only show loading if we are loading AND there is no previous data
+          {/* ✅ FIXED: MAP-SPECIFIC RANKINGS - use ALL maps */}
+          {enrichedMaps.map((map, mapIndex) => {
+            const mapSpecificRankings = mapRankings[map.id] || [];
             const showMapLoading = isMapLoading && !hasMapData;
-            const fallbackMapUser = getFallbackMapUser(m.id);
+            const fallbackMapUser = getFallbackMapUser(map.id);
             
-            // ✅ DEBUG: Log to verify mapping
-            console.log(`🗺️ [Carousel] Rendering map ${m.name} (ID: ${m.id}, index: ${mapIndex}) with ${mapSpecificRankings.length} rankings`);
+            console.log(`🗺️ [Carousel] Rendering map ${map.name} (ID: ${map.id}, index: ${mapIndex}) with ${mapSpecificRankings.length} rankings`);
             
             return (
-              <div key={m.id} className="snap-center flex-shrink-0 w-full px-4 h-full overflow-y-auto">
+              <div key={map.id} className="snap-center flex-shrink-0 w-full px-4 h-full overflow-y-auto">
                 <RankingTable 
                   currentUser={fallbackMapUser || {
                     id: "no-user",
@@ -280,7 +379,7 @@ export function RankingScreen({ }: RankingScreenProps) {
                     isCurrentUser: false
                   }}
                   rankings={mapSpecificRankings}
-                  mapId={m.id}
+                  mapId={map.id}
                   isLoading={showMapLoading}
                 />
               </div>

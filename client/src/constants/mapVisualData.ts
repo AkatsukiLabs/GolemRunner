@@ -13,21 +13,21 @@ export const mapVisualData: Record<number, {
     1: {
         name: "Forest",
         image: ForestMap,
-        description: "Charge through rocky woods, weaving past roots and boulders!",
+        description: "A nice forest with old trees",
         theme: "forest"
     },
     // ID 2: Volcano Map (associated with World ID 2 in the contract)
     2: {
         name: "Volcano",
         image: VolcanoMap,
-        description: "Race lava flows and leap over erupting molten ground!",
+        description: "A dangerous volcanic zone",
         theme: "volcano"
     },
     // ID 3: Ice Map (associated with World ID 3 in the contract)
     3: {
         name: "Glacier",
         image: IceMap,
-        description: "Dash through icy ruins, dodging crystals and frozen traps!",
+        description: "A slippery ice world",
         theme: "ice"
     }
 };

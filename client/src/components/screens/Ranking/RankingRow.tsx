@@ -2,7 +2,6 @@ import { motion } from "framer-motion"
 import GoldenTrophyIcon from "../../../assets/icons/GoldenTrophyIcon.webp"
 import SilverTrophyIcon from "../../../assets/icons/SilverTrophyIcon.webp"
 import BronzeTrophyIcon from "../../../assets/icons/BronzeTrophyIcon.webp"
-import { defaultMaps } from "../../../constants/maps"
 
 interface RankingRowProps {
   rank: number
@@ -12,6 +11,7 @@ interface RankingRowProps {
   isCurrentUser: boolean
   index: number
   mapId?: number
+  mapTheme?: string 
 }
 
 export function RankingRow({
@@ -22,6 +22,7 @@ export function RankingRow({
   isCurrentUser,
   index,
   mapId,
+  mapTheme = "global", 
 }: RankingRowProps) {
   const rowVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -38,20 +39,25 @@ export function RankingRow({
     return "border-surface-dark/10"
   }
 
-  // Get the appropriate gradient for text based on the map ID
+  // Use mapTheme instead of searching in defaultMaps
   const getGradientTextClass = () => {
-    if (!mapId) return "bg-golem-gradient" // Default gold gradient for global ranking
+    if (!mapId || mapTheme === "global") {
+      return "bg-golem-gradient"; // Global ranking
+    }
     
-    const map = defaultMaps.find(m => m.id === mapId)
-    if (!map) return "bg-golem-gradient"
+    console.log(`🎨 [RankingRow] Using theme "${mapTheme}" for map ${mapId}`);
     
-    const mapName = map.name.toLowerCase()
-    if (mapName.includes("forest")) return "bg-gradient-to-r from-green-900 to-emerald-700"
-    if (mapName.includes("ice")) return "bg-gradient-to-r from-blue-700 to-cyan-500"
-    if (mapName.includes("volcano")) return "bg-gradient-to-r from-red-800 to-amber-600"
-    
-    // Fallback to default if no match
-    return "bg-golem-gradient"
+    switch (mapTheme) {
+      case "forest":
+        return "bg-gradient-to-r from-green-900 to-emerald-700";
+      case "ice":
+        return "bg-gradient-to-r from-blue-700 to-cyan-500";
+      case "volcano":
+        return "bg-gradient-to-r from-red-800 to-amber-600";
+      default:
+        console.warn(`🎨 [RankingRow] Unknown theme: ${mapTheme}, using default`);
+        return "bg-golem-gradient";
+    }
   }
 
   const gradientText = isCurrentUser ? 

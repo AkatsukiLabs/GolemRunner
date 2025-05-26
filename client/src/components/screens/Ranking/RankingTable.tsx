@@ -1,6 +1,7 @@
 import { motion } from "framer-motion"
 import { RankingRow } from "./RankingRow"
-import { defaultMaps } from "../../../constants/maps"
+import { getMapVisualDataById } from "../../../constants/mapVisualData"
+import useAppStore from "../../../zustand/store"
 import { GlobalRankingFormatted } from "../../../dojo/hooks/useGlobalRanking"
 import { RankingPlayer } from "../../../dojo/hooks/useRankings"
 
@@ -19,46 +20,68 @@ export function RankingTable({
   mapId, 
   isLoading = false 
 }: RankingTableProps) {
+  // Get map data from blockchain
+  const { worlds } = useAppStore(state => ({ worlds: state.worlds }));
 
-  // Get the appropriate gradient class based on the map ID
+  // Only use mapVisualData to get theme
+  const getMapTheme = (mapId: number): string => {
+    // Directly use mapVisualData which already has the correct mapping
+    const visualData = getMapVisualDataById(mapId);
+    
+    console.log(`🗺️ [RankingTable] Map ID ${mapId} has theme: ${visualData.theme}`);
+    
+    return visualData.theme;
+  };
+
+  // Get gradient class based on theme
   const getGradientClass = () => {
-    if (!mapId) return "bg-golem-gradient" // Default gold gradient for global ranking
+    if (!mapId) return "bg-golem-gradient"; // Global ranking
     
-    const map = defaultMaps.find(m => m.id === mapId)
-    if (!map) return "bg-golem-gradient"
+    const theme = getMapTheme(mapId);
     
-    const mapName = map.name.toLowerCase()
-    if (mapName.includes("forest")) return "bg-gradient-to-r from-green-900 to-emerald-700"
-    if (mapName.includes("ice")) return "bg-gradient-to-r from-blue-700 to-cyan-500"
-    if (mapName.includes("volcano")) return "bg-gradient-to-r from-red-800 to-amber-600"
+    switch (theme) {
+      case "forest":
+        return "bg-gradient-to-r from-green-900 to-emerald-700";
+      case "ice":
+        return "bg-gradient-to-r from-blue-700 to-cyan-500";
+      case "volcano":
+        return "bg-gradient-to-r from-red-800 to-amber-600";
+      default:
+        return "bg-golem-gradient";
+    }
+  };
+
+  // Get display name from blockchain
+  const getMapDisplayName = (): string => {
+    if (!mapId) return "Global";
     
-    // Fallback to default if no match
-    return "bg-golem-gradient"
-  }
+    const world = worlds.find(w => w.id === mapId);
+    if (!world) return `Map ${mapId}`;
+    
+    return world.name; // Use blockchain name
+  };
 
   const shouldShowCurrentUser = () => {
-  const isFallbackUser = currentUser.id.includes('fallback') || currentUser.id === 'current-user' || currentUser.id === 'no-user';
-  
-  if (isFallbackUser) {
-    console.log(`[RankingTable] ${mapId ? `Map ${mapId}` : 'Global'} - Fallback user detected, evaluating...`);
-  }
-  
-  // 🌍 GLOBAL RANKING
-  if (!mapId) {
-    const isUserInRankings = rankings.some(p => p.isCurrentUser === true);
+    const isFallbackUser = currentUser.id.includes('fallback') || currentUser.id === 'current-user' || currentUser.id === 'no-user';
     
-    return !isUserInRankings && isFallbackUser;
-  }
-  
-  // 🗺️ MAP SPECIFIC
-  if (rankings.length > 0) {
-    const isUserInRankings = rankings.some(p => p.isCurrentUser === true);
-
-    return !isUserInRankings && isFallbackUser;
-  }
-  
-  return false;
-};
+    if (isFallbackUser) {
+      console.log(`[RankingTable] ${mapId ? `Map ${mapId}` : 'Global'} - Fallback user detected, evaluating...`);
+    }
+    
+    // 🌍 GLOBAL RANKING
+    if (!mapId) {
+      const isUserInRankings = rankings.some(p => p.isCurrentUser === true);
+      return !isUserInRankings && isFallbackUser;
+    }
+    
+    // 🗺️ MAP SPECIFIC
+    if (rankings.length > 0) {
+      const isUserInRankings = rankings.some(p => p.isCurrentUser === true);
+      return !isUserInRankings && isFallbackUser;
+    }
+    
+    return false;
+  };
 
   const displayPlayers: RankingTablePlayer[] = shouldShowCurrentUser() 
     ? [...rankings, { ...currentUser }]
@@ -96,23 +119,23 @@ export function RankingTable({
       initial="hidden"
       animate={isLoading ? "hidden" : "visible"}
     >
-      {/* ✅ MEJORADO: Table Header con información contextual */}
+      {/* Table Header with blockchain information */}
       <div className={`p-3 ${getGradientClass()} border-b border-primary/30`}>
-      {/* Main header row */}
-      <div className="flex justify-between items-center mb-2">
-        <div className="font-bangers text-xl text-cream w-16 text-center drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">
-          Rank
-        </div>
-        <div className="font-bangers text-xl text-cream flex-1 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">
-          Player
-        </div>
-        <div className="font-bangers text-xl text-cream w-24 text-right drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] tracking-wide">
-          {headers.scoreLabel}
+        {/* Main header row */}
+        <div className="flex justify-between items-center mb-2">
+          <div className="font-bangers text-xl text-cream w-16 text-center drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">
+            Rank
+          </div>
+          <div className="font-bangers text-xl text-cream flex-1 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">
+            Player
+          </div>
+          <div className="font-bangers text-xl text-cream w-24 text-right drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] tracking-wide">
+            {headers.scoreLabel}
+          </div>
         </div>
       </div>
-    </div>
 
-      {/* LOADING STATE con contexto */}
+      {/*  LOADING STATE with blockchain name */}
       {isLoading && (
         <div className="flex flex-col justify-center items-center p-8">
           <motion.div 
@@ -121,12 +144,12 @@ export function RankingTable({
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           />
           <p className="text-dark font-rubik text-sm">
-            {!mapId ? "Loading global rankings..." : `Loading ${defaultMaps.find(m => m.id === mapId)?.name || 'map'} rankings...`}
+            {!mapId ? "Loading global rankings..." : `Loading ${getMapDisplayName()} rankings...`}
           </p>
         </div>
       )}
 
-      {/* EMPTY STATE */}
+      {/* EMPTY STATE with blockchain name */}
       {!isLoading && displayPlayers.length === 0 && (
         <div className="text-center py-8 text-dark font-luckiest">
           {mapId ? (
@@ -134,7 +157,7 @@ export function RankingTable({
               No rankings available for this map yet.
               <br />
               <span className="text-sm font-rubik mt-2 block opacity-70">
-                Be the first to set a high score on {defaultMaps.find(m => m.id === mapId)?.name || 'this map'}!
+                Be the first to set a high score on {getMapDisplayName()}!
               </span>
             </>
           ) : (
@@ -149,7 +172,7 @@ export function RankingTable({
         </div>
       )}
 
-      {/* TABLE ROWS  */}
+      {/* TABLE ROWS */}
       {!isLoading && displayPlayers.length > 0 && (
         <div className="flex flex-col">
           {displayPlayers.map((player, idx) => (
@@ -162,6 +185,7 @@ export function RankingTable({
                 isCurrentUser={player.isCurrentUser}
                 index={idx}
                 mapId={mapId}
+                mapTheme={mapId ? getMapTheme(mapId) : "global"}
               />
             </div>
           ))}
