@@ -10,7 +10,7 @@ export const defaultMaps: Map[] = [
     image: ForestMap,
     unlocked: false,
     price: 50,
-    description: "Charge through rocky woods, weaving past roots and boulders!",
+    description: "A nice forest with old trees",
     highScore: 0,
     theme: "forest"
   },
@@ -20,7 +20,7 @@ export const defaultMaps: Map[] = [
     image: VolcanoMap,
     unlocked: false,
     price: 25,
-    description: "Race lava flows and leap over erupting molten ground!",
+    description: "A dangerous volcanic zone",
     highScore: 8750,
     theme: "volcano"
   },
@@ -30,7 +30,7 @@ export const defaultMaps: Map[] = [
     image: IceMap,
     unlocked: true,
     price: 0,
-    description: "Dash through icy ruins, dodging crystals and frozen traps!",
+    description: "A slippery ice world",
     highScore: 12500,
     theme: "ice"
   }
