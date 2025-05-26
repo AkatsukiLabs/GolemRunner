@@ -3,6 +3,7 @@ import ForestMap   from "../assets/Maps/Forest/ForestMap.webp"
 import IceMap from "../assets/Maps/Ice/IceMap.webp"
 import VolcanoMap  from "../assets/Maps/Volcano/VolcanoMap.webp"
 
+// Just a test file
 export const defaultMaps: Map[] = [
   {
     id: 1, 
