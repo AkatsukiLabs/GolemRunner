@@ -1,5 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { posthogInstance } from "./context/PosthogConfig";
+import { PostHogProvider } from 'posthog-js/react';
 
 // Dojo & Starknet
 import { init } from "@dojoengine/sdk";
@@ -52,11 +54,17 @@ async function main() {
 
   createRoot(rootElement).render(
     <StrictMode>
-      <DojoSdkProvider sdk={sdk} dojoConfig={dojoConfig} clientFn={setupWorld}>
-        <StarknetProvider>
-          <Main />
-        </StarknetProvider>
-      </DojoSdkProvider>
+        <DojoSdkProvider sdk={sdk} dojoConfig={dojoConfig} clientFn={setupWorld}>
+          <StarknetProvider>
+          {posthogInstance.initialized && posthogInstance.client ? (
+              <PostHogProvider client={posthogInstance.client}>
+                <Main />
+              </PostHogProvider>
+            ) : (
+              <Main />
+            )}
+          </StarknetProvider>
+        </DojoSdkProvider>
     </StrictMode>
   );
 }
