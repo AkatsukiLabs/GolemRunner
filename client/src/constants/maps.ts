@@ -27,7 +27,7 @@ export const defaultMaps: Map[] = [
   },
   {
     id: 3, 
-    name: "Ice",
+    name: "Glacier",
     image: IceMap,
     unlocked: true,
     price: 0,

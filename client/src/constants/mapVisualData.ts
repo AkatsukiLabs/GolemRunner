@@ -25,7 +25,7 @@ export const mapVisualData: Record<number, {
     },
     // ID 3: Ice Map (associated with World ID 3 in the contract)
     3: {
-        name: "Ice",
+        name: "Glacier",
         image: IceMap,
         description: "Dash through icy ruins, dodging crystals and frozen traps!",
         theme: "ice"
