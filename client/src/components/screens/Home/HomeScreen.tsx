@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAccount } from "@starknet-react/core";
+import { lookupAddresses } from '@cartridge/controller';
 import { AvatarCarouselFixed } from "./AvatarCarousel";
 import { CharacterCard } from "./CharacterCard";
 import BackgroundParticles from "../../shared/BackgroundParticles";
@@ -37,6 +39,13 @@ export const HomeScreen = memo(function HomeScreen({
     isLoading: state.isLoading,
     error: state.error,
   }));
+
+  // Get current account for username lookup
+  const { account } = useAccount();
+
+  // State for username lookup
+  const [playerName, setPlayerName] = useState<string>('');
+  const [isLoadingUsername, setIsLoadingUsername] = useState<boolean>(false);
 
   // ✅ Extract coins and level from player data
   const coins = player?.coins || 0;
@@ -78,6 +87,46 @@ export const HomeScreen = memo(function HomeScreen({
     () => (isMobile ? 'bottom-center' : 'top-right'),
     [isMobile]
   );
+
+  // ✅ Username lookup effect
+  useEffect(() => {
+    const fetchPlayerName = async () => {
+      if (!account?.address) {
+        setPlayerName('Player');
+        return;
+      }
+
+      try {
+        setIsLoadingUsername(true);
+        console.log("🔍 Looking up username for address:", account.address);
+        
+        // Use lookupAddresses with the current account address
+        const addressMap = await lookupAddresses([account.address]);
+        
+        // Get the username from the map
+        const username = addressMap.get(account.address);
+        
+        console.log("📋 Username lookup result:", username);
+        
+        if (username) {
+          setPlayerName(username);
+        } else {
+          // Fallback to truncated address if no username found
+          const truncated = account.address.slice(0, 6) + '...' + account.address.slice(-4);
+          setPlayerName(truncated);
+        }
+      } catch (error) {
+        console.error("❌ Error looking up username:", error);
+        // Fallback to truncated address on error
+        const truncated = account.address.slice(0, 6) + '...' + account.address.slice(-4);
+        setPlayerName(truncated);
+      } finally {
+        setIsLoadingUsername(false);
+      }
+    };
+
+    fetchPlayerName();
+  }, [account?.address]);
 
   // Mouse and resize effects
   useEffect(() => {
@@ -150,16 +199,6 @@ export const HomeScreen = memo(function HomeScreen({
     [selectedCharacter, level]
   );
 
-  // ✅ Get player name from blockchain data or fallback
-  const playerName = useMemo(() => {
-    // You can enhance this later to get real player names from Cartridge Controller
-    // For now, use a simple fallback
-    if (player?.address) {
-      return player.address.slice(0, 6) + '...' + player.address.slice(-4);
-    }
-    return 'Player';
-  }, [player]);
-
   return (
     <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik flex flex-col">
       <BackgroundParticles />
@@ -195,17 +234,24 @@ export const HomeScreen = memo(function HomeScreen({
             className="h-[100px] max-h-[150px] object-contain mb-1"
           />
           
-          {/* ✅ Player name section - now uses data from Zustand */}
+          {/* ✅ Player name section - now shows real username */}
           <motion.div 
             className="ml-3"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            <div className="bg-screen/60 backdrop-blur-sm px-4 py-1.5 rounded-md shadow-md ring-1 ring-surface/10">
-              <p className="text-sm font-rubik text-cream font-medium">
-                {playerName}
-              </p>
+            <div className="bg-screen/60 backdrop-blur-sm px-4 py-1.5 rounded-[5px] shadow-md ring-1 ring-surface/10">
+              {isLoadingUsername ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-pulse bg-gray-300 h-4 w-20 rounded"></div>
+                  <span className="text-xs text-cream/60">Loading...</span>
+                </div>
+              ) : (
+                <p className="text-sm font-rubik text-cream font-medium">
+                  {playerName}
+                </p>
+              )}
             </div>
           </motion.div>
         </motion.div>
