@@ -3,11 +3,9 @@ import ForestMap   from "../assets/Maps/Forest/ForestMap.webp"
 import IceMap from "../assets/Maps/Ice/IceMap.webp"
 import VolcanoMap  from "../assets/Maps/Volcano/VolcanoMap.webp"
 
-// ✅ CORREGIR: maps.ts - Reordenar por ID
-// ✅ CORREGIR: maps.ts - Ordenar por ID para que coincida con la lógica
 export const defaultMaps: Map[] = [
   {
-    id: 1, // ← Primera posición = Forest
+    id: 1, 
     name: "Forest",
     image: ForestMap,
     unlocked: false,
@@ -17,7 +15,7 @@ export const defaultMaps: Map[] = [
     theme: "forest"
   },
   {
-    id: 2, // ← Segunda posición = Volcano
+    id: 2, 
     name: "Volcano", 
     image: VolcanoMap,
     unlocked: false,
@@ -27,7 +25,7 @@ export const defaultMaps: Map[] = [
     theme: "volcano"
   },
   {
-    id: 3, // ← Tercera posición = Ice
+    id: 3, 
     name: "Ice",
     image: IceMap,
     unlocked: true,

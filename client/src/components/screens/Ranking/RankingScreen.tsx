@@ -8,7 +8,6 @@ import { useRankings } from "../../../dojo/hooks/useRankings"
 import { useGlobalRanking } from "../../../dojo/hooks/useGlobalRanking"
 import useAppStore from "../../../zustand/store";
 
-// Importar las imágenes de los gólems con trofeos
 import globalRankingGolem from "../../../assets/Ranking/global-ranking-golem.webp"
 import forestRankingGolem from "../../../assets/Ranking/forest-ranking-golem.webp"
 import iceRankingGolem from "../../../assets/Ranking/ice-ranking-golem.webp"
@@ -22,17 +21,16 @@ export function RankingScreen({ }: RankingScreenProps) {
   // Get player data from Zustand store
   const { player } = useAppStore();
   
-  // ✅ NUEVO: Hook separado para Global Ranking (datos de Player model)
+  // Separate hook for Global Ranking (Player model data)
   const { 
     globalRankings,
     currentUserGlobalRanking,
     isLoading: isGlobalLoading,
-    hasData: hasGlobalData,
     refetch: refetchGlobal,
     error: globalError
   } = useGlobalRanking();
   
-  // ✅ EXISTENTE: Hook original para Map Rankings (datos de Ranking model)
+  // Original hook for Map Rankings (Ranking model data)
   const { 
     mapRankings, 
     isLoading: isMapLoading,
@@ -41,7 +39,7 @@ export function RankingScreen({ }: RankingScreenProps) {
     error: mapError
   } = useRankings();
   
-  // ✅ COMBINADO: Loading y error states
+  // Loading and error states
   const hasError = globalError || mapError;
   
   // Animation variants
@@ -62,7 +60,7 @@ export function RankingScreen({ }: RankingScreenProps) {
   const carouselRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
 
-  // ✅ COMBINADO: Refetch function que llama ambos hooks
+  // Refetch function that calls both hooks
   const refetch = useCallback(async () => {
     console.log("🔄 [RankingScreen] Refetching all ranking data...");
     try {
@@ -81,32 +79,6 @@ export function RankingScreen({ }: RankingScreenProps) {
     refetch();
   }, [refetch]);
 
-  // ✅ DEBUG: Log data from both hooks
-  useEffect(() => {
-    console.log("🎮 [RankingScreen] Current state:");
-    console.log("  Global Rankings:", globalRankings.length);
-    console.log("  Map Rankings:", Object.keys(mapRankings).map(k => `World ${k}: ${mapRankings[parseInt(k)].length}`));
-    console.log("  Global Loading:", isGlobalLoading);
-    console.log("  Maps Loading:", isMapLoading);
-    console.log("  Current User Global Rank:", currentUserGlobalRanking?.rank || "Not found");
-    console.log("  Has Global Data:", hasGlobalData);
-    console.log("  Has Map Data:", hasMapData);
-    console.log("  Global Error:", globalError?.message || "None");
-    console.log("  Map Error:", mapError?.message || "None");
-    
-    if (globalRankings.length > 0) {
-      console.log("  Top 3 Global:", globalRankings.slice(0, 3).map(p => `${p.name}: ${p.score}`));
-    }
-    
-    defaultMaps.forEach(map => {
-      const hasRankingData = mapRankings[map.id] && mapRankings[map.id].length > 0;
-      console.log(`  Map "${map.name}" (ID: ${map.id}) has data: ${hasRankingData}`);
-      if (hasRankingData) {
-        console.log(`    └── ${mapRankings[map.id].length} rankings`);
-      }
-    });
-  }, [globalRankings, mapRankings, isGlobalLoading, isMapLoading, currentUserGlobalRanking, hasGlobalData, hasMapData, globalError, mapError]);
-
   // Update active index on scroll
   useEffect(() => {
     const el = carouselRef.current
@@ -119,14 +91,14 @@ export function RankingScreen({ }: RankingScreenProps) {
     return () => el.removeEventListener("scroll", onScroll)
   }, [])
 
-  // ✅ MEJORADO: Fallback users más inteligentes
+  // Smarter fallback users
   const fallbackGlobalUser = useCallback(() => {
-    // Si ya tenemos el usuario en los rankings, no crear fallback
+    // If we already have the user in the rankings, don't create fallback
     if (currentUserGlobalRanking && globalRankings.some(r => r.isCurrentUser)) {
       return currentUserGlobalRanking;
     }
     
-    // Solo crear fallback si usuario no está en rankings
+    // Only create fallback if user is not in rankings
     return currentUserGlobalRanking || {
       id: "current-user-fallback-global",
       name: "You",
@@ -139,12 +111,12 @@ export function RankingScreen({ }: RankingScreenProps) {
   const getFallbackMapUser = useCallback((mapId: number) => {
     const mapRankingsForMap = mapRankings[mapId] || [];
     
-    // Si usuario ya está en rankings del mapa, no crear fallback
+    // If user is already in map rankings, don't create fallback
     if (mapRankingsForMap.some(r => r.isCurrentUser)) {
       return null; // No fallback needed
     }
     
-    // Solo crear fallback si hay rankings pero usuario no está
+    // Only create fallback if there are rankings but user is not in them
     if (mapRankingsForMap.length > 0) {
       return {
         id: `current-user-fallback-map-${mapId}`,
@@ -158,7 +130,7 @@ export function RankingScreen({ }: RankingScreenProps) {
     return null; // No rankings = no fallback
   }, [mapRankings]);
 
-  // ✅ CORREGIDO: Determine dynamic title and subtitle con mejor mapping
+  // Determine dynamic title and subtitle with better mapping
   const isGlobal = activeIndex === 0
   const map = isGlobal ? null : defaultMaps[activeIndex - 1]
   
@@ -167,7 +139,7 @@ export function RankingScreen({ }: RankingScreenProps) {
     ? "Top runners worldwide by total points."
     : `Top runners on the ${map?.name || 'selected'} map.`
 
-  // ✅ CORREGIDO: Get the appropriate golem image based on the active index
+  //  Get the appropriate golem image based on the active index
   const getGolemImage = () => {
     if (isGlobal) return globalRankingGolem
     
@@ -180,7 +152,7 @@ export function RankingScreen({ }: RankingScreenProps) {
     return globalRankingGolem
   }
   
-  // ✅ CORREGIDO: Get the appropriate gradient based on the active index
+  // Get the appropriate gradient based on the active index
   const getGradientClass = () => {
     if (isGlobal) return "bg-golem-gradient" // Default gold gradient
     
@@ -193,26 +165,6 @@ export function RankingScreen({ }: RankingScreenProps) {
     return "bg-golem-gradient"
   }
 
-  // En RankingScreen.tsx
-useEffect(() => {
-  console.log("🔍 [FINAL DEBUG] Verification:");
-  console.log("  Active Index:", activeIndex);
-  console.log("  defaultMaps order:", defaultMaps.map((m, idx) => `Pos[${idx}] = ${m.name}(ID:${m.id})`));
-  
-  if (!isGlobal && map) {
-    console.log("  Current map:", map.name, "ID:", map.id);
-    console.log("  Looking for rankings with world_id:", map.id);
-    console.log("  Found rankings:", mapRankings[map.id]?.length || 0);
-    console.log("  Available world_ids in data:", Object.keys(mapRankings));
-  }
-  
-  // Verificar que la conversión hex → decimal esté funcionando
-  console.log("  Hex conversions test:");
-  console.log("    0x1 →", parseInt("0x1", 16)); // Should be 1
-  console.log("    0x2 →", parseInt("0x2", 16)); // Should be 2
-  console.log("    0x3 →", parseInt("0x3", 16)); // Should be 3
-}, [activeIndex, isGlobal, map, mapRankings]);
-
   return (
     <div className="relative h-screen w-full bg-screen overflow-hidden font-rubik">
       <BackgroundParticles />
@@ -224,7 +176,7 @@ useEffect(() => {
         title="RANKING" 
       />
 
-      {/* ✅ ERROR DISPLAY: Show errors if any */}
+      {/* ERROR DISPLAY: Show errors if any */}
       {hasError && (
         <div className="mx-4 mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
           <div className="font-semibold">Error loading rankings:</div>
@@ -239,7 +191,7 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Clash Royale style banner animado */}
+      {/* Style banner */}
       <motion.div
         className="relative mt-12 mb-3"
         initial="hidden"
@@ -292,30 +244,29 @@ useEffect(() => {
         </div>
       </motion.div>
 
-      {/* ✅ MAIN CONTENT: Carousel con ambos tipos de ranking */}
+      {/* MAIN CONTENT */}
       <div className="relative z-10 pt-4 h-[calc(100%-16rem)] pb-16">
         <div
           ref={carouselRef}
           className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth h-full"
         >
-          {/* 🌍 GLOBAL RANKING - Primera posición (índice 0) */}
+          {/* GLOBAL RANKING*/}
           <div className="snap-center flex-shrink-0 w-full px-4 h-full overflow-y-auto">
             <RankingTable 
               currentUser={fallbackGlobalUser}
               rankings={globalRankings}
               isLoading={isGlobalLoading}
-              // NO mapId = indica que es global ranking
             />
           </div>
 
-          {/* 🗺️ MAP-SPECIFIC RANKINGS - Posiciones 1+ (un índice por mapa) */}
+          {/* 🗺️ MAP-SPECIFIC RANKINGS */}
           {defaultMaps.map((m, mapIndex) => {
             const mapSpecificRankings = mapRankings[m.id] || [];
-            // Solo mostrar loading si estamos cargando Y no hay data previa
+            // Only show loading if we are loading AND there is no previous data
             const showMapLoading = isMapLoading && !hasMapData;
             const fallbackMapUser = getFallbackMapUser(m.id);
             
-            // ✅ DEBUG: Log para verificar el mapeo
+            // ✅ DEBUG: Log to verify mapping
             console.log(`🗺️ [Carousel] Rendering map ${m.name} (ID: ${m.id}, index: ${mapIndex}) with ${mapSpecificRankings.length} rankings`);
             
             return (

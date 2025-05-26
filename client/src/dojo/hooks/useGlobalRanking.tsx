@@ -4,13 +4,13 @@ import { addAddressPadding } from "starknet";
 import { dojoConfig } from "../dojoConfig";
 import { lookupAddresses } from '@cartridge/controller';
 
-// Interface para el modelo Player simplificado
+// Interface for simplified Player model
 export interface GlobalRankingPlayer {
     address: string;
     total_points: number;
 }
 
-// Interface para el jugador formateado en el ranking
+// Interface for formatted player in the ranking
 export interface GlobalRankingFormatted {
     id: string;
     name: string;
@@ -19,7 +19,7 @@ export interface GlobalRankingFormatted {
     isCurrentUser: boolean;
 }
 
-// Return type del hook
+// Return type of the hook
 interface UseGlobalRankingReturn {
     globalRankings: GlobalRankingFormatted[];
     currentUserGlobalRanking: GlobalRankingFormatted | null;
@@ -32,7 +32,7 @@ interface UseGlobalRankingReturn {
 // Constants
 const TORII_URL = dojoConfig.toriiUrl + "/graphql";
 
-// ✅ CORREGIDO: GraphQL Query sin orderBy (sorting en JavaScript)
+// ✅ FIXED: GraphQL Query without orderBy (sorting in JavaScript)
 const GLOBAL_RANKING_QUERY = `
     query GetGlobalRanking {
         golemRunnerPlayerModels(first: 1000) {
@@ -48,7 +48,7 @@ const GLOBAL_RANKING_QUERY = `
 `;
 
 /**
- * Normaliza una dirección para comparaciones consistentes
+ * Normalizes an address for consistent comparisons
  */
 const normalizeAddress = (address: string): string => {
     if (!address) return '';
@@ -61,7 +61,7 @@ const normalizeAddress = (address: string): string => {
 };
 
 /**
- * Convierte valor hexadecimal a número
+ * Converts hexadecimal value to number
  */
 const hexToNumber = (hexValue: string): number => {
     if (!hexValue) return 0;
@@ -79,7 +79,7 @@ const hexToNumber = (hexValue: string): number => {
 };
 
 /**
- * Formatea dirección a nombre corto (fallback)
+ * Formats address to short name (fallback)
  */
 const formatAddressToName = (address: string): string => {
     if (!address || address.length < 10) return "Unknown";
@@ -89,7 +89,7 @@ const formatAddressToName = (address: string): string => {
 };
 
 /**
- * Obtiene nombres reales usando Cartridge Controller
+ * Gets real names using Cartridge Controller
  */
 const getUserNames = async (addresses: string[]): Promise<Map<string, string>> => {
     try {
@@ -116,7 +116,7 @@ const getUserNames = async (addresses: string[]): Promise<Map<string, string>> =
 };
 
 /**
- * ✅ CORREGIDO: Fetch global ranking data from Player model
+ * ✅ FIXED: Fetch global ranking data from Player model
  */
 const fetchGlobalRankingData = async (): Promise<GlobalRankingPlayer[]> => {
     console.log("📥 [GlobalRanking] Fetching global ranking data from Player model...");
@@ -160,7 +160,7 @@ const fetchGlobalRankingData = async (): Promise<GlobalRankingPlayer[]> => {
             };
         });
         
-        // ✅ NUEVO: Filter players with points and sort by total_points descending
+        // ✅ NEW: Filter players with points and sort by total_points descending
         const playersWithPoints = players.filter(player => player.total_points > 0);
         const sortedPlayers = playersWithPoints.sort((a, b) => b.total_points - a.total_points);
         
@@ -182,7 +182,7 @@ const fetchGlobalRankingData = async (): Promise<GlobalRankingPlayer[]> => {
 };
 
 /**
- * ✅ OPTIMIZADO: Process global ranking data with usernames
+ * ✅ OPTIMIZED: Process global ranking data with usernames
  */
 const processGlobalRankingData = async (
     playersData: GlobalRankingPlayer[],
@@ -241,7 +241,7 @@ const processGlobalRankingData = async (
 };
 
 /**
- * ✅ Hook principal para Global Ranking
+ * ✅ Main hook for Global Ranking
  */
 export const useGlobalRanking = (): UseGlobalRankingReturn => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -263,7 +263,7 @@ export const useGlobalRanking = (): UseGlobalRankingReturn => {
         return normalizedAddr;
     }, [account]);
 
-    // ✅ OPTIMIZADO: Fetch function with better error handling
+    // ✅ OPTIMIZED: Fetch function with better error handling
     const refetch = useCallback(async () => {
         if (!account) {
             console.log("⚠️ [GlobalRanking] No account connected, skipping fetch");
@@ -293,7 +293,7 @@ export const useGlobalRanking = (): UseGlobalRankingReturn => {
         }
     }, [account]);
 
-    // ✅ OPTIMIZADO: Process data whenever raw data or user address changes
+    // ✅ OPTIMIZED: Process data whenever raw data or user address changes
     useEffect(() => {
         const processData = async () => {
             if (rawPlayersData.length === 0 || !userAddress) {
@@ -328,7 +328,7 @@ export const useGlobalRanking = (): UseGlobalRankingReturn => {
         }
     }, [userAddress, refetch]);
 
-    // ✅ OPTIMIZADO: Get current user's ranking with better fallback
+    // ✅ OPTIMIZED: Get current user's ranking with better fallback
     const currentUserGlobalRanking = useMemo((): GlobalRankingFormatted | null => {
         // Look for current user in processed rankings
         const globalUser = processedRankings.find(r => r.isCurrentUser);
@@ -357,25 +357,6 @@ export const useGlobalRanking = (): UseGlobalRankingReturn => {
 
     // Check if we have data
     const hasData = processedRankings.length > 0;
-
-    // ✅ OPTIMIZADO: Debug log final hook return values
-    useEffect(() => {
-        console.log("🎮 [GlobalRanking] Hook state update:");
-        console.log("  Rankings Count:", processedRankings.length);
-        console.log("  Has Data:", hasData);
-        console.log("  Is Loading:", isLoading);
-        console.log("  Error:", error?.message || "None");
-        console.log("  Current User Rank:", currentUserGlobalRanking?.rank || "Not found");
-        console.log("  Current User Score:", currentUserGlobalRanking?.score || 0);
-        
-        if (processedRankings.length > 0) {
-            console.log("  Top 3:", processedRankings.slice(0, 3).map(p => `${p.rank}. ${p.name}: ${p.score}pts`).join(', '));
-        }
-        
-        if (error) {
-            console.log("  Error Details:", error);
-        }
-    }, [processedRankings, hasData, isLoading, error, currentUserGlobalRanking]);
 
     return {
         globalRankings: processedRankings,

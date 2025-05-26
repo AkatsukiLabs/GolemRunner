@@ -36,9 +36,7 @@ export function RankingTable({
     return "bg-golem-gradient"
   }
 
-  // ✅ MEJORADO: Lógica más inteligente para mostrar usuario actual
   const shouldShowCurrentUser = () => {
-  // Verificar si el currentUser es un fallback
   const isFallbackUser = currentUser.id.includes('fallback') || currentUser.id === 'current-user' || currentUser.id === 'no-user';
   
   if (isFallbackUser) {
@@ -48,36 +46,23 @@ export function RankingTable({
   // 🌍 GLOBAL RANKING
   if (!mapId) {
     const isUserInRankings = rankings.some(p => p.isCurrentUser === true);
-    console.log(`[RankingTable] Global - Real user in rankings: ${isUserInRankings}, Rankings: ${rankings.length}`);
     
-    // Solo mostrar fallback si no hay usuario real en rankings
     return !isUserInRankings && isFallbackUser;
   }
   
   // 🗺️ MAP SPECIFIC
   if (rankings.length > 0) {
     const isUserInRankings = rankings.some(p => p.isCurrentUser === true);
-    console.log(`[RankingTable] Map ${mapId} - Real user in rankings: ${isUserInRankings}, Rankings: ${rankings.length}`);
-    
-    // Solo mostrar fallback si hay rankings pero no usuario real
+
     return !isUserInRankings && isFallbackUser;
   }
   
-  // No rankings = no mostrar nada
   return false;
 };
 
-  // ✅ MEJORADO: Preparar datos con mejor logging
   const displayPlayers: RankingTablePlayer[] = shouldShowCurrentUser() 
     ? [...rankings, { ...currentUser }]
     : rankings;
-
-  // ✅ DEBUG: Log detallado de lo que se va a mostrar
-  console.log(`🎮 [RankingTable] ${mapId ? `Map ${mapId}` : 'Global'}:`);
-  console.log(`  Input rankings: ${rankings.length}`);
-  console.log(`  Should show current user: ${shouldShowCurrentUser()}`);
-  console.log(`  Display players: ${displayPlayers.length}`);
-  console.log(`  Is loading: ${isLoading}`);
   
   if (displayPlayers.length > 0) {
     console.log(`  Players to display: ${displayPlayers.map(p => `${p.name}(${p.score}pts, rank:${p.rank})`).slice(0, 5).join(', ')}${displayPlayers.length > 5 ? '...' : ''}`);
@@ -89,7 +74,6 @@ export function RankingTable({
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
   }
 
-  // ✅ MEJORADO: Headers descriptivos según el tipo
   const getHeaders = () => {
     if (!mapId) {
       return {
@@ -128,7 +112,7 @@ export function RankingTable({
       </div>
     </div>
 
-      {/* ✅ LOADING STATE con contexto */}
+      {/* LOADING STATE con contexto */}
       {isLoading && (
         <div className="flex flex-col justify-center items-center p-8">
           <motion.div 
@@ -142,7 +126,7 @@ export function RankingTable({
         </div>
       )}
 
-      {/* ✅ EMPTY STATE mejorado con contexto específico */}
+      {/* EMPTY STATE */}
       {!isLoading && displayPlayers.length === 0 && (
         <div className="text-center py-8 text-dark font-luckiest">
           {mapId ? (
@@ -165,7 +149,7 @@ export function RankingTable({
         </div>
       )}
 
-      {/* ✅ TABLE ROWS con datos reales */}
+      {/* TABLE ROWS  */}
       {!isLoading && displayPlayers.length > 0 && (
         <div className="flex flex-col">
           {displayPlayers.map((player, idx) => (
