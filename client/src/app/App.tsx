@@ -17,7 +17,6 @@ function AppContent() {
   const { setCurrentScreen } = useMusic();
   const [currentScreen, setCurrentScreenState] = useState<Screen>("login");
   const [coins, setCoins] = useState(385);
-  const [level] = useState(3);
   const [playerAddress] = useState("0x123"); // Temporal address for testing
   const [selectedGolemId, setSelectedGolemId] = useState<number | null>(null)
 
@@ -67,8 +66,6 @@ function AppContent() {
           setSelectedGolemId(golem.id);
           handleNavigation("play");}}
           onMarketClick={() => handleNavigation("market")}
-          coins={coins}
-          level={level}
           playerAddress={playerAddress}
           onNavigation={handleNavigation}
           onNavigateLogin={() => handleNavigation("login")}
