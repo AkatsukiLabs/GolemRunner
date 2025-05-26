@@ -1,9 +1,9 @@
 {
   "world": {
-    "class_hash": "0x2660e42e300e85d14619e31ab1c51520a98ecd6ff97accefb40b62b260aeafc",
-    "address": "0x4a8ed1a46118db416888f6b98caf1e4c64bb33a20f89d98cbc59da46856fb7e",
-    "seed": "dojo_starter",
-    "name": "Dojo starter",
+    "class_hash": "0x7c9469d45a9cdbab775035afb48e1fa73fb35ab059fcb9dfb0a301aa973e783",
+    "address": "0x1afd4e39cb0444ba05366facc1d6e1aa53bfd8094bce5cfc99eac7675cfe066",
+    "seed": "golem_runner5",
+    "name": "Golem Runner",
     "entrypoints": [
       "uuid",
       "set_metadata",
@@ -1312,12 +1312,12 @@
   },
   "contracts": [
     {
-      "address": "0x76461d50a37c5c6f8167cd14ddc641cb98b4ef608f36f67fdf6748338b2626c",
-      "class_hash": "0x3960b38c19aec8dfa20bac3625b3d63c1553601ec9db43197ed20910019f2a7",
+      "address": "0x717d3dd3462dcb61bbebaf666ed40fbfbf8bb3bb49d2f7380cffa74b7f7f365",
+      "class_hash": "0x4721e86a88dc0c67deda1c66548f4b6d0357e7bcda8d2a144876ef1286113f0",
       "abi": [
         {
           "type": "impl",
-          "name": "actions__ContractImpl",
+          "name": "game__ContractImpl",
           "interface_name": "dojo::contract::interface::IContract"
         },
         {
@@ -1327,7 +1327,7 @@
         },
         {
           "type": "impl",
-          "name": "actions__DeployedContractImpl",
+          "name": "game__DeployedContractImpl",
           "interface_name": "dojo::meta::interface::IDeployedResource"
         },
         {
@@ -1366,63 +1366,144 @@
           ]
         },
         {
+          "type": "function",
+          "name": "dojo_init",
+          "inputs": [],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
           "type": "impl",
-          "name": "ActionsImpl",
-          "interface_name": "dojo_starter::systems::actions::IActions"
+          "name": "GameImpl",
+          "interface_name": "golem_runner::systems::game::IGame"
+        },
+        {
+          "type": "struct",
+          "name": "core::integer::u256",
+          "members": [
+            {
+              "name": "low",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "high",
+              "type": "core::integer::u128"
+            }
+          ]
         },
         {
           "type": "enum",
-          "name": "dojo_starter::models::Direction",
+          "name": "core::bool",
           "variants": [
             {
-              "name": "Left",
+              "name": "False",
               "type": "()"
             },
             {
-              "name": "Right",
-              "type": "()"
-            },
-            {
-              "name": "Up",
-              "type": "()"
-            },
-            {
-              "name": "Down",
+              "name": "True",
               "type": "()"
             }
           ]
         },
         {
           "type": "interface",
-          "name": "dojo_starter::systems::actions::IActions",
+          "name": "golem_runner::systems::game::IGame",
           "items": [
             {
               "type": "function",
-              "name": "spawn",
+              "name": "spawn_player",
               "inputs": [],
               "outputs": [],
               "state_mutability": "external"
             },
             {
               "type": "function",
-              "name": "move",
+              "name": "reward_player",
               "inputs": [
                 {
-                  "name": "direction",
-                  "type": "dojo_starter::models::Direction"
+                  "name": "points",
+                  "type": "core::integer::u64"
+                },
+                {
+                  "name": "coins_collected",
+                  "type": "core::integer::u64"
                 }
               ],
               "outputs": [],
               "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "update_player_ranking",
+              "inputs": [
+                {
+                  "name": "world_id",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "points",
+                  "type": "core::integer::u64"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "update_player_daily_streak",
+              "inputs": [],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "update_golem_name",
+              "inputs": [
+                {
+                  "name": "golem_id",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "name",
+                  "type": "core::felt252"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "unlock_golem_store",
+              "inputs": [
+                {
+                  "name": "golem_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "unlock_world_store",
+              "inputs": [
+                {
+                  "name": "world_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "external"
             }
           ]
-        },
-        {
-          "type": "function",
-          "name": "dojo_init",
-          "inputs": [],
-          "outputs": [],
-          "state_mutability": "view"
         },
         {
           "type": "impl",
@@ -1516,7 +1597,13 @@
         },
         {
           "type": "event",
-          "name": "dojo_starter::systems::actions::actions::Event",
+          "name": "achievement::components::achievable::AchievableComponent::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "golem_runner::systems::game::game::Event",
           "kind": "enum",
           "variants": [
             {
@@ -1528,16 +1615,27 @@
               "name": "WorldProviderEvent",
               "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
               "kind": "nested"
+            },
+            {
+              "name": "AchievableEvent",
+              "type": "achievement::components::achievable::AchievableComponent::Event",
+              "kind": "flat"
             }
           ]
         }
       ],
       "init_calldata": [],
-      "tag": "dojo_starter-actions",
-      "selector": "0x7a1c71029f2d0b38e3ac89b09931d08b6e48417e079c289ff19a8698d0cba33",
+      "tag": "golem_runner-game",
+      "selector": "0x33787671131f4105bb2c25fd939146ee80a3b1d915d723a6eee1a7490054ba8",
       "systems": [
-        "spawn",
-        "move",
+        "dojo_init",
+        "spawn_player",
+        "reward_player",
+        "update_player_ranking",
+        "update_player_daily_streak",
+        "update_golem_name",
+        "unlock_golem_store",
+        "unlock_world_store",
         "upgrade"
       ]
     }
@@ -1546,35 +1644,41 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x46d4db177d7edf355bf1e51fa72023171232b928ef3b9467dbd541611da5f83",
-      "tag": "dojo_starter-DirectionsAvailable",
-      "selector": "0x77844f1facb51e60e546a9832d56c6bd04fa23be4fd5b57290caae5e9a3c1e4"
+      "class_hash": "0x1a1753884d84b4d47542e12a36e5c002822361cff27ba4475eb31d274e7437b",
+      "tag": "golem_runner-Golem",
+      "selector": "0x5a1af4923c31f36a9a9b5cd3f717dac8c55c1e6a26e92a0e4f28d30754166db"
     },
     {
       "members": [],
-      "class_hash": "0x5a3dcd4bf5a0e6fff9ca88dcd77c6b49f1a33a1b9bbea8ce5aa5290e9470070",
-      "tag": "dojo_starter-Moves",
-      "selector": "0x2a29373f1af8348bd366a990eb3a342ef2cbe5e85160539eaca3441a673f468"
+      "class_hash": "0x3f2287ca0736b645e3c9b3b4a09d1b15c1637debf3ccfbfd180aafe43f75d27",
+      "tag": "golem_runner-Player",
+      "selector": "0x7b397b18887d22d521f615e145249e315d8f45e9a432af240d7432791cb9f49"
     },
     {
       "members": [],
-      "class_hash": "0x7231f1cec2b0ba37c39e6d919d35648d07d86a687680aa92ccb0d65fe5af17e",
-      "tag": "dojo_starter-Position",
-      "selector": "0x2ac8b4c190f7031b9fc44312e6b047a1dce0b3f2957c33a935ca7846a46dd5b"
+      "class_hash": "0x2e0439c50a73f63b5a8b627d7ba58ff4776fb26ad292e9f2a26dc51f18a0562",
+      "tag": "golem_runner-Ranking",
+      "selector": "0x57961198e16025d7c675b7937a9d6a08cbdab802295890121e96c9e86e65400"
     },
     {
       "members": [],
-      "class_hash": "0x4518971c1abf10a6c1c40f8f72fc34816dee4752d66f0f2b9d29a62f4fb3310",
-      "tag": "dojo_starter-PositionCount",
-      "selector": "0x44e8e8c3aea54e97e01563cacc08abb4a8ce8c468cd4d3a332bca12bfc2290d"
+      "class_hash": "0x415dda66c516bc466ade69771e14319ffdaa16758d979d9ef760186700bee5c",
+      "tag": "golem_runner-World",
+      "selector": "0x3439bd1ed5b4701376ee18969b23a97450b251b3707c7227722b805a987f1b9"
     }
   ],
   "events": [
     {
       "members": [],
-      "class_hash": "0x49f539cc331573abc29d729a65824485514906457af4049ff148ffe421520cb",
-      "tag": "dojo_starter-Moved",
-      "selector": "0x504403e5c02b6442527721fc464d9ea5fc8f1ee600ab5ccd5c0845d36fd45f1"
+      "class_hash": "0x19a5c06b3a8417ff3f9883be3acb0e33c835795bd81fb87a5a47e6ed7d2d3af",
+      "tag": "golem_runner-TrophyCreation",
+      "selector": "0x2e8327afc845eb1b6f80de3bed6b279ff598e76938b3ff35573d518bfd20f5a"
+    },
+    {
+      "members": [],
+      "class_hash": "0x1922d2cd8b63eccf66321673234a52126cd9f0ab1bf6298c5abee6ee80c8990",
+      "tag": "golem_runner-TrophyProgression",
+      "selector": "0xc3c0b02429d1e0239b8a2d453dca6d2d21c3be5a76b01d8617156d36865d2c"
     }
   ],
   "external_contracts": []
