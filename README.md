@@ -1,31 +1,43 @@
-# Golem Runner 🌟
+# 🧱 Golem Runner — A Web3 Endless Runner
 
-![image](client/src/assets/cover-mobile.webp)
+![cover](client/src/assets/cover-mobile.webp)
 
+**Golem Runner** is a visually stunning, mobile-first endless runner where players control elemental golems racing through vibrant, mystical realms. Built during the **Starknet Hackathon: Re{ignite}**, this game showcases the fusion of engaging gameplay with powerful on-chain infrastructure.
 
-## 📱 About
+---
 
-Golem Runner is a captivating mobile endless runner where elemental golems race through magical realms. Built during the Starknet Hackathon: Re{ignite}, this game combines fun gameplay with powerful blockchain technology!
+## 🌟 Why Golem Runner?
 
-Players can:
-- 🏃‍♂️ Control different elemental golems with simple tap controls
-- 🔮 Unlock new golem characters with unique abilities
-- 🏆 Compete on verifiable blockchain leaderboards
-- 🌍 Progress through stunning elemental worlds
-- 💰 Collect magical coins during their runs
+Designed with a sleek UI/UX and fully optimized for mobile via **PWA**, the game offers a smooth and intuitive onboarding flow using the **Cartridge Controller**. Players can unlock golems, complete achievements, and compete on secure, verifiable leaderboards — all running on Starknet’s Sepolia testnet.
 
-## ✨ Features
+We also integrated a dynamic **AI Agent** to enrich the experience with personalized challenges and interactive features.
 
-- 🎮 **Addictive Gameplay**: Simple tap/swipe controls with increasing difficulty
-- 🧱 **Collectible Golems**: Stone, Crystal, Lava and more elemental characters!
-- 📊 **Secure Leaderboards**: Powered by blockchain, no cheating possible!
-- 🎯 **Daily Challenges**: Special runs with unique rewards
-- 📱 **Complete Mobile Experience**: Optimized for Android devices
+---
+
+## 🕹️ Key Features
+
+- 🏃 Simple and addictive **tap/swipe** mechanics  
+- 🔥 Unlockable elemental golems: **Stone, Crystal, Lava**, and more  
+- 🛍️ In-game **Shop**: Spend collected coins to unlock new golems and maps  
+- 🌍 Multiple **elemental environments** with dynamic visuals  
+- 🏆 **On-chain leaderboards** — fully verifiable and cheat-proof  
+- 🧠 Integrated **AI Agent** for dynamic missions and interactions  
+- 🎯 **Daily challenges** and progression-based **achievements**  
+- 💰 Collect magical coins during each run  
+- 📱 Full **PWA mobile experience**, installable on Android/iOS  
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Backend**: [Dojo Engine](https://dojoengine.org), Cairo, Starknet
-- **Frontend**: React
-- **Mobile**: PWA
-- **Wallet**: [Cartridge Controller](https://cartridge.gg)
-- **Network**: Sepolia testnet
+- **Smart Contracts**: [Cairo](https://book.cairo-lang.org/) + [Dojo Engine](https://dojoengine.org) on Starknet  
+- **Frontend**: React + Mobile-first responsive UI  
+- **Wallet & Auth**: [Cartridge Controller](https://cartridge.gg)  
+- **Network**: Starknet Sepolia testnet  
+- **Deployment**: Web + PWA (via Railway)
+
+---
+
+## 🎮 Play Golem Runner
+
+👉🏻 [https://golemrunner.live/](https://golemrunner.live/)
