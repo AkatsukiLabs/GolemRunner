@@ -2,7 +2,7 @@
 name = "Golem Runner"
 description = "Golem Runner is a mobile endless runner game where players control elemental golems. Built using Dojo Engine and Cartridge Controller on Starknet."
 website = "https://github.com/AkatsukiLabs/GolemRunner"
-seed = "golem_runner5"
+seed = "golem_runner6"
 
 [namespace]
 default = "golem_runner"

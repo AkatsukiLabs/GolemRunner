@@ -6,7 +6,7 @@ import { constants } from "starknet";
 
 const { VITE_PUBLIC_DEPLOY_TYPE } = import.meta.env;
 
-const CONTRACT_ADDRESS_GAME = '0x717d3dd3462dcb61bbebaf666ed40fbfbf8bb3bb49d2f7380cffa74b7f7f365'
+const CONTRACT_ADDRESS_GAME = '0x681ea222117a7e68124fdb1dbbdee016a560fd453b846fb54bef34be325882d'
 
 const policies: SessionPolicies = {
   contracts: {
@@ -39,7 +39,7 @@ const options: ControllerOptions = {
   theme,
   colorMode,
   namespace: "golem_runner", 
-  slot: "golem4", 
+  slot: "golem5", 
 };
 
 const cartridgeConnector = new ControllerConnector(

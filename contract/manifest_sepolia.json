@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x7c9469d45a9cdbab775035afb48e1fa73fb35ab059fcb9dfb0a301aa973e783",
-    "address": "0x1afd4e39cb0444ba05366facc1d6e1aa53bfd8094bce5cfc99eac7675cfe066",
-    "seed": "golem_runner5",
+    "address": "0x1fe4f3da25325886ab8c89826d0af42385e36f2cdb717441532e3220d179da4",
+    "seed": "golem_runner6",
     "name": "Golem Runner",
     "entrypoints": [
       "uuid",
@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x717d3dd3462dcb61bbebaf666ed40fbfbf8bb3bb49d2f7380cffa74b7f7f365",
-      "class_hash": "0x4721e86a88dc0c67deda1c66548f4b6d0357e7bcda8d2a144876ef1286113f0",
+      "address": "0x681ea222117a7e68124fdb1dbbdee016a560fd453b846fb54bef34be325882d",
+      "class_hash": "0x3341e5d0066d25ab19de417dd772c05593d88063f6084b81b03841d4802d909",
       "abi": [
         {
           "type": "impl",

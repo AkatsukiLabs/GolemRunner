@@ -206,82 +206,82 @@ mod tests {
         assert(ranking4.points == points4, 'Points update new record');
     }
 
-    // #[test]
-    // #[available_gas(100000000)]
-    // fn test_game_flow_with_ranking() {
-    //     // Create test environment
-    //     let world = create_test_world();
-    //     let game_system = create_game_system(world);
+    #[test]
+    #[available_gas(100000000)]
+    fn test_game_flow_with_ranking() {
+        // Create test environment
+        let world = create_test_world();
+        let game_system = create_game_system(world);
 
-    //     // Set the caller address for the test
-    //     cheat_caller_address(PLAYER());
+        // Set the caller address for the test
+        cheat_caller_address(PLAYER());
 
-    //     // Spawn a player
-    //     game_system.spawn_player();
+        // Spawn a player
+        game_system.spawn_player();
 
-    //     // Simulate a complete game flow:
-    //     // 1. Player earns points and coins
-    //     // 2. Ranking is updated
-    //     // 3. Player buys new golem with coins
-    //     // 4. Player tries a different world
+        // Simulate a complete game flow:
+        // 1. Player earns points and coins
+        // 2. Ranking is updated
+        // 3. Player buys new golem with coins
+        // 4. Player tries a different world
 
-    //     // Step 1: Play in Forest world and earn rewards
-    //     let forest_id: u256 = 1;
-    //     let points_earned: u64 = 500;
-    //     let coins_earned: u64 = 15000; // Increased to have enough for both purchases
+        // Step 1: Play in Forest world and earn rewards
+        let forest_id: u256 = 1;
+        let points_earned: u64 = 500;
+        let coins_earned: u64 = 15000; // Increased to have enough for both purchases
 
-    //     // Reward player for playing
-    //     game_system.reward_player(points_earned, coins_earned);
+        // Reward player for playing
+        game_system.reward_player(points_earned, coins_earned);
 
-    //     // Update ranking
-    //     game_system.update_player_ranking(forest_id, points_earned);
+        // Update ranking
+        game_system.update_player_ranking(forest_id, points_earned);
 
-    //     // Verify player state
-    //     let player_after_forest: Player = world.read_model(PLAYER());
-    //     assert(player_after_forest.coins == coins_earned, 'Player have earned coins');
+        // Verify player state
+        let player_after_forest: Player = world.read_model(PLAYER());
+        assert(player_after_forest.coins == coins_earned, 'Player have earned coins');
 
-    //     // Verify ranking
-    //     let forest_ranking: Ranking = world.read_model((forest_id, PLAYER()));
-    //     assert(forest_ranking.points == points_earned, 'Forest ranking is updated');
+        // Verify ranking
+        let forest_ranking: Ranking = world.read_model((forest_id, PLAYER()));
+        assert(forest_ranking.points == points_earned, 'Forest ranking is updated');
 
-    //     // Step 2: Buy Fire Golem with coins
-    //     let fire_golem_id: u256 = 2;
-    //     let unlock_result = game_system.unlock_golem_store(fire_golem_id);
-    //     assert(unlock_result, 'Should unlock Fire Golem');
+        // Step 2: Buy Fire Golem with coins
+        let fire_golem_id: u256 = 2;
+        let unlock_result = game_system.unlock_golem_store(fire_golem_id);
+        assert(unlock_result, 'Should unlock Fire Golem');
 
-    //     // Verify player's coins after buying Fire Golem
-    //     let player_after_golem: Player = world.read_model(PLAYER());
-    //     assert(player_after_golem.coins == coins_earned - 5000, 'Coins deducted for golem');
+        // Verify player's coins after buying Fire Golem
+        let player_after_golem: Player = world.read_model(PLAYER());
+        assert(player_after_golem.coins == coins_earned - 5000, 'Coins deducted for golem');
 
-    //     // Step 3: Buy Volcano World with remaining coins
-    //     let volcano_id: u256 = 2;
-    //     let unlock_world_result = game_system.unlock_world_store(volcano_id);
-    //     assert(unlock_world_result, 'Should unlock Volcano World');
+        // Step 3: Buy Volcano World with remaining coins
+        let volcano_id: u256 = 2;
+        let unlock_world_result = game_system.unlock_world_store(volcano_id);
+        assert(unlock_world_result, 'Should unlock Volcano World');
 
-    //     // Verify player's coins after buying Volcano World
-    //     let player_after_world: Player = world.read_model(PLAYER());
-    //     assert(player_after_world.coins == coins_earned - 5000 - 7500, 'Coins deducted for world');
+        // Verify player's coins after buying Volcano World
+        let player_after_world: Player = world.read_model(PLAYER());
+        assert(player_after_world.coins == coins_earned - 5000 - 7500, 'Coins deducted for world');
 
-    //     // Step 4: Play in Volcano world
-    //     let volcano_points: u64 = 750;
-    //     game_system.update_player_ranking(volcano_id, volcano_points);
+        // Step 4: Play in Volcano world
+        let volcano_points: u64 = 750;
+        game_system.update_player_ranking(volcano_id, volcano_points);
 
-    //     // Verify volcano ranking
-    //     let volcano_ranking: Ranking = world.read_model((volcano_id, PLAYER()));
-    //     assert(volcano_ranking.points == volcano_points, 'Volcano ranking is created');
+        // Verify volcano ranking
+        let volcano_ranking: Ranking = world.read_model((volcano_id, PLAYER()));
+        assert(volcano_ranking.points == volcano_points, 'Volcano ranking is created');
 
-    //     // Step 5: Play in Forest again with higher score
-    //     let new_forest_points: u64 = 600;
-    //     game_system.update_player_ranking(forest_id, new_forest_points);
+        // Step 5: Play in Forest again with higher score
+        let new_forest_points: u64 = 600;
+        game_system.update_player_ranking(forest_id, new_forest_points);
 
-    //     // Verify forest ranking is updated
-    //     let updated_forest_ranking: Ranking = world.read_model((forest_id, PLAYER()));
-    //     assert(updated_forest_ranking.points == new_forest_points, 'Forest ranking is updated');
+        // Verify forest ranking is updated
+        let updated_forest_ranking: Ranking = world.read_model((forest_id, PLAYER()));
+        assert(updated_forest_ranking.points == new_forest_points, 'Forest ranking is updated');
 
-    //     // Verify volcano ranking is unchanged
-    //     let unchanged_volcano_ranking: Ranking = world.read_model((volcano_id, PLAYER()));
-    //     assert(unchanged_volcano_ranking.points == volcano_points, 'Volcano ranking is unchanged');
-    // }
+        // Verify volcano ranking is unchanged
+        let unchanged_volcano_ranking: Ranking = world.read_model((volcano_id, PLAYER()));
+        assert(unchanged_volcano_ranking.points == volcano_points, 'Volcano ranking is unchanged');
+    }
 
     #[test]
     #[available_gas(40000000)]
