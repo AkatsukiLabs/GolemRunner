@@ -1,16 +1,8 @@
 [world]
 name = "Golem Runner"
 description = "Golem Runner is a mobile endless runner game where players control elemental golems. Built using Dojo Engine and Cartridge Controller on Starknet."
-cover_uri = "file://assets/cover.png"
-icon_uri = "file://assets/icon.png"
-website = "https://github.com/dojoengine/dojo-starter"
-seed = "golem_runner4"
-
-[world.socials]
-x = "https://x.com/ohayo_dojo"
-discord = "https://discord.gg/FB2wR6uF"
-github = "https://github.com/dojoengine/dojo-starter"
-telegram = "https://t.me/dojoengine"
+website = "https://github.com/AkatsukiLabs/GolemRunner"
+seed = "golem_runner5"
 
 [namespace]
 default = "golem_runner"

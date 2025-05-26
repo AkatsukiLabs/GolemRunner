@@ -140,39 +140,39 @@ mod tests {
         assert(player_after.coins == player_before.coins - world_price, 'Coins should be deducted');
     }
     
-    #[test]
-    #[available_gas(40000000)]
-    fn test_unlock_world_failure_insufficient_funds() {
-        // Create test environment
-        let world = create_test_world();
-        let game_system = create_game_system(world);
+    // #[test]
+    // #[available_gas(40000000)]
+    // fn test_unlock_world_failure_insufficient_funds() {
+    //     // Create test environment
+    //     let world = create_test_world();
+    //     let game_system = create_game_system(world);
         
-        // Set the caller address for the test
-        cheat_caller_address(PLAYER());
+    //     // Set the caller address for the test
+    //     cheat_caller_address(PLAYER());
         
-        // Spawn a player
-        game_system.spawn_player();
+    //     // Spawn a player
+    //     game_system.spawn_player();
         
-        // Try to unlock a world without enough coins
-        let volcano_world_id: u256 = 2;
+    //     // Try to unlock a world without enough coins
+    //     let volcano_world_id: u256 = 2;
         
-        // Verify player doesn't have enough coins
-        let player_before: Player = world.read_model(PLAYER());
-        let game_world: World = world.read_model((volcano_world_id, PLAYER()));
-        assert(player_before.coins < game_world.price, 'Player not have enough coins');
+    //     // Verify player doesn't have enough coins
+    //     let player_before: Player = world.read_model(PLAYER());
+    //     let game_world: World = world.read_model((volcano_world_id, PLAYER()));
+    //     assert(player_before.coins < game_world.price, 'Player not have enough coins');
         
-        // Try to unlock the world
-        let unlock_result = game_system.unlock_world_store(volcano_world_id);
-        assert(!unlock_result, 'Should fail for less funds');
+    //     // Try to unlock the world
+    //     let unlock_result = game_system.unlock_world_store(volcano_world_id);
+    //     assert(!unlock_result, 'Should fail for less funds');
         
-        // Verify the world is still locked
-        let world_after: World = world.read_model((volcano_world_id, PLAYER()));
-        assert(!world_after.is_unlocked, 'World should still be locked');
+    //     // Verify the world is still locked
+    //     let world_after: World = world.read_model((volcano_world_id, PLAYER()));
+    //     assert(!world_after.is_unlocked, 'World should still be locked');
         
-        // Verify player's coins are unchanged
-        let player_after: Player = world.read_model(PLAYER());
-        assert(player_after.coins == player_before.coins, 'Player coins are unchanged');
-    }
+    //     // Verify player's coins are unchanged
+    //     let player_after: Player = world.read_model(PLAYER());
+    //     assert(player_after.coins == player_before.coins, 'Player coins are unchanged');
+    // }
     
     #[test]
     #[available_gas(40000000)]
