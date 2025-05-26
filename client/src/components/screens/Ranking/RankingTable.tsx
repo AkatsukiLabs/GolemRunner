@@ -1,11 +1,14 @@
 import { motion } from "framer-motion"
 import { RankingRow } from "./RankingRow"
 import { defaultMaps } from "../../../constants/maps"
+import { GlobalRankingFormatted } from "../../../dojo/hooks/useGlobalRanking"
 import { RankingPlayer } from "../../../dojo/hooks/useRankings"
 
+export type RankingTablePlayer = GlobalRankingFormatted | RankingPlayer;
+
 export interface RankingTableProps {
-  currentUser: RankingPlayer;
-  rankings?: RankingPlayer[];
+  currentUser: RankingTablePlayer;
+  rankings?: RankingTablePlayer[];
   mapId?: number;
   isLoading?: boolean;
 }
@@ -33,36 +36,36 @@ export function RankingTable({
     return "bg-golem-gradient"
   }
 
-  // ✅ FIXED: Only show currentUser if there are actual rankings OR it's the global ranking (no mapId)
   const shouldShowCurrentUser = () => {
-    // For global ranking (no mapId), always show current user if not in rankings
-    if (!mapId) {
-      const isUserInRankings = rankings.some(p => p.id === currentUser.id);
-      return !isUserInRankings;
-    }
+  const isFallbackUser = currentUser.id.includes('fallback') || currentUser.id === 'current-user' || currentUser.id === 'no-user';
+  
+  if (isFallbackUser) {
+    console.log(`[RankingTable] ${mapId ? `Map ${mapId}` : 'Global'} - Fallback user detected, evaluating...`);
+  }
+  
+  // 🌍 GLOBAL RANKING
+  if (!mapId) {
+    const isUserInRankings = rankings.some(p => p.isCurrentUser === true);
     
-    // For specific maps, only show current user if there are rankings AND user is not in them
-    if (rankings.length > 0) {
-      const isUserInRankings = rankings.some(p => p.id === currentUser.id);
-      return !isUserInRankings;
-    }
-    
-    // If no rankings for this map, don't show current user
-    return false;
-  };
+    return !isUserInRankings && isFallbackUser;
+  }
+  
+  // 🗺️ MAP SPECIFIC
+  if (rankings.length > 0) {
+    const isUserInRankings = rankings.some(p => p.isCurrentUser === true);
 
-  // ✅ FIXED: Prepare data with correct fallback logic
-  const displayPlayers: RankingPlayer[] = shouldShowCurrentUser() 
+    return !isUserInRankings && isFallbackUser;
+  }
+  
+  return false;
+};
+
+  const displayPlayers: RankingTablePlayer[] = shouldShowCurrentUser() 
     ? [...rankings, { ...currentUser }]
     : rankings;
-
-  // ✅ DEBUG: Log what we're displaying
-  console.log(`🎮 [RankingTable] Map ${mapId || 'Global'}:`);
-  console.log(`  └── Input rankings: ${rankings.length}`);
-  console.log(`  └── Should show current user: ${shouldShowCurrentUser()}`);
-  console.log(`  └── Display players: ${displayPlayers.length}`);
+  
   if (displayPlayers.length > 0) {
-    console.log(`  └── Players: ${displayPlayers.map(p => `${p.name}(${p.score})`).join(', ')}`);
+    console.log(`  Players to display: ${displayPlayers.map(p => `${p.name}(${p.score}pts, rank:${p.rank})`).slice(0, 5).join(', ')}${displayPlayers.length > 5 ? '...' : ''}`);
   }
 
   // Animation container variants
@@ -71,6 +74,21 @@ export function RankingTable({
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
   }
 
+  const getHeaders = () => {
+    if (!mapId) {
+      return {
+        scoreLabel: "Total Points"
+      }
+    } else {
+      return {
+        subtitle: null,
+        scoreLabel: "Best Score"
+      }
+    }
+  };
+
+  const headers = getHeaders();
+
   return (
     <motion.div
       className="bg-surface rounded-xl shadow-md overflow-hidden mb-12" 
@@ -78,48 +96,64 @@ export function RankingTable({
       initial="hidden"
       animate={isLoading ? "hidden" : "visible"}
     >
-      {/* Table Header */}
-      <div className={`flex justify-between items-center p-3 ${getGradientClass()} border-b border-primary/30`}>
-        <div className="font-bangers text-xl text-cream w-16 text-center drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">Rank</div>
-        <div className="font-bangers text-xl text-cream flex-1 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">Player</div>
-        <div className="font-bangers text-xl text-cream w-24 text-right drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] tracking-wide">Score</div>
+      {/* ✅ MEJORADO: Table Header con información contextual */}
+      <div className={`p-3 ${getGradientClass()} border-b border-primary/30`}>
+      {/* Main header row */}
+      <div className="flex justify-between items-center mb-2">
+        <div className="font-bangers text-xl text-cream w-16 text-center drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">
+          Rank
+        </div>
+        <div className="font-bangers text-xl text-cream flex-1 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wide">
+          Player
+        </div>
+        <div className="font-bangers text-xl text-cream w-24 text-right drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] tracking-wide">
+          {headers.scoreLabel}
+        </div>
       </div>
+    </div>
 
-      {/* Loading State */}
+      {/* LOADING STATE con contexto */}
       {isLoading && (
-        <div className="flex justify-center items-center p-8">
+        <div className="flex flex-col justify-center items-center p-8">
           <motion.div 
-            className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full"
+            className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full mb-4"
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           />
+          <p className="text-dark font-rubik text-sm">
+            {!mapId ? "Loading global rankings..." : `Loading ${defaultMaps.find(m => m.id === mapId)?.name || 'map'} rankings...`}
+          </p>
         </div>
       )}
 
-      {/* ✅ FIXED: Empty State - Only show when not loading AND no display players */}
+      {/* EMPTY STATE */}
       {!isLoading && displayPlayers.length === 0 && (
         <div className="text-center py-8 text-dark font-luckiest">
           {mapId ? (
             <>
               No rankings available for this map yet.
               <br />
-              <span className="text-sm font-rubik mt-2 block">Be the first to set a high score!</span>
+              <span className="text-sm font-rubik mt-2 block opacity-70">
+                Be the first to set a high score on {defaultMaps.find(m => m.id === mapId)?.name || 'this map'}!
+              </span>
             </>
           ) : (
             <>
-              No rankings available yet.
+              No global rankings available yet.
               <br />
-              <span className="text-sm font-rubik mt-2 block">Be the first to set a high score!</span>
+              <span className="text-sm font-rubik mt-2 block opacity-70">
+                Start playing to earn total points and appear here!
+              </span>
             </>
           )}
         </div>
       )}
 
-      {/* Table Rows */}
+      {/* TABLE ROWS  */}
       {!isLoading && displayPlayers.length > 0 && (
         <div className="flex flex-col">
           {displayPlayers.map((player, idx) => (
-            <div key={`${player.id}-${idx}`}>
+            <div key={`${player.id}-${idx}-${mapId || 'global'}`}>
               <RankingRow
                 rank={player.rank}
                 name={player.name}

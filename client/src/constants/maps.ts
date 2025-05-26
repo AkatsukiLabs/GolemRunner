@@ -5,27 +5,7 @@ import VolcanoMap  from "../assets/Maps/Volcano/VolcanoMap.webp"
 
 export const defaultMaps: Map[] = [
   {
-    id: 3,
-    name: "Ice",
-    image: IceMap,
-    unlocked: true,
-    price: 0,
-    description: "Dash through icy ruins, dodging crystals and frozen traps!",
-    highScore: 12500,
-    theme: "ice"
-  },
-  {
-    id: 2,
-    name: "Volcano",
-    image: VolcanoMap,
-    unlocked: false,
-    price: 25,
-    description: "Race lava flows and leap over erupting molten ground!",
-    highScore: 8750,
-    theme: "volcano"
-  },
-  {
-    id: 1,
+    id: 1, 
     name: "Forest",
     image: ForestMap,
     unlocked: false,
@@ -34,4 +14,24 @@ export const defaultMaps: Map[] = [
     highScore: 0,
     theme: "forest"
   },
+  {
+    id: 2, 
+    name: "Volcano", 
+    image: VolcanoMap,
+    unlocked: false,
+    price: 25,
+    description: "Race lava flows and leap over erupting molten ground!",
+    highScore: 8750,
+    theme: "volcano"
+  },
+  {
+    id: 3, 
+    name: "Ice",
+    image: IceMap,
+    unlocked: true,
+    price: 0,
+    description: "Dash through icy ruins, dodging crystals and frozen traps!",
+    highScore: 12500,
+    theme: "ice"
+  }
 ]
