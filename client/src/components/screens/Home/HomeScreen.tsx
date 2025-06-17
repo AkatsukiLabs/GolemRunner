@@ -8,7 +8,8 @@ import BackgroundParticles from "../../shared/BackgroundParticles";
 import { characters, getGolemVisualDataById } from "../../../constants/characters";
 import { TopBar } from "../../layout/TopBar";
 import bannerImg from "../../../assets/icons/banner.webp";
-import { GolemTalkModal } from "./GolemTalkModal";
+//import { GolemTalkModal } from "./GolemTalkModal";
+import { DailyMissionsModal } from "./DailyMissionsModal";
 import useAppStore from "../../../zustand/store";
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -277,10 +278,18 @@ export const HomeScreen = memo(function HomeScreen({
         </div>
       </div>
 
-      <AnimatePresence>
+      {/* <AnimatePresence>
         {showTalkModal && (
           <div className="absolute inset-0 z-50">
             <GolemTalkModal playerAddress={playerAddress} onClose={closeTalk} />
+          </div>
+        )}
+      </AnimatePresence> */}
+
+      <AnimatePresence>
+        {showTalkModal && (
+          <div className="absolute inset-0 z-50">
+            <DailyMissionsModal playerAddress={playerAddress} onClose={closeTalk} />
           </div>
         )}
       </AnimatePresence>
