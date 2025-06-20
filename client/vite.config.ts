@@ -3,15 +3,15 @@ import { defineConfig } from "vite";
 import topLevelAwait from "vite-plugin-top-level-await";
 import wasm from "vite-plugin-wasm";
 import { VitePWA } from "vite-plugin-pwa";
-//import fs from "fs";
+import fs from "fs";
 
 export default defineConfig(({ mode }) => ({
    server: {
     port: 3001,
-        //   https: {
-        //     key: fs.readFileSync("mkcert+1-key.pem"), // Path to private key file
-        //     cert: fs.readFileSync("mkcert+1.pem"),   // Path to certificate file
-        // },
+           https: {
+            key: fs.readFileSync("mkcert+1-key.pem"), // Path to private key file
+            cert: fs.readFileSync("mkcert+1.pem"),   // Path to certificate file
+        },
    },
   plugins: [
     react(),
