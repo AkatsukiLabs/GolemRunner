@@ -6,7 +6,7 @@ import { constants } from "starknet";
 
 const { VITE_PUBLIC_DEPLOY_TYPE } = import.meta.env;
 
-const CONTRACT_ADDRESS_GAME = '0x681ea222117a7e68124fdb1dbbdee016a560fd453b846fb54bef34be325882d'
+const CONTRACT_ADDRESS_GAME = '0x36a518498c1d7de4106b8904f0878e1e7b78c73614001fba22eba0adca80387'
 
 const policies: SessionPolicies = {
   contracts: {
@@ -19,6 +19,9 @@ const policies: SessionPolicies = {
         { name: "update_golem_name", entrypoint: "update_golem_name" },
         { name: "unlock_golem_store", entrypoint: "unlock_golem_store" },
         { name: "unlock_world_store", entrypoint: "unlock_world_store" },
+        { name: "create_mission", entrypoint: "create_mission" },
+        { name: "update_mission", entrypoint: "update_mission" },
+        { name: "reward_current_mission", entrypoint: "reward_current_mission" },
       ],
     },
   },
@@ -39,7 +42,7 @@ const options: ControllerOptions = {
   theme,
   colorMode,
   namespace: "golem_runner", 
-  slot: "golem5", 
+  slot: "golem6", 
 };
 
 const cartridgeConnector = new ControllerConnector(

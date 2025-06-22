@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x7c9469d45a9cdbab775035afb48e1fa73fb35ab059fcb9dfb0a301aa973e783",
-    "address": "0x1fe4f3da25325886ab8c89826d0af42385e36f2cdb717441532e3220d179da4",
-    "seed": "golem_runner6",
+    "address": "0x7c677ef29a276a115468ee7f53094720de5da6d443e6f1a2b7f4a6afb6f86b2",
+    "seed": "golem_runner7",
     "name": "Golem Runner",
     "entrypoints": [
       "uuid",
@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x681ea222117a7e68124fdb1dbbdee016a560fd453b846fb54bef34be325882d",
-      "class_hash": "0x3341e5d0066d25ab19de417dd772c05593d88063f6084b81b03841d4802d909",
+      "address": "0x36a518498c1d7de4106b8904f0878e1e7b78c73614001fba22eba0adca80387",
+      "class_hash": "0x75e15e84fe204faeaa58f91e626f7e4d0a8ca897763f28e0d96ffc1b0a52c2",
       "abi": [
         {
           "type": "impl",
@@ -1401,6 +1401,42 @@
             },
             {
               "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "golem_runner::types::world::WorldType",
+          "variants": [
+            {
+              "name": "Forest",
+              "type": "()"
+            },
+            {
+              "name": "Volcano",
+              "type": "()"
+            },
+            {
+              "name": "Glacier",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "golem_runner::types::golem::GolemType",
+          "variants": [
+            {
+              "name": "Fire",
+              "type": "()"
+            },
+            {
+              "name": "Ice",
+              "type": "()"
+            },
+            {
+              "name": "Stone",
               "type": "()"
             }
           ]
@@ -1501,6 +1537,62 @@
                   "type": "core::bool"
                 }
               ],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_mission",
+              "inputs": [
+                {
+                  "name": "target_coins",
+                  "type": "core::integer::u64"
+                },
+                {
+                  "name": "required_world",
+                  "type": "golem_runner::types::world::WorldType"
+                },
+                {
+                  "name": "required_golem",
+                  "type": "golem_runner::types::golem::GolemType"
+                },
+                {
+                  "name": "description",
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "update_mission",
+              "inputs": [
+                {
+                  "name": "mission_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "reward_current_mission",
+              "inputs": [
+                {
+                  "name": "mission_id",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "coins_collected",
+                  "type": "core::integer::u64"
+                }
+              ],
+              "outputs": [],
               "state_mutability": "external"
             }
           ]
@@ -1636,6 +1728,9 @@
         "update_golem_name",
         "unlock_golem_store",
         "unlock_world_store",
+        "create_mission",
+        "update_mission",
+        "reward_current_mission",
         "upgrade"
       ]
     }
@@ -1647,6 +1742,12 @@
       "class_hash": "0x1a1753884d84b4d47542e12a36e5c002822361cff27ba4475eb31d274e7437b",
       "tag": "golem_runner-Golem",
       "selector": "0x5a1af4923c31f36a9a9b5cd3f717dac8c55c1e6a26e92a0e4f28d30754166db"
+    },
+    {
+      "members": [],
+      "class_hash": "0x2d620c3d3bc76ab5016d9707bcc9ca995ee446492cb26fc41744600d04ecf0f",
+      "tag": "golem_runner-Mission",
+      "selector": "0x53894aba2c90ef9aeb7f37e5690c7f994547a79dcce91e9f2f098baa85587a"
     },
     {
       "members": [],

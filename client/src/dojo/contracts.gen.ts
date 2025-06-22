@@ -1,7 +1,49 @@
 import { DojoProvider, DojoCall } from "@dojoengine/core";
-import { Account, AccountInterface } from "starknet";
+import { Account, AccountInterface, CairoCustomEnum, ByteArray } from "starknet";
 
 export function setupWorld(provider: DojoProvider) {
+
+	const build_game_createMission_calldata = (targetCoins: number, requiredWorld: CairoCustomEnum, requiredGolem: CairoCustomEnum, description: ByteArray): DojoCall => {
+		return {
+			contractName: "game",
+			entrypoint: "create_mission",
+			calldata: [targetCoins, requiredWorld, requiredGolem, description],
+		};
+	};
+
+	const game_createMission = async (snAccount: Account | AccountInterface, targetCoins: number, requiredWorld: CairoCustomEnum, requiredGolem: CairoCustomEnum, description: ByteArray) => {
+		try {
+			return await provider.execute(
+				snAccount as any,
+				build_game_createMission_calldata(targetCoins, requiredWorld, requiredGolem, description),
+				"golem_runner",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_rewardCurrentMission_calldata = (missionId: number, coinsCollected: number): DojoCall => {
+		return {
+			contractName: "game",
+			entrypoint: "reward_current_mission",
+			calldata: [missionId, coinsCollected],
+		};
+	};
+
+	const game_rewardCurrentMission = async (snAccount: Account | AccountInterface, missionId: number, coinsCollected: number) => {
+		try {
+			return await provider.execute(
+				snAccount as any,
+				build_game_rewardCurrentMission_calldata(missionId, coinsCollected),
+				"golem_runner",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
 
 	const build_game_rewardPlayer_calldata = (points: number, coinsCollected: number): DojoCall => {
 		return {
@@ -108,6 +150,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_game_updateMission_calldata = (missionId: number): DojoCall => {
+		return {
+			contractName: "game",
+			entrypoint: "update_mission",
+			calldata: [missionId],
+		};
+	};
+
+	const game_updateMission = async (snAccount: Account | AccountInterface, missionId: number) => {
+		try {
+			return await provider.execute(
+				snAccount as any,
+				build_game_updateMission_calldata(missionId),
+				"golem_runner",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_game_updatePlayerDailyStreak_calldata = (): DojoCall => {
 		return {
 			contractName: "game",
@@ -154,6 +217,10 @@ export function setupWorld(provider: DojoProvider) {
 
 	return {
 		game: {
+			createMission: game_createMission,
+			buildCreateMissionCalldata: build_game_createMission_calldata,
+			rewardCurrentMission: game_rewardCurrentMission,
+			buildRewardCurrentMissionCalldata: build_game_rewardCurrentMission_calldata,
 			rewardPlayer: game_rewardPlayer,
 			buildRewardPlayerCalldata: build_game_rewardPlayer_calldata,
 			spawnPlayer: game_spawnPlayer,
@@ -164,6 +231,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildUnlockWorldStoreCalldata: build_game_unlockWorldStore_calldata,
 			updateGolemName: game_updateGolemName,
 			buildUpdateGolemNameCalldata: build_game_updateGolemName_calldata,
+			updateMission: game_updateMission,
+			buildUpdateMissionCalldata: build_game_updateMission_calldata,
 			updatePlayerDailyStreak: game_updatePlayerDailyStreak,
 			buildUpdatePlayerDailyStreakCalldata: build_game_updatePlayerDailyStreak_calldata,
 			updatePlayerRanking: game_updatePlayerRanking,

@@ -16,12 +16,34 @@ export interface Golem {
 
 // Type definition for `golem_runner::models::golem::GolemValue` struct
 export interface GolemValue {
-	name: number;
-	description: number;
+	name: string;
+	description: string;
 	price: number;
 	rarity: RarityEnum;
 	is_starter: boolean;
 	is_unlocked: boolean;
+}
+
+// Type definition for `golem_runner::models::mission::Mission` struct
+export interface Mission {
+	id: number;
+	player_id: string;
+	target_coins: number;
+	required_world: WorldTypeEnum;
+	required_golem: GolemTypeEnum;
+	description: string;
+	status: MissionStatusEnum;
+	created_at: number;
+}
+
+// Type definition for `golem_runner::models::mission::MissionValue` struct
+export interface MissionValue {
+	target_coins: number;
+	required_world: WorldTypeEnum;
+	required_golem: GolemTypeEnum;
+	description: string;
+	status: MissionStatusEnum;
+	created_at: number;
 }
 
 // Type definition for `golem_runner::models::player::Player` struct
@@ -40,9 +62,9 @@ export interface Player {
 export interface PlayerValue {
 	coins: number;
 	total_points: number;
-	level: number;
 	daily_streak: number;
 	last_active_day: number;
+	level: number;
 	experience: number;
 	creation_day: number;
 }
@@ -72,8 +94,8 @@ export interface World {
 
 // Type definition for `golem_runner::models::world::WorldValue` struct
 export interface WorldValue {
-	name: number;
-	description: number;
+	name: string;
+	description: string;
 	price: number;
 	is_starter: boolean;
 	is_unlocked: boolean;
@@ -131,6 +153,21 @@ export interface Task {
 	description: string;
 }
 
+// Type definition for `golem_runner::types::golem::GolemType` enum
+export type GolemType = {
+	Fire: string;
+	Ice: string;
+	Stone: string;
+}
+export type GolemTypeEnum = CairoCustomEnum;
+
+// Type definition for `golem_runner::types::mission_status::MissionStatus` enum
+export type MissionStatus = {
+	Pending: string;
+	Completed: string;
+}
+export type MissionStatusEnum = CairoCustomEnum;
+
 // Type definition for `golem_runner::types::rarity::Rarity` enum
 export type Rarity = {
 	Basic: string;
@@ -143,10 +180,20 @@ export type Rarity = {
 }
 export type RarityEnum = CairoCustomEnum;
 
+// Type definition for `golem_runner::types::world::WorldType` enum
+export type WorldType = {
+	Forest: string;
+	Volcano: string;
+	Glacier: string;
+}
+export type WorldTypeEnum = CairoCustomEnum;
+
 export interface SchemaType extends ISchemaType {
 	golem_runner: {
 		Golem: Golem,
 		GolemValue: GolemValue,
+		Mission: Mission,
+		MissionValue: MissionValue,
 		Player: Player,
 		PlayerValue: PlayerValue,
 		Ranking: Ranking,
@@ -171,30 +218,64 @@ export const schema: SchemaType = {
 			description: "",
 			price: 0,
 		rarity: new CairoCustomEnum({ 
-				Basic: "Basic",
-				Common: "Common",
-				Uncommon: "Uncommon",
-				Rare: "Rare",
-				VeryRare: "VeryRare",
-				Epic: "Epic",
-				Unique: "Unique", }),
+			Basic: "Basic",
+			Common: "Common",
+			Uncommon: "Uncommon",
+			Rare: "Rare",
+			VeryRare: "VeryRare",
+			Epic: "Epic",
+			Unique: "Unique", }),
 			is_starter: false,
 			is_unlocked: false,
 		},
 		GolemValue: {
-			name: 0,
-			description: 0,
+			name: "",
+			description: "",
 			price: 0,
 		rarity: new CairoCustomEnum({ 
-				Basic: "Basic",
-				Common: "Common",
-				Uncommon: "Uncommon",
-				Rare: "Rare",
-				VeryRare: "VeryRare",
-				Epic: "Epic",
-				Unique: "Unique", }),
+			Basic: "Basic",
+			Common: "Common",
+			Uncommon: "Uncommon",
+			Rare: "Rare",
+			VeryRare: "VeryRare",
+			Epic: "Epic",
+			Unique: "Unique", }),
 			is_starter: false,
 			is_unlocked: false,
+		},
+		Mission: {
+		id: 0,
+			player_id: "",
+			target_coins: 0,
+		required_world: new CairoCustomEnum({ 
+				Forest: "Forest",
+				Volcano: "Volcano",
+				Glacier: "Glacier", }),
+		required_golem: new CairoCustomEnum({ 
+				Fire: "Fire",
+				Ice: "Ice",
+				Stone: "Stone", }),
+		description: "",
+		status: new CairoCustomEnum({ 
+				Pending: "Pending",
+				Completed: "Completed", }),
+			created_at: 0,
+		},
+		MissionValue: {
+			target_coins: 0,
+		required_world: new CairoCustomEnum({ 
+				Forest: "Forest",
+				Volcano: "Volcano",
+				Glacier: "Glacier", }),
+		required_golem: new CairoCustomEnum({ 
+				Fire: "Fire",
+				Ice: "Ice",
+				Stone: "Stone", }),
+		description: "",
+		status: new CairoCustomEnum({ 
+				Pending: "Pending",
+				Completed: "Completed", }),
+			created_at: 0,
 		},
 		Player: {
 			address: "",
@@ -233,68 +314,73 @@ export const schema: SchemaType = {
 			is_unlocked: false,
 		},
 		WorldValue: {
-			name: 0,
-			description: 0,
+			name: "",
+			description: "",
 			price: 0,
 			is_starter: false,
 			is_unlocked: false,
 		},
 	},
-	achievement: {
-		TrophyCreation: {
-			id: 0,
-			hidden: false,
-			index: 0,
-			points: 0,
-			start: 0,
-			end: 0,
-			group: 0,
-			icon: 0,
-			title: 0,
-			description: "",
-			tasks: [{ id: 0, total: 0, description: "", }],
-			data: "",
-		},
-		TrophyCreationValue: {
-			hidden: false,
-			index: 0,
-			points: 0,
-			start: 0,
-			end: 0,
-			group: 0,
-			icon: 0,
-			title: 0,
-			description: "",
-			tasks: [{ id: 0, total: 0, description: "", }],
-			data: "",
-		},
-		TrophyProgression: {
-			player_id: 0,
-			task_id: 0,
-			count: 0,
-			time: 0,
-		},
-		TrophyProgressionValue: {
-			count: 0,
-			time: 0,
-		},
-		Task: {
-			id: 0,
-			total: 0,
-			description: "",
-		},
-	}
+		achievement: {
+			TrophyCreation: {
+				id: 0,
+				hidden: false,
+				index: 0,
+				points: 0,
+				start: 0,
+				end: 0,
+				group: 0,
+				icon: 0,
+				title: 0,
+				description: "",
+				tasks: [{ id: 0, total: 0, description: "", }],
+				data: "",
+			},
+			TrophyCreationValue: {
+				hidden: false,
+				index: 0,
+				points: 0,
+				start: 0,
+				end: 0,
+				group: 0,
+				icon: 0,
+				title: 0,
+				description: "",
+				tasks: [{ id: 0, total: 0, description: "", }],
+				data: "",
+			},
+			TrophyProgression: {
+				player_id: 0,
+				task_id: 0,
+				count: 0,
+				time: 0,
+			},
+			TrophyProgressionValue: {
+				count: 0,
+				time: 0,
+			},
+			Task: {
+				id: 0,
+				total: 0,
+				description: "",
+			},
+		}
 };
 export enum ModelsMapping {
 	Golem = 'golem_runner-Golem',
 	GolemValue = 'golem_runner-GolemValue',
+	Mission = 'golem_runner-Mission',
+	MissionValue = 'golem_runner-MissionValue',
 	Player = 'golem_runner-Player',
 	PlayerValue = 'golem_runner-PlayerValue',
 	Ranking = 'golem_runner-Ranking',
 	RankingValue = 'golem_runner-RankingValue',
 	World = 'golem_runner-World',
 	WorldValue = 'golem_runner-WorldValue',
+	GolemType = 'golem_runner-GolemType',
+	MissionStatus = 'golem_runner-MissionStatus',
 	Rarity = 'golem_runner-Rarity',
+	WorldType = 'golem_runner-WorldType',
 	TrophyCreation = 'achievement-TrophyCreation',
 	TrophyCreationValue = 'achievement-TrophyCreationValue',
 	TrophyProgression = 'achievement-TrophyProgression',
