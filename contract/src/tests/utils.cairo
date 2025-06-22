@@ -18,6 +18,7 @@ pub mod utils {
     use golem_runner::models::golem::{m_Golem};
     use golem_runner::models::player::{m_Player};
     use golem_runner::models::ranking::{m_Ranking};
+    use golem_runner::models::mission::{m_Mission};
 
     // ------- Constants -------
     pub fn PLAYER() -> ContractAddress {
@@ -33,6 +34,7 @@ pub mod utils {
                 TestResource::Model(m_Golem::TEST_CLASS_HASH),
                 TestResource::Model(m_Player::TEST_CLASS_HASH),
                 TestResource::Model(m_Ranking::TEST_CLASS_HASH),
+                TestResource::Model(m_Mission::TEST_CLASS_HASH),
                 TestResource::Event(achievement::events::index::e_TrophyCreation::TEST_CLASS_HASH),
                 TestResource::Event(achievement::events::index::e_TrophyProgression::TEST_CLASS_HASH),
                 TestResource::Contract(game::TEST_CLASS_HASH),

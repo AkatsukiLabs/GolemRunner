@@ -1,3 +1,7 @@
+// Types imports
+use golem_runner::types::golem::{GolemType};
+use golem_runner::types::world::{WorldType};
+
 // Interface definition
 #[starknet::interface]
 pub trait IGame<T> {
@@ -10,6 +14,10 @@ pub trait IGame<T> {
     // --------- Unlock Items ---------
     fn unlock_golem_store(ref self: T, golem_id: u256) -> bool;
     fn unlock_world_store(ref self: T, world_id: u256) -> bool;
+    // --------- Daily Missions  ---------
+    fn create_mission(ref self: T, target_coins: u64, required_world: WorldType,required_golem: GolemType,description: ByteArray);
+    fn update_mission(ref self: T, mission_id: u256) -> bool;
+    fn reward_current_mission(ref self: T, mission_id: u256, coins_collected: u64);
 }
 
 #[dojo::contract]
@@ -18,6 +26,9 @@ pub mod game {
     use super::super::super::models::player::PlayerTrait;
     use super::super::super::models::golem::{Golem, GolemTrait};
     use super::{IGame};
+
+    use golem_runner::types::golem::{GolemType};
+    use golem_runner::types::world::{WorldType};
 
     // Achievement import
     use golem_runner::achievements::achievement::{Achievement, AchievementTrait};
@@ -28,6 +39,13 @@ pub mod game {
     // Starknet imports
     use core::num::traits::{SaturatingAdd, SaturatingMul};
     use starknet::{get_block_timestamp};
+
+    // Starknet imports
+    #[allow(unused_imports)]
+    use starknet::storage::{ 
+        StoragePointerWriteAccess, 
+        StoragePointerReadAccess, 
+    };
 
     // Constant import
     use golem_runner::constants;
@@ -56,6 +74,7 @@ pub mod game {
     struct Storage {
         #[substorage(v0)]
         achievable: AchievableComponent::Storage,
+        mission_counter: u256,
     }
 
     #[event]
@@ -68,6 +87,8 @@ pub mod game {
     // Constructor
     fn dojo_init(ref self: ContractState) {
         let mut world = self.world(@"golem_runner");
+
+        self.mission_counter.write(1);
 
         let mut achievement_id: u8 = 1;
         while achievement_id <= constants::ACHIEVEMENTS_COUNT {
@@ -218,5 +239,51 @@ pub mod game {
 
             store.unlock_world(world_id)
         }
+
+        // --------- Daily Missions  ---------
+
+        // Method to create a new mission
+        fn create_mission(
+            ref self: ContractState, 
+            target_coins: u64,
+            required_world: WorldType,
+            required_golem: GolemType,
+            description: ByteArray
+        ) {
+            let mut world = self.world(@"golem_runner");
+            let store = StoreTrait::new(world);
+
+            let current_mission_id = self.mission_counter.read();
+    
+            // Create new mission using store method
+            store.new_mission(
+                current_mission_id, 
+                target_coins, 
+                required_world, 
+                required_golem, 
+                description
+            );
+
+            self.mission_counter.write(current_mission_id+1);
+        }
+
+        // Method to update a mission
+        fn update_mission(ref self: ContractState, mission_id: u256) -> bool {
+            let mut world = self.world(@"golem_runner");
+            let mut store = StoreTrait::new(world);
+        
+            // Update the mission status using store method
+            store.update_mission_status(mission_id)
+        }
+
+        // Method to reward the player for completing a mission
+        fn reward_current_mission(ref self: ContractState, mission_id: u256, coins_collected: u64) {
+            let mut world = self.world(@"golem_runner");
+            let mut store = StoreTrait::new(world);
+
+            // Reward the player with coins collected
+            store.reward_mission(mission_id, coins_collected);
+        }
+
     }
 }

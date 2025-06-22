@@ -1,6 +1,6 @@
 use core::byte_array::ByteArrayTrait;
 
-#[derive(Drop, Serde, IntrospectPacked, Debug)]
+#[derive(Drop, Serde, IntrospectPacked, Debug, PartialEq, Copy)]
 pub enum WorldType {
     Forest,   
     Volcano, 
