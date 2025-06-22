@@ -230,8 +230,6 @@ const useAppStore = create<AppStore>()(
         worlds: state.worlds,
         currentGolem: state.currentGolem,
         currentWorld: state.currentWorld,
-        missions: state.missions,
-        lastMissionFetch: state.lastMissionFetch, // persist last fetch time
       }),
     }
   )

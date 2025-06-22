@@ -8,6 +8,7 @@ import coinIcon from "../../../assets/icons/CoinIcon.webp";
 import { useMissionsInit } from "../../../dojo/hooks/useMissions";
 import { Mission } from "../../../dojo/bindings";
 import { MissionDisplayData } from "../../types/missionTypes";
+//import { debugTimeCalculations } from '../../../utils/TimeHelpers';
 
 interface DailyMissionsModalProps {
   /** Callback to close the modal */
@@ -15,28 +16,68 @@ interface DailyMissionsModalProps {
 }
 
 /**
- * Converts Mission bindings to display data for UI
+ * 🛠️ FIXED: Safe function to extract enum variant 
+ */
+const getEnumVariant = (enumObj: any, defaultValue: string): string => {
+  if (!enumObj) return defaultValue;
+  
+  // Try activeVariant function first
+  if (typeof enumObj.activeVariant === 'function') {
+    try {
+      return enumObj.activeVariant();
+    } catch (error) {
+      console.warn("activeVariant failed:", error);
+    }
+  }
+  
+  // Try variant property format {variant: {Key: 'Value'}}
+  if (enumObj.variant && typeof enumObj.variant === 'object') {
+    const keys = Object.keys(enumObj.variant);
+    if (keys.length > 0) {
+      return keys[0]; // Return first key
+    }
+  }
+  
+  // Try direct object format {Key: 'Value'}
+  if (typeof enumObj === 'object') {
+    const keys = Object.keys(enumObj);
+    if (keys.length > 0) {
+      return keys[0]; // Return first key
+    }
+  }
+  
+  // Fallback
+  return defaultValue;
+};
+
+/**
+ * 🛠️ FIXED: Converts Mission bindings to display data for UI
  */
 const missionToDisplayData = (mission: Mission): MissionDisplayData => {
+  console.log("🔍 Converting mission to display data:", mission);
+  
   // Determine difficulty based on target_coins
   let difficulty: 'Easy' | 'Mid' | 'Hard' = 'Easy';
   if (mission.target_coins >= 1000) difficulty = 'Hard';
   else if (mission.target_coins >= 500) difficulty = 'Mid';
 
-  // Extract world and golem names
-  const worldVariant = mission.required_world.activeVariant();
-  const golemVariant = mission.required_golem.activeVariant();
+  // 🛠️ FIXED: Safe extraction of world and golem variants
+  const worldVariant = getEnumVariant(mission.required_world, 'Forest');
+  const golemVariant = getEnumVariant(mission.required_golem, 'Fire');
+  const statusVariant = getEnumVariant(mission.status, 'Pending');
+  
+  console.log("🔍 Extracted variants:", { worldVariant, golemVariant, statusVariant });
   
   const requiredWorld = worldVariant.charAt(0).toUpperCase() + worldVariant.slice(1);
   const requiredGolem = golemVariant.charAt(0).toUpperCase() + golemVariant.slice(1);
 
   // Check if completed
-  const completed = mission.status.activeVariant() === 'Completed';
+  const completed = statusVariant === 'Completed';
 
   // Generate a title from description (first few words)
   const title = mission.description.split(' ').slice(0, 3).join(' ') || 'Daily Mission';
 
-  return {
+  const displayData: MissionDisplayData = {
     id: mission.id.toString(), // Convert to string for compatibility
     title,
     description: mission.description,
@@ -47,6 +88,9 @@ const missionToDisplayData = (mission: Mission): MissionDisplayData => {
     completed,
     claimed: false // UI state, will be managed locally
   };
+  
+  console.log("✅ Created display data:", displayData);
+  return displayData;
 };
 
 export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
@@ -77,6 +121,7 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
   useEffect(() => {
     if (playerAddress) {
       console.log("🚀 Modal opened, initializing missions for:", playerAddress);
+      //debugTimeCalculations();
       initializeMissions();
     }
   }, [playerAddress, initializeMissions]);

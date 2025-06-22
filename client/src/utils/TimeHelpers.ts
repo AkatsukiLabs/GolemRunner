@@ -8,8 +8,8 @@ export const SECONDS_PER_DAY = 86400; // 24 * 60 * 60
 export const MILLISECONDS_PER_DAY = SECONDS_PER_DAY * 1000;
 
 /**
- * Converts a Unix timestamp (in seconds) to day number
- * Matches the Cairo implementation: timestamp / SECONDS_PER_DAY
+ * Converts a Unix timestamp (in seconds) to day number  
+ * 🛠️ FIX: This should match Cairo exactly
  * @param timestamp Unix timestamp in seconds
  * @returns Day number since Unix epoch
  */
@@ -18,23 +18,25 @@ export function unixTimestampToDay(timestamp: number): number {
 }
 
 /**
- * Gets the current day timestamp (start of day in seconds)
- * This is what we'll use to query missions for "today"
+ * 🛠️ FIX: Gets the current day NUMBER (not timestamp)
+ * This matches exactly what the Cairo contract does:
+ * Timestamp::unix_timestamp_to_day(current_timestamp)
+ * @returns Day number since Unix epoch (like 20261)
+ */
+export function getCurrentDay(): number {
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  return Math.floor(nowSeconds / SECONDS_PER_DAY);
+}
+
+/**
+ * 🛠️ FIX: Gets current day timestamp for START of day
+ * This is different from getCurrentDay() - this gives start of day timestamp
  * @returns Unix timestamp for start of current day in seconds
  */
 export function getCurrentDayTimestamp(): number {
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return Math.floor(startOfDay.getTime() / 1000); // Convert to seconds
-}
-
-/**
- * Gets the current day number
- * @returns Current day number since Unix epoch
- */
-export function getCurrentDay(): number {
-  const now = Math.floor(Date.now() / 1000); 
-  return Math.floor(now / SECONDS_PER_DAY); 
+  return Math.floor(startOfDay.getTime() / 1000);
 }
 
 /**
@@ -50,8 +52,9 @@ export function isDifferentDay(timestamp1: number, timestamp2: number): boolean 
 }
 
 /**
- * Checks if a mission was created today
- * @param missionCreatedAt Mission's created_at timestamp (from contract, in seconds)
+ * 🛠️ FIX: Checks if a mission was created today
+ * Mission created_at is stored as DAY NUMBER in Cairo contract
+ * @param missionCreatedAt Mission's created_at (day number from contract)
  * @returns true if mission was created today
  */
 export function isMissionFromToday(missionCreatedAt: number): boolean {
@@ -107,6 +110,31 @@ export function getDayTimestamp(daysOffset: number = 0): number {
   const now = new Date();
   const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysOffset);
   return Math.floor(targetDate.getTime() / 1000);
+}
+
+/**
+ * 🛠️ DEBUG: Function to validate our calculations
+ */
+export function debugTimeCalculations() {
+  const now = Date.now();
+  const nowSeconds = Math.floor(now / 1000);
+  const currentDay = getCurrentDay();
+  const currentDayTimestamp = getCurrentDayTimestamp();
+  
+  console.log('=== Time Debug - Expected to match blockchain ===');
+  console.log('Current time (ms):', now);
+  console.log('Current time (seconds):', nowSeconds);
+  console.log('Current DAY NUMBER (for GraphQL):', currentDay);
+  console.log('Start of day timestamp:', currentDayTimestamp);
+  console.log('Blockchain mission created_at example:', 20261);
+  console.log('Do they match timezone?', currentDay, 'vs', 20261);
+  
+  // Calculate what day 20261 represents
+  const blockchainDayAsDate = new Date(20261 * SECONDS_PER_DAY * 1000);
+  console.log('Blockchain day 20261 represents:', blockchainDayAsDate.toDateString());
+  
+  const todayAsDay = getCurrentDay();
+  console.log('Today as day number:', todayAsDay);
 }
 
 // Debug utility to validate our time calculations

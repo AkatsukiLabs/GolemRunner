@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useAccount } from "@starknet-react/core";
 import { addAddressPadding, CairoCustomEnum } from "starknet";
 import { useDojoSDK } from "@dojoengine/sdk/react";
@@ -13,8 +13,7 @@ import {
   parseElizaResponse 
 } from '../../components/types/missionTypes';
 import { 
-  getCurrentDay,
-  getCurrentDayTimestamp, 
+  getCurrentDay, 
   isMissionCacheStale, 
   isMissionFromToday 
 } from '../../utils/TimeHelpers';
@@ -93,38 +92,58 @@ const hexToNumber = (hexValue: string | number): number => {
 };
 
 /**
+ * Helper function to safely create CairoCustomEnum
+ */
+const createCairoEnum = (rawValue: any, enumMap: Record<string, string>, defaultValue: string): CairoCustomEnum => {
+  // Handle null/undefined
+  if (!rawValue) {
+    return new CairoCustomEnum({ [defaultValue]: defaultValue });
+  }
+  
+  // If it's already a string
+  if (typeof rawValue === 'string') {
+    const enumKey = enumMap[rawValue] ? rawValue : defaultValue;
+    return new CairoCustomEnum({ [enumKey]: enumKey });
+  }
+  
+  // Handle Torii object format {Pending: {}} or {variant: {Pending: 'Pending'}}
+  if (typeof rawValue === 'object') {
+    // Check if it has variant property first
+    if (rawValue.variant && typeof rawValue.variant === 'object') {
+      for (const [key, value] of Object.entries(rawValue.variant)) {
+        if (enumMap[key]) {
+          return new CairoCustomEnum({ [key]: key });
+        }
+      }
+    }
+    
+    // Check direct object format {Pending: {}}
+    for (const [key, value] of Object.entries(rawValue)) {
+      if (enumMap[key]) {
+        return new CairoCustomEnum({ [key]: key });
+      }
+    }
+  }
+  
+  // Fallback to default
+  return new CairoCustomEnum({ [defaultValue]: defaultValue });
+};
+
+/**
  * Converts raw Torii response to Mission binding format
  */
 const toriiNodeToMission = (rawNode: RawMissionNode): Mission => {
-  // Extract world type from Cairo enum
-  let required_world: CairoCustomEnum;
-  if (rawNode.required_world?.Volcano !== undefined) {
-    required_world = new CairoCustomEnum({ Volcano: "Volcano" });
-  } else if (rawNode.required_world?.Glacier !== undefined) {
-    required_world = new CairoCustomEnum({ Glacier: "Glacier" });
-  } else {
-    required_world = new CairoCustomEnum({ Forest: "Forest" });
-  }
+  // Enum maps
+  const worldEnumMap = { Volcano: "Volcano", Glacier: "Glacier", Forest: "Forest" };
+  const golemEnumMap = { Ice: "Ice", Stone: "Stone", Fire: "Fire" };
+  const statusEnumMap = { Completed: "Completed", Pending: "Pending" };
+  
+  // Create enums safely
+  const required_world = createCairoEnum(rawNode.required_world, worldEnumMap, "Forest");
+  const required_golem = createCairoEnum(rawNode.required_golem, golemEnumMap, "Fire");
+  const status = createCairoEnum(rawNode.status, statusEnumMap, "Pending");
 
-  // Extract golem type from Cairo enum
-  let required_golem: CairoCustomEnum;
-  if (rawNode.required_golem?.Ice !== undefined) {
-    required_golem = new CairoCustomEnum({ Ice: "Ice" });
-  } else if (rawNode.required_golem?.Stone !== undefined) {
-    required_golem = new CairoCustomEnum({ Stone: "Stone" });
-  } else {
-    required_golem = new CairoCustomEnum({ Fire: "Fire" });
-  }
-
-  // Extract status from Cairo enum
-  let status: CairoCustomEnum;
-  if (rawNode.status?.Completed !== undefined) {
-    status = new CairoCustomEnum({ Completed: "Completed" });
-  } else {
-    status = new CairoCustomEnum({ Pending: "Pending" });
-  }
-
-  return {
+  const mission: Mission = {
     id: hexToNumber(rawNode.id),
     player_id: rawNode.player_id,
     target_coins: hexToNumber(rawNode.target_coins),
@@ -134,6 +153,29 @@ const toriiNodeToMission = (rawNode: RawMissionNode): Mission => {
     status,
     created_at: hexToNumber(rawNode.created_at)
   };
+  
+  // Test and patch status if needed
+  try {
+    mission.status.activeVariant();
+  } catch (error) {
+    // If activeVariant fails, create a working enum manually
+    let statusKey = "Pending"; // default
+    
+    if (mission.status && typeof mission.status === 'object') {
+      const statusObj = mission.status as any;
+      
+      if (statusObj.variant) {
+        if (statusObj.variant.Pending !== undefined) statusKey = "Pending";
+        else if (statusObj.variant.Completed !== undefined) statusKey = "Completed";
+      }
+      else if (statusObj.Pending !== undefined) statusKey = "Pending";
+      else if (statusObj.Completed !== undefined) statusKey = "Completed";
+    }
+    
+    mission.status = new CairoCustomEnum({ [statusKey]: statusKey });
+  }
+  
+  return mission;
 };
 
 /**
@@ -141,17 +183,8 @@ const toriiNodeToMission = (rawNode: RawMissionNode): Mission => {
  */
 const fetchMissionsFromTorii = async (playerAddress: string): Promise<Mission[]> => {
   try {
-    // 🔍 DEBUG: Ver qué timestamp estamos calculando
-    const dayTimestamp = getCurrentDayTimestamp();
-    const currentDayNumber = getCurrentDay(); // Este debería ser similar a 20261
+    const currentDay = getCurrentDay();
     
-    console.log("📡 Fetching missions for player:", playerAddress);
-    console.log("🕐 Day timestamp (start of day in seconds):", dayTimestamp);
-    console.log("🕐 Current day number:", currentDayNumber);
-    console.log("🕐 Blockchain missions have created_at:", 20261);
-    
-    // 🛠️ FIX: Usar day number (integer) en lugar de timestamp (string)
-    // El contrato usa Timestamp::unix_timestamp_to_day() que devuelve el día número
     const response = await fetch(TORII_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -159,24 +192,21 @@ const fetchMissionsFromTorii = async (playerAddress: string): Promise<Mission[]>
         query: MISSIONS_QUERY,
         variables: { 
           playerAddress,
-          dayTimestamp: currentDayNumber // 🛠️ FIX: usar día número como integer
+          dayTimestamp: currentDay
         }
       }),
     });
 
     const result = await response.json();
-    console.log("📥 GraphQL missions response:", result);
     
     if (!result.data?.golemRunnerMissionModels?.edges) {
-      console.log("ℹ️ No missions found in Torii response");
       return [];
     }
 
-    const missions = result.data.golemRunnerMissionModels.edges.map((edge: MissionEdge) => 
-      toriiNodeToMission(edge.node)
-    );
+    const missions = result.data.golemRunnerMissionModels.edges.map((edge: MissionEdge) => {
+      return toriiNodeToMission(edge.node);
+    });
 
-    console.log("✅ Parsed missions from Torii:", missions);
     return missions;
   } catch (error) {
     console.error("❌ Error fetching missions from Torii:", error);
@@ -227,6 +257,11 @@ export const useMissionsInit = (): UseMissionsInitReturn => {
 
   // Local state
   const [isSpawning, setIsSpawning] = useState<boolean>(false);
+  const [spawnAttempts, setSpawnAttempts] = useState<number>(0);
+  const [lastSpawnTime, setLastSpawnTime] = useState<number>(0);
+  
+  const MAX_SPAWN_ATTEMPTS = 1; // Solo un intento por sesión
+  const MIN_SPAWN_INTERVAL = 30000; // 30 segundos entre intentos
 
   // Memoize user address
   const userAddress = useMemo(() => 
@@ -234,34 +269,104 @@ export const useMissionsInit = (): UseMissionsInitReturn => {
     [account]
   );
 
-  // Memoized derived data - Solo misiones de hoy
-  const todayMissions = useMemo(() => 
-    missions.filter(mission => isMissionFromToday(mission.created_at)),
-    [missions]
-  );
+  // Memoized derived data with defensive programming
+  const todayMissions = useMemo(() => {
+    if (!Array.isArray(missions)) {
+      return [];
+    }
+    
+    return missions.filter(mission => {
+      try {
+        return isMissionFromToday(mission.created_at);
+      } catch (error) {
+        return false;
+      }
+    });
+  }, [missions]);
 
-  const pendingMissions = useMemo(() => 
-    todayMissions.filter(mission => 
-      mission.status.activeVariant() === 'Pending'
-    ),
-    [todayMissions]
-  );
+  const pendingMissions = useMemo(() => {
+    if (!Array.isArray(todayMissions)) {
+      return [];
+    }
+    
+    return todayMissions.filter((mission) => {
+      try {
+        let statusVariant = "Pending"; // default assumption
+        
+        if (mission.status && typeof mission.status.activeVariant === 'function') {
+          statusVariant = mission.status.activeVariant();
+        } else if (mission.status && typeof mission.status === 'object') {
+          const statusObj = mission.status as any;
+          
+          if (statusObj.variant) {
+            if (statusObj.variant.Pending !== undefined) statusVariant = "Pending";
+            else if (statusObj.variant.Completed !== undefined) statusVariant = "Completed";
+          }
+          else if (statusObj.Pending !== undefined) statusVariant = "Pending";
+          else if (statusObj.Completed !== undefined) statusVariant = "Completed";
+        }
+        
+        return statusVariant === 'Pending';
+        
+      } catch (error) {
+        return true; // Assume pending on error
+      }
+    });
+  }, [todayMissions]);
 
-  const completedMissions = useMemo(() => 
-    todayMissions.filter(mission => 
-      mission.status.activeVariant() === 'Completed'
-    ),
-    [todayMissions]
-  );
+  const completedMissions = useMemo(() => {
+    try {
+      return todayMissions.filter(mission => {
+        try {
+          let statusVariant = "Pending";
+          
+          if (mission.status && typeof mission.status.activeVariant === 'function') {
+            statusVariant = mission.status.activeVariant();
+          } else if (mission.status && typeof mission.status === 'object') {
+            const statusObj = mission.status as any;
+            
+            if (statusObj.variant) {
+              if (statusObj.variant.Completed !== undefined) statusVariant = "Completed";
+              else if (statusObj.variant.Pending !== undefined) statusVariant = "Pending";
+            }
+            else if (statusObj.Completed !== undefined) statusVariant = "Completed";
+            else if (statusObj.Pending !== undefined) statusVariant = "Pending";
+          }
+          
+          return statusVariant === 'Completed';
+        } catch (error) {
+          return false;
+        }
+      });
+    } catch (error) {
+      return [];
+    }
+  }, [todayMissions]);
 
   const hasData = todayMissions.length > 0;
+
+  /**
+   * Check if we can spawn (rate limiting)
+   */
+  const canSpawn = useCallback((): boolean => {
+    const now = Date.now();
+    
+    if (spawnAttempts >= MAX_SPAWN_ATTEMPTS) {
+      return false;
+    }
+    
+    if (lastSpawnTime && (now - lastSpawnTime) < MIN_SPAWN_INTERVAL) {
+      return false;
+    }
+    
+    return true;
+  }, [spawnAttempts, lastSpawnTime]);
 
   /**
    * Fetch missions from Torii and update store
    */
   const refetchMissions = useCallback(async (): Promise<void> => {
     if (!userAddress) {
-      console.log("ℹ️ No user address, skipping mission fetch");
       return;
     }
 
@@ -271,11 +376,9 @@ export const useMissionsInit = (): UseMissionsInitReturn => {
     try {
       const fetchedMissions = await fetchMissionsFromTorii(userAddress);
       setMissions(fetchedMissions);
-      console.log("✅ Missions successfully fetched and stored");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch missions";
       setMissionsError(errorMessage);
-      console.error("❌ Error in refetchMissions:", err);
       throw err;
     } finally {
       setMissionsLoading(false);
@@ -283,59 +386,53 @@ export const useMissionsInit = (): UseMissionsInitReturn => {
   }, [userAddress, setMissions, setMissionsLoading, setMissionsError]);
 
   /**
-   * Generate 3 missions using Eliza and create them in the contract
+   * Generate missions with error handling and tracking
    */
   const spawnNewMissions = useCallback(async (): Promise<boolean> => {
     if (!userAddress || !account) {
-      console.error("❌ No user address or account for spawning missions");
+      return false;
+    }
+
+    if (!canSpawn()) {
+      setMissionsError("Mission generation is temporarily limited. Please try again later.");
       return false;
     }
 
     setIsSpawning(true);
     setMissionsError(null);
+    
+    // Update tracking
+    setSpawnAttempts(prev => prev + 1);
+    setLastSpawnTime(Date.now());
 
     try {
-      console.log("🎲 Starting mission spawn process...");
-      
       // Generate 3 missions from Eliza
       const elizaMissions: ElizaMissionData[] = [];
       const fallbackMissions = createFallbackMissions();
       
       for (let i = 0; i < 3; i++) {
         try {
-          console.log(`🤖 Requesting mission ${i + 1} from Eliza...`);
           const elizaResponse = await AIAgentService.getDailyMission(userAddress);
-          
-          // Parse Eliza response using our helper
           const elizaData = parseElizaResponse(elizaResponse);
           
           if (elizaData) {
             elizaMissions.push(elizaData);
-            console.log(`✅ Mission ${i + 1} parsed successfully:`, elizaData);
           } else {
-            console.log(`⚠️ Failed to parse mission ${i + 1}, using fallback`);
             elizaMissions.push(fallbackMissions[i] || fallbackMissions[0]);
           }
-          
         } catch (error) {
-          console.error(`❌ Error getting mission ${i + 1} from Eliza:`, error);
           elizaMissions.push(fallbackMissions[i] || fallbackMissions[0]);
         }
       }
 
-      console.log("📝 Generated missions:", elizaMissions);
-
       // Create missions in contract (sequential transactions)
-      console.log("🔗 Creating missions in contract sequentially...");
       const results = [];
       
       for (let i = 0; i < elizaMissions.length; i++) {
         const elizaData = elizaMissions[i];
         try {
           const cairoData = elizaDataToCairoEnums(elizaData);
-          console.log(`📤 Creating mission ${i + 1}/3:`, cairoData);
           
-          // Usar el patrón correcto: client.game.metodo()
           const tx = await client.game.createMission(
             account as Account,
             cairoData.target_coins,
@@ -344,24 +441,18 @@ export const useMissionsInit = (): UseMissionsInitReturn => {
             cairoData.description
           );
           
-          console.log(`📥 Mission ${i + 1} transaction response:`, tx);
-          
           if (tx && tx.code === "SUCCESS") {
             results.push({ success: true, mission: elizaData, tx });
-            console.log(`✅ Mission ${i + 1} created successfully`);
           } else {
             results.push({ success: false, mission: elizaData, error: `Transaction failed with code: ${tx?.code}` });
-            console.log(`❌ Mission ${i + 1} failed with code:`, tx?.code);
           }
           
           // Small delay between transactions to avoid nonce issues
           if (i < elizaMissions.length - 1) {
-            console.log("⏳ Waiting before next transaction...");
             await new Promise(resolve => setTimeout(resolve, 1000));
           }
           
         } catch (error) {
-          console.error(`❌ Failed to create mission ${i + 1}:`, error);
           results.push({ 
             success: false, 
             mission: elizaData, 
@@ -372,75 +463,84 @@ export const useMissionsInit = (): UseMissionsInitReturn => {
       
       // Check results
       const successful = results.filter(result => result.success).length;
-      const failed = results.filter(result => !result.success).length;
-      
-      console.log(`📊 Mission creation results: ${successful}/3 successful, ${failed}/3 failed`);
       
       if (successful === 0) {
         throw new Error("All mission creation transactions failed");
       }
-      
-      if (failed > 0) {
-        console.warn(`⚠️ ${failed} mission(s) failed to create, but continuing with ${successful} successful mission(s)`);
-      }
 
-      // Wait a bit for blockchain to process
-      console.log("⏳ Waiting for blockchain to process...");
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Wait for blockchain to process
+      await new Promise(resolve => setTimeout(resolve, 8000));
       
       // Refetch missions from Torii
-      console.log("🔄 Refetching missions from Torii...");
       await refetchMissions();
       
-      console.log("🎉 Mission spawn process completed successfully");
       return true;
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to spawn missions";
       setMissionsError(errorMessage);
-      console.error("❌ Error spawning missions:", error);
       return false;
     } finally {
       setIsSpawning(false);
     }
-  }, [userAddress, account, client.game, refetchMissions, setMissionsError]);
+  }, [userAddress, account, client.game, refetchMissions, setMissionsError, canSpawn]);
 
   /**
-   * Main initialization function - checks cache, fetches from Torii, or spawns new missions
+   * Main initialization function
    */
   const initializeMissions = useCallback(async (): Promise<boolean> => {
     if (!userAddress) {
-      console.log("ℹ️ No user address, skipping mission initialization");
       return false;
     }
 
-    console.log("🚀 Initializing missions...");
-
-    // 1. Check if cache is fresh
+    // 1. Check if cache is fresh and has today's missions
     if (!isMissionCacheStale(lastMissionFetch) && todayMissions.length > 0) {
-      console.log("✅ Using cached missions");
       return true;
     }
 
-    // 2. Try to fetch from Torii
-    console.log("📡 Fetching missions from Torii...");
+    // 2. Always fetch from Torii first (fresh data)
     try {
       await refetchMissions();
       
-      // 3. If no missions found after fetch, spawn new ones
-      if (todayMissions.length === 0) {
-        console.log("🎲 No missions found, spawning new ones...");
-        return await spawnNewMissions();
+      // 3. After refetch, check if we have today's missions
+      const currentTodayMissions = missions.filter(mission => isMissionFromToday(mission.created_at));
+      
+      if (currentTodayMissions.length > 0) {
+        return true;
       }
 
-      console.log("✅ Missions initialized successfully");
-      return true;
+      // 4. Only spawn if we can and have no missions
+      if (canSpawn()) {
+        return await spawnNewMissions();
+      } else {
+        setMissionsError("No daily missions available. Generation is temporarily limited.");
+        return false;
+      }
+
     } catch (error) {
-      console.error("❌ Error fetching from Torii, trying to spawn:", error);
-      // If fetch fails, try to spawn new missions
-      return await spawnNewMissions();
+      // If fetch fails and we can spawn, try to create new missions
+      if (canSpawn()) {
+        return await spawnNewMissions();
+      } else {
+        setMissionsError("Failed to load missions and generation is rate-limited.");
+        return false;
+      }
     }
-  }, [userAddress, lastMissionFetch, todayMissions.length, refetchMissions, spawnNewMissions]);
+  }, [userAddress, lastMissionFetch, todayMissions.length, missions, refetchMissions, spawnNewMissions, canSpawn, setMissionsError]);
+
+  // 🛠️ ANTI-CICLO: Solo reset spawn tracking cuando cambia userAddress
+  useEffect(() => {
+    setSpawnAttempts(0);
+    setLastSpawnTime(0);
+  }, [userAddress]);
+
+  // 🛠️ ANTI-CICLO: Solo clear missions cuando userAddress cambia y existe
+  useEffect(() => {
+    if (userAddress) {
+      useAppStore.getState().clearMissions();
+      setMissionsError(null);
+    }
+  }, [userAddress, setMissionsError]);
 
   return {
     // Data
