@@ -33,7 +33,8 @@ export function getCurrentDayTimestamp(): number {
  * @returns Current day number since Unix epoch
  */
 export function getCurrentDay(): number {
-  return unixTimestampToDay(getCurrentDayTimestamp());
+  const now = Math.floor(Date.now() / 1000); 
+  return Math.floor(now / SECONDS_PER_DAY); 
 }
 
 /**
@@ -54,9 +55,9 @@ export function isDifferentDay(timestamp1: number, timestamp2: number): boolean 
  * @returns true if mission was created today
  */
 export function isMissionFromToday(missionCreatedAt: number): boolean {
-  const missionDay = unixTimestampToDay(missionCreatedAt);
   const currentDay = getCurrentDay();
-  return missionDay === currentDay;
+  console.log(`🔍 Comparing mission day ${missionCreatedAt} with current day ${currentDay}`);
+  return missionCreatedAt === currentDay;
 }
 
 /**
