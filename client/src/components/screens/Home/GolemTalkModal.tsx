@@ -20,7 +20,7 @@ export function GolemTalkModal({ playerAddress, onClose }: GolemTalkModalProps) 
   
     const fetchMission = async () => {
       try {
-        const mission = await AIAgentService.getDailyMission(playerAddress)
+        const mission = await AIAgentService.getDailyMission()
         if (isMounted.current) {
           setMissionText(mission)
           setIsLoading(false)
