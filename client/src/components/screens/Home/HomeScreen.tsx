@@ -29,7 +29,6 @@ export interface HomeScreenProps {
 }
 
 export const HomeScreen = memo(function HomeScreen({
-  playerAddress,
   onPlayClick,
   onNavigateLogin,
 }: HomeScreenProps) {
@@ -289,7 +288,7 @@ export const HomeScreen = memo(function HomeScreen({
       <AnimatePresence>
         {showTalkModal && (
           <div className="absolute inset-0 z-50">
-            <DailyMissionsModal playerAddress={playerAddress} onClose={closeTalk} />
+            <DailyMissionsModal onClose={closeTalk} />
           </div>
         )}
       </AnimatePresence>
