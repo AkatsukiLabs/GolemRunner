@@ -1,5 +1,3 @@
-import { db } from './db';
-
 const ELIZA_URL = import.meta.env.VITE_ELIZA_URL;
 
 interface AIMessageResponse {
@@ -11,14 +9,13 @@ interface AIMessageResponse {
 export class AIAgentService {
   private static async fetchDailyMission(): Promise<string> {
     try {
-      
       const response = await fetch(ELIZA_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: "Give me a daily mission for my golem", // TODO: Provide dinamically the golem name and map available
+          text: "Give me a daily mission for my golem",
           userId: "user",
           userName: "User"
         })
@@ -40,54 +37,11 @@ export class AIAgentService {
       
     } catch (error) {
       console.error('Error fetching daily mission:', error);
-      return 'Default mission: Complete 3 battles today!';
+      throw error; 
     }
   }
 
-  static async getDailyMission(playerAddress: string | undefined | null): Promise<string> {
-
-    if (!playerAddress || typeof playerAddress !== 'string') {
-      return 'Default mission: Complete 3 battles today!';
-    }
-
-    try {
-      const cachedMission = await db.dailyMissions
-        .where('playerAddress')
-        .equals(playerAddress)
-        .last();
-
-      if (cachedMission) {
-        const now = Date.now();
-        const missionAge = now - cachedMission.timestamp;
-        const twentyFourHours = 24 * 60 * 60 * 1000;
-
-        if (missionAge < twentyFourHours) {
-          return cachedMission.mission;
-        }
-      }
-
-      const newMission = await this.fetchDailyMission();
-      
-      if (!newMission) {
-        throw new Error('Failed to get new mission');
-      }
-
-      // First try to delete any existing mission for the player
-      await db.dailyMissions
-        .where('playerAddress')
-        .equals(playerAddress)
-        .delete();
-
-      // Then add the new mission
-      await db.dailyMissions.add({
-        playerAddress,
-        mission: newMission,
-        timestamp: Date.now()
-      });
-      return newMission;
-    } catch (error) {
-      console.error('Error in getDailyMission:', error);
-      return 'Default mission: Complete 3 battles today!';
-    }
+  static async getDailyMission(): Promise<string> {
+    return await this.fetchDailyMission();
   }
-} 
+}

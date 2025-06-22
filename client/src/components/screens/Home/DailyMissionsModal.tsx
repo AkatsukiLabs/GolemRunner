@@ -1,14 +1,15 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useAccount } from "@starknet-react/core";
 import { addAddressPadding } from "starknet";
 import GolemTalkIcon from "../../../assets/icons/GolemTalkIcon.webp"
 import { ClaimMissionAnimation } from "./ClaimMissionAnimation"
 import coinIcon from "../../../assets/icons/CoinIcon.webp";
-import { useMissionsInit } from "../../../dojo/hooks/useMissions";
 import { Mission } from "../../../dojo/bindings";
 import { MissionDisplayData } from "../../types/missionTypes";
-//import { debugTimeCalculations } from '../../../utils/TimeHelpers';
+import { useMissionQuery } from "../../../dojo/hooks/useMissionQuery";
+import { useMissionSpawner } from "../../../dojo/hooks/useMissionSpawner";
+import { useMissionData } from "../../../dojo/hooks/useMissionData";
 
 interface DailyMissionsModalProps {
   /** Callback to close the modal */
@@ -16,12 +17,11 @@ interface DailyMissionsModalProps {
 }
 
 /**
- * 🛠️ FIXED: Safe function to extract enum variant 
+ * Safe function to extract enum variant 
  */
 const getEnumVariant = (enumObj: any, defaultValue: string): string => {
   if (!enumObj) return defaultValue;
   
-  // Try activeVariant function first
   if (typeof enumObj.activeVariant === 'function') {
     try {
       return enumObj.activeVariant();
@@ -30,55 +30,42 @@ const getEnumVariant = (enumObj: any, defaultValue: string): string => {
     }
   }
   
-  // Try variant property format {variant: {Key: 'Value'}}
   if (enumObj.variant && typeof enumObj.variant === 'object') {
     const keys = Object.keys(enumObj.variant);
     if (keys.length > 0) {
-      return keys[0]; // Return first key
+      return keys[0];
     }
   }
   
-  // Try direct object format {Key: 'Value'}
   if (typeof enumObj === 'object') {
     const keys = Object.keys(enumObj);
     if (keys.length > 0) {
-      return keys[0]; // Return first key
+      return keys[0];
     }
   }
   
-  // Fallback
   return defaultValue;
 };
 
 /**
- * 🛠️ FIXED: Converts Mission bindings to display data for UI
+ * Converts Mission bindings to display data for UI
  */
 const missionToDisplayData = (mission: Mission): MissionDisplayData => {
-  console.log("🔍 Converting mission to display data:", mission);
-  
-  // Determine difficulty based on target_coins
   let difficulty: 'Easy' | 'Mid' | 'Hard' = 'Easy';
   if (mission.target_coins >= 1000) difficulty = 'Hard';
   else if (mission.target_coins >= 500) difficulty = 'Mid';
 
-  // 🛠️ FIXED: Safe extraction of world and golem variants
   const worldVariant = getEnumVariant(mission.required_world, 'Forest');
   const golemVariant = getEnumVariant(mission.required_golem, 'Fire');
   const statusVariant = getEnumVariant(mission.status, 'Pending');
   
-  console.log("🔍 Extracted variants:", { worldVariant, golemVariant, statusVariant });
-  
   const requiredWorld = worldVariant.charAt(0).toUpperCase() + worldVariant.slice(1);
   const requiredGolem = golemVariant.charAt(0).toUpperCase() + golemVariant.slice(1);
-
-  // Check if completed
   const completed = statusVariant === 'Completed';
-
-  // Generate a title from description (first few words)
   const title = mission.description.split(' ').slice(0, 3).join(' ') || 'Daily Mission';
 
   const displayData: MissionDisplayData = {
-    id: mission.id.toString(), // Convert to string for compatibility
+    id: mission.id.toString(),
     title,
     description: mission.description,
     difficulty,
@@ -86,47 +73,79 @@ const missionToDisplayData = (mission: Mission): MissionDisplayData => {
     requiredWorld,
     requiredGolem,
     completed,
-    claimed: false // UI state, will be managed locally
+    claimed: false
   };
   
-  console.log("✅ Created display data:", displayData);
   return displayData;
 };
 
 export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
-  // Get account from Starknet directly
   const { account } = useAccount();
   
-  // Memoize user address with proper formatting
   const playerAddress = useMemo(() => 
     account ? addAddressPadding(account.address) : null, 
     [account]
   );
-  // Hook para manejo de misiones
-  const {
-    todayMissions,
-    isLoading,
-    isSpawning,
-    error,
-    hasData,
-    initializeMissions
-  } = useMissionsInit();
 
-  // Estado local para UI
+  // Hooks modulares
+  const { fetchTodayMissions, isLoading: isQuerying, error: queryError } = useMissionQuery();
+  const { spawnMissions, isSpawning, error: spawnError } = useMissionSpawner();
+  
+  // Estado local
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [claimedMission, setClaimedMission] = useState<MissionDisplayData | null>(null);
   const [claimedMissionIds, setClaimedMissionIds] = useState<Set<string>>(new Set());
+  
+  // Procesar data
+  const { todayMissions, hasData } = useMissionData(missions);
 
-  // Inicializar misiones cuando se abre el modal
+  // Estados combinados
+  const isLoading = isQuerying || isSpawning;
+  const error = queryError || spawnError;
+
+  // 🎯 ORQUESTACIÓN PRINCIPAL
+  const initializeMissions = useCallback(async () => {
+    if (!playerAddress || isInitialized) return;
+
+    try {
+      console.log("📡 Checking for existing missions...");
+      const existingMissions = await fetchTodayMissions(playerAddress);
+      
+      if (existingMissions.length > 0) {
+        console.log(`✅ Found ${existingMissions.length} existing missions`);
+        setMissions(existingMissions);
+      } else {
+        console.log("🎲 No missions found, creating new ones...");
+        const spawnSuccess = await spawnMissions(playerAddress);
+        
+        if (spawnSuccess) {
+          const newMissions = await fetchTodayMissions(playerAddress);
+          setMissions(newMissions);
+        }
+      }
+      
+      setIsInitialized(true);
+    } catch (error) {
+      console.error("❌ Error initializing missions:", error);
+    }
+  }, [playerAddress, isInitialized, fetchTodayMissions, spawnMissions]);
+
+  // Ejecutar al abrir modal
   useEffect(() => {
     if (playerAddress) {
-      console.log("🚀 Modal opened, initializing missions for:", playerAddress);
-      //debugTimeCalculations();
       initializeMissions();
     }
   }, [playerAddress, initializeMissions]);
 
-  // Early return if no account connected
+  // Reset cuando cambia de usuario
+  useEffect(() => {
+    setMissions([]);
+    setIsInitialized(false);
+  }, [playerAddress]);
+
+  // Early return if no account
   if (!account || !playerAddress) {
     return (
       <motion.div
@@ -160,10 +179,9 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
     );
   }
 
-  // Convertir misiones de bindings a display data
+  // Convertir misiones
   const displayMissions: MissionDisplayData[] = todayMissions.map(mission => {
     const displayData = missionToDisplayData(mission);
-    // Check if this mission was claimed in this session
     displayData.claimed = claimedMissionIds.has(mission.id.toString());
     return displayData;
   });
@@ -184,12 +202,7 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
   const handleClaimReward = (mission: MissionDisplayData) => {
     setClaimedMission(mission);
     setShowCelebration(true);
-    
-    // Mark as claimed in local state
     setClaimedMissionIds(prev => new Set(prev).add(mission.id));
-    
-    console.log(`Claiming reward for mission: ${mission.id}, reward: ${mission.reward}`);
-    // TODO: Aquí irá la lógica de reward cuando implementemos ese feature
   };
 
   const handleCloseCelebration = () => {
@@ -198,10 +211,10 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
   };
 
   // Loading states
-  const showLoading = isLoading || isSpawning;
+  const showLoading = isLoading;
   const loadingText = isSpawning 
     ? "Creating your daily missions..." 
-    : isLoading 
+    : isQuerying 
     ? "Loading missions..." 
     : "";
 
@@ -214,7 +227,6 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
         exit={{ opacity: 0 }}
         onClick={onClose}
       >
-        {/* Container principal con flex column */}
         <motion.div
           className="flex flex-col items-center w-full max-w-md min-h-fit"
           initial={{ scale: 0.8, opacity: 0 }}
@@ -223,7 +235,6 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
           transition={{ delay: 0.1 }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Imagen del golem - ahora dentro del flujo normal */}
           <motion.img
             src={GolemTalkIcon}
             alt="Golem hablando"
@@ -238,15 +249,12 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
             }}
           />
 
-          {/* Card del modal con las misiones */}
           <div className="bg-cream rounded-xl p-4 sm:p-6 shadow-md w-full max-h-[70vh] overflow-y-auto">
-            {/* Título del modal */}
             <div className="text-center mb-4 sm:mb-6">
               <h2 className="font-luckiest text-xl sm:text-2xl text-dark mb-2">Daily Missions</h2>
               <p className="font-rubik text-xs sm:text-sm text-gray-600">Complete missions to earn rewards!</p>
             </div>
 
-            {/* Estados de carga y error */}
             {showLoading && (
               <div className="text-center py-8">
                 <motion.div
@@ -281,7 +289,6 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
               </div>
             )}
 
-            {/* Lista de misiones */}
             {!showLoading && !error && hasData && (
               <div className="space-y-3 sm:space-y-4">
                 {displayMissions.map((mission: MissionDisplayData, index: number) => (
@@ -299,17 +306,14 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
                     transition={{ delay: 0.2 + index * 0.1 }}
                     whileHover={{ scale: mission.completed ? 1 : 1.02 }}
                   >
-                    {/* Header: Dificultad, Recompensa y Estado */}
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex items-center space-x-2 sm:space-x-3">
-                        {/* Etiqueta de dificultad */}
                         <span 
                           className={`px-2 py-1 rounded-full text-xs font-bold ${getDifficultyStyle(mission.difficulty)}`}
                         >
                           {mission.difficulty}
                         </span>
                         
-                        {/* Recompensa */}
                         <div className="flex items-center space-x-1">
                           <span className={`font-luckiest text-sm sm:text-lg ${
                             mission.completed 
@@ -330,7 +334,6 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
                         </div>
                       </div>
                       
-                      {/* Indicador de completado */}
                       {mission.completed && (
                         <div className={`rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center ${
                           mission.claimed 
@@ -342,7 +345,6 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
                       )}
                     </div>
 
-                    {/* Título y descripción */}
                     <div className="mb-3">
                       <h3 className={`font-luckiest text-sm sm:text-base mb-1 ${
                         mission.completed 
@@ -363,14 +365,12 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
                         {mission.description}
                       </p>
                       
-                      {/* Información adicional del mundo y golem requerido */}
                       <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
                         <span>🗺️ {mission.requiredWorld}</span>
                         <span>🧌 {mission.requiredGolem} Golem</span>
                       </div>
                     </div>
 
-                    {/* Botón de reclamar */}
                     {mission.completed && !mission.claimed && (
                       <div className="flex justify-end">
                         <motion.button
@@ -384,7 +384,6 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
                       </div>
                     )}
 
-                    {/* Overlay para misiones completadas */}
                     {mission.completed && (
                       <div className={`absolute inset-0 rounded-lg pointer-events-none ${
                         mission.claimed 
@@ -397,7 +396,6 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
               </div>
             )}
 
-            {/* Estado cuando no hay misiones y no está cargando */}
             {!showLoading && !error && !hasData && (
               <div className="text-center py-8">
                 <p className="font-rubik text-sm text-gray-600 mb-4">
@@ -414,7 +412,6 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
               </div>
             )}
 
-            {/* Botón para cerrar */}
             <motion.button
               onClick={onClose}
               className="w-full mt-4 sm:mt-6 btn-cr-yellow hover:bg-gray-600 text-white py-2 px-4 font-luckiest text-sm sm:text-base"
