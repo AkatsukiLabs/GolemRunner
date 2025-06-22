@@ -17,12 +17,14 @@ pub mod models {
     pub mod golem;
     pub mod world;
     pub mod ranking;
+    pub mod mission;
 }
 
 pub mod types {
     pub mod rarity;
     pub mod golem;
     pub mod world;
+    pub mod mission_status;
 }
 
 #[cfg(test)]
@@ -32,6 +34,7 @@ pub mod tests {
     mod test_world;
     mod test_player;
     mod test_ranking;
+    mod test_mission;
 }
 
 pub mod constants;

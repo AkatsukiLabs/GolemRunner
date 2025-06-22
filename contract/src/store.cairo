@@ -10,11 +10,13 @@ use golem_runner::models::player::{Player, PlayerTrait};
 use golem_runner::models::golem::{Golem, GolemTrait, ZeroableGolemTrait};
 use golem_runner::models::world::{World, WorldTrait, ZeroableWorldTrait};
 use golem_runner::models::ranking::{Ranking};
+use golem_runner::models::mission::{Mission, MissionTrait};
 
 // Types imports
 use golem_runner::types::rarity::{Rarity};
 use golem_runner::types::golem::{GolemType};
 use golem_runner::types::world::{WorldType};
+use golem_runner::types::mission_status::{MissionStatus};
 
 // Helpers import
 use golem_runner::helpers::timestamp::Timestamp;
@@ -43,6 +45,11 @@ pub impl StoreImpl of StoreTrait {
         self.world.read_model(player_address)
     }
 
+    fn read_mission(self: Store, mission_id: u256) -> Mission {
+        let player_address = get_caller_address();
+        self.world.read_model((mission_id, player_address))
+    }
+
     fn read_golem(self: Store, golem_id: u256) -> Golem {
         let player_address = get_caller_address();
         self.world.read_model((golem_id, player_address))
@@ -67,6 +74,10 @@ pub impl StoreImpl of StoreTrait {
         self.world.write_model(golem)
     }
 
+    fn write_mission(mut self: Store, mission: @Mission) {
+        self.world.write_model(mission)
+    }
+
     fn write_world(mut self: Store, world: @World) {
         self.world.write_model(world)
     }
@@ -74,30 +85,54 @@ pub impl StoreImpl of StoreTrait {
     fn write_ranking(mut self: Store, ranking: @Ranking) {
         self.world.write_model(ranking)
     }
-    
+
     // --------- New entities ---------
     fn new_player(mut self: Store) {
         let caller = get_caller_address();
         let current_timestamp = get_block_timestamp();
 
         let new_player = PlayerTrait::new(
-            caller, 
+            caller,
             0, // coins
             0, // total points
             0, // daily streak
             0, // last active day
             1, // level
             0, // experience
-            Timestamp::unix_timestamp_to_day(current_timestamp), // creation_day
+            Timestamp::unix_timestamp_to_day(current_timestamp) // creation_day
         );
 
         self.world.write_model(@new_player);
     }
 
+    fn new_mission(
+        mut self: Store,
+        mission_id: u256,
+        target_coins: u64,
+        required_world: WorldType,
+        required_golem: GolemType,
+        description: ByteArray,
+    ) {
+        let caller = get_caller_address();
+        let current_timestamp = get_block_timestamp();
+
+        let new_mission = MissionTrait::new_mission(
+            mission_id,
+            caller,
+            target_coins,
+            required_world,
+            required_golem,
+            description,
+            Timestamp::unix_timestamp_to_day(current_timestamp) // created_at
+        );
+
+        self.world.write_model(@new_mission);
+    }
+
     // --------- Golem methods ---------
     fn new_golem(mut self: Store, golem_type: GolemType, golem_id: u256) {
         let caller = get_caller_address();
-        
+
         match golem_type {
             GolemType::Fire => self.new_fire_golem(caller, golem_id),
             GolemType::Ice => self.new_ice_golem(caller, golem_id),
@@ -114,7 +149,7 @@ pub impl StoreImpl of StoreTrait {
             5000,
             Rarity::Uncommon,
             false, // is_starter
-            false, // is_unlocked
+            false // is_unlocked
         );
 
         self.world.write_model(@new_golem);
@@ -129,7 +164,7 @@ pub impl StoreImpl of StoreTrait {
             10000,
             Rarity::Rare,
             false, // is_starter
-            false, // is_unlocked
+            false // is_unlocked
         );
 
         self.world.write_model(@new_golem);
@@ -144,7 +179,7 @@ pub impl StoreImpl of StoreTrait {
             0,
             Rarity::Common,
             true, // is_starter
-            true, // is_unlocked
+            true // is_unlocked
         );
 
         self.world.write_model(@new_golem);
@@ -153,7 +188,7 @@ pub impl StoreImpl of StoreTrait {
     // --------- World methods ---------
     fn new_world(mut self: Store, world_type: WorldType, world_id: u256) {
         let caller = get_caller_address();
-        
+
         match world_type {
             WorldType::Forest => self.new_forest_world(caller, world_id),
             WorldType::Volcano => self.new_volcano_world(caller, world_id),
@@ -169,7 +204,7 @@ pub impl StoreImpl of StoreTrait {
             'A nice forest with old trees',
             0,
             true, // is_starter
-            true, // is_unlocked
+            true // is_unlocked
         );
 
         self.world.write_model(@new_world);
@@ -183,7 +218,7 @@ pub impl StoreImpl of StoreTrait {
             'A dangerous volcanic zone',
             7500,
             false, // is_starter
-            false, // is_unlocked
+            false // is_unlocked
         );
 
         self.world.write_model(@new_world);
@@ -197,42 +232,42 @@ pub impl StoreImpl of StoreTrait {
             'A slippery ice world',
             9000,
             false, // is_starter
-            false, // is_unlocked
+            false // is_unlocked
         );
 
         self.world.write_model(@new_world);
     }
-    
+
     // --------- Initialization ---------
     fn init_player_items(mut self: Store) {
         // Create items for the new player
-        self.new_golem(GolemType::Stone, 1);  // Stone Golem (starter, unlocked by default)
-        self.new_golem(GolemType::Fire, 2);   // Fire Golem (locked)
-        self.new_golem(GolemType::Ice, 3);    // Ice Golem (locked)
-        
-        self.new_world(WorldType::Forest, 1);   // Forest (starter, unlocked by default)
-        self.new_world(WorldType::Volcano, 2);  // Volcano (locked)
-        self.new_world(WorldType::Glacier, 3);  // Glacier (locked)
+        self.new_golem(GolemType::Stone, 1); // Stone Golem (starter, unlocked by default)
+        self.new_golem(GolemType::Fire, 2); // Fire Golem (locked)
+        self.new_golem(GolemType::Ice, 3); // Ice Golem (locked)
+
+        self.new_world(WorldType::Forest, 1); // Forest (starter, unlocked by default)
+        self.new_world(WorldType::Volcano, 2); // Volcano (locked)
+        self.new_world(WorldType::Glacier, 3); // Glacier (locked)
     }
-    
+
     // --------- Helper "Purchase" methods ---------
     fn unlock_golem(mut self: Store, golem_id: u256) -> bool {
         let mut golem = self.read_golem(golem_id);
-        
+
         // Verify that the golem exists
         if golem.name == '' {
             return false; // Golem does not exist
         }
-        
+
         // Verify if the golem is already unlocked
         if golem.is_unlocked {
             return false; // It's already unlocked
         }
-        
+
         // For non-starter golems, check the cost
         let mut player = self.read_player();
         let golem_price: u64 = golem.price.try_into().unwrap();
-        
+
         // Try to decrease coins (decrease_coins includes fund verification)
         if !player.decrease_coins(golem_price) {
             return false; // No hay suficientes monedas
@@ -240,45 +275,77 @@ pub impl StoreImpl of StoreTrait {
 
         // Save the player with updated coins
         self.world.write_model(@player);
-        
+
         // Unlock the golem
         golem.is_unlocked = true;
         self.world.write_model(@golem);
-        
+
         return true;
     }
 
     fn unlock_world(mut self: Store, world_id: u256) -> bool {
         let mut world = self.read_world(world_id);
-        
+
         // Verify that the world exists
         if world.name == '' {
             return false; // World does not exist
         }
-        
+
         // Verify if the world is already unlocked
         if world.is_unlocked {
             return false; // It's already unlocked
         }
-        
+
         // Get the price and make the payment
         let mut player = self.read_player();
         let world_price: u64 = world.price.try_into().unwrap();
-        
+
         // Try to decrease coins (decrease_coins includes fund verification)
         if !player.decrease_coins(world_price) {
             return false; // Insufficient coins
         }
-        
+
         // Save the player with updated coins
         self.world.write_model(@player);
-        
+
         // Unlock the world
         world.is_unlocked = true;
         self.world.write_model(@world);
-        
+
         return true;
     }
-    
-    
+
+    fn update_mission_status(mut self: Store, mission_id: u256) -> bool {
+        let mut mission = self.read_mission(mission_id);
+
+        mission.update_mission_status();
+
+        // Save the updated mission
+        self.world.write_model(@mission);
+
+        return true; // Mission status updated successfully
+    }
+
+    fn reward_mission(mut self: Store, mission_id: u256, coins_collected: u64) -> bool {
+        let mission = self.read_mission(mission_id);
+
+        // Verify mission
+        if mission.is_zero() {
+            return false; 
+        }
+
+        // Verify mission is completed
+        if mission.status != MissionStatus::Completed {
+            return false; 
+        }
+
+        // Reward the player with coins
+        let mut player = self.read_player();
+        player.add_coins(coins_collected);
+
+        // Save the updated player
+        self.world.write_model(@player);
+
+        return true; // Mission rewarded successfully
+    }
 }
