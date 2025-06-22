@@ -22,6 +22,8 @@ mkcert+1.pem
 mkcert+1-key.pem
 localhost*.pem
 localhost*-key.pem
+dev-key.pem
+dev.pem
 
 # Editor directories and files
 .vscode/*
