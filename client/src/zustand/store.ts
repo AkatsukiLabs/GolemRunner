@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Player, Golem, World, Ranking } from '../dojo/bindings';
+import { Player, Golem, World, Ranking, Mission } from '../dojo/bindings';
 
 // Define application state interface
 interface AppState {
@@ -11,6 +11,12 @@ interface AppState {
   golems: Golem[];
   worlds: World[];
   rankings: Ranking[];
+  
+  // Missions data 
+  missions: Mission[];
+  lastMissionFetch: number | null; // Timestamp of last fetch
+  isMissionsLoading: boolean;
+  missionsError: string | null;
   
   // UI state
   isLoading: boolean;
@@ -46,6 +52,15 @@ interface AppActions {
   setRankings: (rankings: Ranking[]) => void;
   updateRanking: (ranking: Ranking) => void;
   
+  // Mission actions - NEW
+  setMissions: (missions: Mission[]) => void;
+  addMission: (mission: Mission) => void;
+  updateMissionStatus: (missionId: number, status: 'Pending' | 'Completed') => void;
+  setMissionsLoading: (loading: boolean) => void;
+  setMissionsError: (error: string | null) => void;
+  setLastMissionFetch: (timestamp: number) => void;
+  clearMissions: () => void;
+  
   // UI actions
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -68,6 +83,10 @@ const initialState: AppState = {
   golems: [],
   worlds: [],
   rankings: [],
+  missions: [], 
+  lastMissionFetch: null,
+  isMissionsLoading: false, 
+  missionsError: null, 
   isLoading: false,
   error: null,
   currentGolem: null,
@@ -78,7 +97,7 @@ const initialState: AppState = {
 // Create the store
 const useAppStore = create<AppStore>()(
   persist(
-    (set, _get) => ({
+    (set) => ({
       // Initial state
       ...initialState,
 
@@ -150,6 +169,42 @@ const useAppStore = create<AppStore>()(
         }
       }),
 
+      // Mission actions
+      setMissions: (missions) => set({ 
+        missions, 
+        lastMissionFetch: Date.now(),
+        missionsError: null 
+      }),
+      
+      addMission: (mission) => set((state) => ({
+        missions: [...state.missions, mission]
+      })),
+      
+      updateMissionStatus: (missionId, status) => set((state) => ({
+        missions: state.missions.map(mission => 
+          mission.id === missionId 
+            ? { 
+                ...mission, 
+                status: status === 'Completed' 
+                  ? { activeVariant: 'Completed', Completed: 'Completed' } as any
+                  : { activeVariant: 'Pending', Pending: 'Pending' } as any
+              }
+            : mission
+        )
+      })),
+      
+      setMissionsLoading: (isMissionsLoading) => set({ isMissionsLoading }),
+      
+      setMissionsError: (missionsError) => set({ missionsError }),
+      
+      setLastMissionFetch: (lastMissionFetch) => set({ lastMissionFetch }),
+      
+      clearMissions: () => set({ 
+        missions: [], 
+        lastMissionFetch: null,
+        missionsError: null 
+      }),
+
       // UI actions
       setLoading: (isLoading) => set({ isLoading }),
       setError: (error) => set({ error }),
@@ -175,6 +230,8 @@ const useAppStore = create<AppStore>()(
         worlds: state.worlds,
         currentGolem: state.currentGolem,
         currentWorld: state.currentWorld,
+        missions: state.missions,
+        lastMissionFetch: state.lastMissionFetch, // persist last fetch time
       }),
     }
   )
