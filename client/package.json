@@ -14,7 +14,7 @@
     "dev:https": "VITE_LOCAL_HTTPS=true vite",
     "dev:http": "VITE_LOCAL_HTTPS=false vite",
     "preview:https": "VITE_LOCAL_HTTPS=true vite preview",
-    "mkcert": "mkcert -key-file dev-key.pem -cert-file dev.pem localhost 127.0.0.1 ::1"
+    "mkcert": "mkcert -key-file mkcert+1-key.pem -cert-file mkcert+1.pem localhost 127.0.0.1 ::1"
   },
   "dependencies": {
     "@cartridge/connector": "0.5.9",
