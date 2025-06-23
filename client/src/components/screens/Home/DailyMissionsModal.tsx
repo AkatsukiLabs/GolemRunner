@@ -48,20 +48,28 @@ const getEnumVariant = (enumObj: any, defaultValue: string): string => {
 };
 
 /**
+ * NEW FUNCTION: Determines if a mission is completed based on its status
+ */
+const isMissionCompleted = (mission: Mission): boolean => {
+  const statusVariant = getEnumVariant(mission.status, 'Pending');
+  return statusVariant === 'Completed';
+};
+
+/**
  * Converts Mission bindings to display data for UI
  */
-const missionToDisplayData = (mission: Mission): MissionDisplayData => {
+const missionToDisplayData = (mission: Mission, claimedMissionIds: Set<string>): MissionDisplayData => {
   let difficulty: 'Easy' | 'Mid' | 'Hard' = 'Easy';
   if (mission.target_coins >= 1000) difficulty = 'Hard';
   else if (mission.target_coins >= 500) difficulty = 'Mid';
 
   const worldVariant = getEnumVariant(mission.required_world, 'Forest');
   const golemVariant = getEnumVariant(mission.required_golem, 'Fire');
-  const statusVariant = getEnumVariant(mission.status, 'Pending');
+  const completed = isMissionCompleted(mission);
+  const claimed = claimedMissionIds.has(mission.id.toString());
   
   const requiredWorld = worldVariant.charAt(0).toUpperCase() + worldVariant.slice(1);
   const requiredGolem = golemVariant.charAt(0).toUpperCase() + golemVariant.slice(1);
-  const completed = statusVariant === 'Completed';
   const title = mission.description.split(' ').slice(0, 3).join(' ') || 'Daily Mission';
 
   const displayData: MissionDisplayData = {
@@ -73,7 +81,7 @@ const missionToDisplayData = (mission: Mission): MissionDisplayData => {
     requiredWorld,
     requiredGolem,
     completed,
-    claimed: false
+    claimed
   };
   
   return displayData;
@@ -98,12 +106,67 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
   const [claimedMission, setClaimedMission] = useState<MissionDisplayData | null>(null);
   const [claimedMissionIds, setClaimedMissionIds] = useState<Set<string>>(new Set());
   
+  // NEW STATE: For claim reward process
+  const [claimingMissionId, setClaimingMissionId] = useState<string | null>(null);
+  const [claimError, setClaimError] = useState<string | null>(null);
+  
   // Procesar data
   const { todayMissions, hasData } = useMissionData(missions);
 
   // Estados combinados
   const isLoading = isQuerying || isSpawning;
-  const error = queryError || spawnError;
+  const error = queryError || spawnError || claimError;
+
+  // NEW FUNCTION: Refresh missions after claim
+  const refreshMissionsAfterClaim = useCallback(async () => {
+    if (!playerAddress) return;
+    
+    try {
+      console.log("🔄 Refreshing missions after claim...");
+      const refreshedMissions = await fetchTodayMissions(playerAddress);
+      setMissions(refreshedMissions);
+      console.log("✅ Missions refreshed successfully");
+    } catch (error) {
+      console.error("❌ Error refreshing missions:", error);
+    }
+  }, [playerAddress, fetchTodayMissions]);
+
+  // NEW FUNCTION: Handle claim reward (placeholder for future implementation)
+  const handleClaimReward = useCallback(async (mission: MissionDisplayData) => {
+    console.log(`🎯 Claiming reward for mission ${mission.id}:`, mission);
+    
+    setClaimingMissionId(mission.id);
+    setClaimError(null);
+    
+    try {
+      // TODO: Implement actual claim reward transaction
+      // This would call a hook like useMissionRewardClaimer
+      // For now, we'll simulate the process
+      
+      console.log("🔄 Processing claim reward transaction...");
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // For now, just mark as claimed locally
+      // In the real implementation, this would be handled by the blockchain transaction
+      setClaimedMission(mission);
+      setShowCelebration(true);
+      setClaimedMissionIds(prev => new Set(prev).add(mission.id));
+      
+      // Refresh missions from blockchain after successful claim
+      await refreshMissionsAfterClaim();
+      
+      console.log("✅ Mission reward claimed successfully");
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to claim reward";
+      setClaimError(errorMessage);
+      console.error("❌ Error claiming mission reward:", error);
+    } finally {
+      setClaimingMissionId(null);
+    }
+  }, [refreshMissionsAfterClaim]);
 
   // 🎯 ORQUESTACIÓN PRINCIPAL
   const initializeMissions = useCallback(async () => {
@@ -143,6 +206,8 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
   useEffect(() => {
     setMissions([]);
     setIsInitialized(false);
+    setClaimedMissionIds(new Set()); // NEW: Reset claimed missions
+    setClaimError(null); // NEW: Reset claim errors
   }, [playerAddress]);
 
   // Early return if no account
@@ -179,12 +244,34 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
     );
   }
 
-  // Convertir misiones
+  // Convertir misiones - UPDATED to pass claimedMissionIds
   const displayMissions: MissionDisplayData[] = todayMissions.map(mission => {
-    const displayData = missionToDisplayData(mission);
-    displayData.claimed = claimedMissionIds.has(mission.id.toString());
-    return displayData;
+    return missionToDisplayData(mission, claimedMissionIds);
   });
+
+  // NEW FUNCTION: Get mission card styling based on status
+  const getMissionCardStyling = (mission: MissionDisplayData) => {
+    if (mission.completed) {
+      if (mission.claimed) {
+        return {
+          borderColor: 'border-gray-300',
+          backgroundColor: 'bg-gray-50',
+          opacity: 'opacity-75'
+        };
+      } else {
+        return {
+          borderColor: 'border-green-200',
+          backgroundColor: 'bg-green-50',
+          opacity: 'opacity-100'
+        };
+      }
+    }
+    return {
+      borderColor: 'border-gray-200 hover:border-gray-300',
+      backgroundColor: 'bg-white',
+      opacity: 'opacity-100'
+    };
+  };
 
   const getDifficultyStyle = (difficulty: MissionDisplayData['difficulty']) => {
     switch (difficulty) {
@@ -197,12 +284,6 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
       default:
         return 'bg-gray-500 text-white'
     }
-  };
-
-  const handleClaimReward = (mission: MissionDisplayData) => {
-    setClaimedMission(mission);
-    setShowCelebration(true);
-    setClaimedMissionIds(prev => new Set(prev).add(mission.id));
   };
 
   const handleCloseCelebration = () => {
@@ -291,108 +372,121 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
 
             {!showLoading && !error && hasData && (
               <div className="space-y-3 sm:space-y-4">
-                {displayMissions.map((mission: MissionDisplayData, index: number) => (
-                  <motion.div
-                    key={mission.id}
-                    className={`relative bg-white rounded-[10px] p-3 sm:p-4 border-2 shadow-sm ${
-                      mission.completed 
-                        ? mission.claimed 
-                          ? 'border-gray-300 bg-gray-50'
-                          : 'border-green-200 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 + index * 0.1 }}
-                    whileHover={{ scale: mission.completed ? 1 : 1.02 }}
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center space-x-2 sm:space-x-3">
-                        <span 
-                          className={`px-2 py-1 rounded-full text-xs font-bold ${getDifficultyStyle(mission.difficulty)}`}
-                        >
-                          {mission.difficulty}
-                        </span>
-                        
-                        <div className="flex items-center space-x-1">
-                          <span className={`font-luckiest text-sm sm:text-lg ${
-                            mission.completed 
-                              ? mission.claimed 
-                                ? 'text-gray-500'
-                                : 'text-green-600'
-                              : 'text-yellow-600'
-                          }`}>
-                            {mission.reward}
+                {displayMissions.map((mission: MissionDisplayData, index: number) => {
+                  const styling = getMissionCardStyling(mission);
+                  const isClaimingThis = claimingMissionId === mission.id;
+                  
+                  return (
+                    <motion.div
+                      key={mission.id}
+                      className={`relative rounded-[10px] p-3 sm:p-4 border-2 shadow-sm ${styling.borderColor} ${styling.backgroundColor} ${styling.opacity}`}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2 + index * 0.1 }}
+                      whileHover={{ scale: mission.completed && !mission.claimed ? 1.02 : 1 }}
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center space-x-2 sm:space-x-3">
+                          <span 
+                            className={`px-2 py-1 rounded-full text-xs font-bold ${getDifficultyStyle(mission.difficulty)}`}
+                          >
+                            {mission.difficulty}
                           </span>
-                          <img
-                            src={coinIcon}
-                            alt="Coin Icon"
-                            className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                              mission.completed && mission.claimed ? 'opacity-50' : ''
-                            }`}
-                          />
+                          
+                          <div className="flex items-center space-x-1">
+                            <span className={`font-luckiest text-sm sm:text-lg ${
+                              mission.completed 
+                                ? mission.claimed 
+                                  ? 'text-gray-500'
+                                  : 'text-green-600'
+                                : 'text-yellow-600'
+                            }`}>
+                              {mission.reward}
+                            </span>
+                            <img
+                              src={coinIcon}
+                              alt="Coin Icon"
+                              className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                                mission.completed && mission.claimed ? 'opacity-50' : ''
+                              }`}
+                            />
+                          </div>
+                        </div>
+                        
+                        {mission.completed && (
+                          <div className={`rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center ${
+                            mission.claimed 
+                              ? 'bg-gray-500 text-white'
+                              : 'bg-green-500 text-white'
+                          }`}>
+                            <span className="text-xs font-bold">✓</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mb-3">
+                        <h3 className={`font-luckiest text-sm sm:text-base mb-1 ${
+                          mission.completed 
+                            ? mission.claimed 
+                              ? 'text-gray-500'
+                              : 'text-green-700'
+                            : 'text-dark'
+                        }`}>
+                          {mission.title}
+                        </h3>
+                        <p className={`font-rubik text-xs sm:text-sm ${
+                          mission.completed 
+                            ? mission.claimed 
+                              ? 'text-gray-400'
+                              : 'text-green-600'
+                            : 'text-gray-600'
+                        }`}>
+                          {mission.description}
+                        </p>
+                        
+                        <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
+                          <span>🗺️ {mission.requiredWorld}</span>
+                          <span>🧌 {mission.requiredGolem} Golem</span>
                         </div>
                       </div>
-                      
-                      {mission.completed && (
-                        <div className={`rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center ${
-                          mission.claimed 
-                            ? 'bg-gray-500 text-white'
-                            : 'bg-green-500 text-white'
-                        }`}>
-                          <span className="text-xs font-bold">✓</span>
+
+                      {/* NEW SECTION: Action Buttons */}
+                      {mission.completed && !mission.claimed && (
+                        <div className="flex justify-end">
+                          <motion.button
+                            className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-[5px] font-luckiest text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            whileHover={!isClaimingThis ? { scale: 1.05 } : {}}
+                            whileTap={!isClaimingThis ? { scale: 0.95 } : {}}
+                            onClick={() => handleClaimReward(mission)}
+                            disabled={isClaimingThis || claimingMissionId !== null}
+                          >
+                            {isClaimingThis ? (
+                              <>
+                                <motion.div
+                                  className="w-3 h-3 border border-white border-t-transparent rounded-full"
+                                  animate={{ rotate: 360 }}
+                                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                />
+                                <span>Claiming...</span>
+                              </>
+                            ) : (
+                              'Claim Reward'
+                            )}
+                          </motion.button>
                         </div>
                       )}
-                    </div>
 
-                    <div className="mb-3">
-                      <h3 className={`font-luckiest text-sm sm:text-base mb-1 ${
-                        mission.completed 
-                          ? mission.claimed 
-                            ? 'text-gray-500'
-                            : 'text-green-700'
-                          : 'text-dark'
-                      }`}>
-                        {mission.title}
-                      </h3>
-                      <p className={`font-rubik text-xs sm:text-sm ${
-                        mission.completed 
-                          ? mission.claimed 
-                            ? 'text-gray-400'
-                            : 'text-green-600'
-                          : 'text-gray-600'
-                      }`}>
-                        {mission.description}
-                      </p>
-                      
-                      <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
-                        <span>🗺️ {mission.requiredWorld}</span>
-                        <span>🧌 {mission.requiredGolem} Golem</span>
-                      </div>
-                    </div>
-
-                    {mission.completed && !mission.claimed && (
-                      <div className="flex justify-end">
-                        <motion.button
-                          className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-[5px] font-luckiest text-xs sm:text-sm"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => handleClaimReward(mission)}
-                        >
-                          Claim Reward
-                        </motion.button>
-                      </div>
-                    )}
-
-                    {mission.completed && (
-                      <div className={`absolute inset-0 rounded-lg pointer-events-none ${
-                        mission.claimed 
-                          ? 'bg-gray-500/10'
-                          : 'bg-green-500/5'
-                      }`} />
-                    )}
-                  </motion.div>
-                ))}
+                      {/* Status indicator overlay */}
+                      {mission.completed && (
+                        <div className={`absolute inset-0 rounded-lg pointer-events-none ${
+                          mission.claimed 
+                            ? 'bg-gray-500/10'
+                            : 'bg-green-500/5'
+                        }`} />
+                      )}
+                    </motion.div>
+                  );
+                })}
               </div>
             )}
 

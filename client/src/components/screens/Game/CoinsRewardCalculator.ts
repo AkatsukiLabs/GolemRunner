@@ -12,12 +12,20 @@ export interface ScoreRange {
   }
   
   // Predefined score ranges for coin rewards
+  // const SCORE_RANGES: ScoreRange[] = [
+  //   { min: 0, max: 999, coins: 50, label: "Beginner" },
+  //   { min: 1000, max: 2999, coins: 100, label: "Runner" },
+  //   { min: 3000, max: 5999, coins: 250, label: "Speedster" },
+  //   { min: 6000, max: 9999, coins: 500, label: "Champion" },
+  //   { min: 10000, max: Infinity, coins: 1000, label: "Legend" }
+  // ];
+
   const SCORE_RANGES: ScoreRange[] = [
-    { min: 0, max: 999, coins: 50, label: "Beginner" },
-    { min: 1000, max: 2999, coins: 100, label: "Runner" },
-    { min: 3000, max: 5999, coins: 250, label: "Speedster" },
-    { min: 6000, max: 9999, coins: 500, label: "Champion" },
-    { min: 10000, max: Infinity, coins: 1000, label: "Legend" }
+    { min: 0, max: 250, coins: 100, label: "Beginner" },
+    { min: 251, max: 500, coins: 250, label: "Runner" },
+    { min: 501, max: 1000, coins: 400, label: "Speedster" },
+    { min: 1001, max: 2000, coins: 500, label: "Champion" },
+    { min: 2000, max: Infinity, coins: 1000, label: "Legend" }
   ];
   
   /**
