@@ -10,9 +10,10 @@ import { MissionDisplayData } from "../../types/missionTypes";
 import { useMissionQuery } from "../../../dojo/hooks/useMissionQuery";
 import { useMissionSpawner } from "../../../dojo/hooks/useMissionSpawner";
 import { useMissionData } from "../../../dojo/hooks/useMissionData";
+import { useMissionRewardClaimer } from "../../../dojo/hooks/useMissionRewardClaimer";
+import { usePlayer } from "../../../dojo/hooks/usePlayer";
 
 interface DailyMissionsModalProps {
-  /** Callback to close the modal */
   onClose: () => void
 }
 
@@ -48,7 +49,7 @@ const getEnumVariant = (enumObj: any, defaultValue: string): string => {
 };
 
 /**
- * NEW FUNCTION: Determines if a mission is completed based on its status
+ * Determines if a mission is completed based on its status
  */
 const isMissionCompleted = (mission: Mission): boolean => {
   const statusVariant = getEnumVariant(mission.status, 'Pending');
@@ -56,9 +57,17 @@ const isMissionCompleted = (mission: Mission): boolean => {
 };
 
 /**
+ * Determines if a mission has been claimed based on its status
+ */
+const isMissionClaimed = (mission: Mission): boolean => {
+  const statusVariant = getEnumVariant(mission.status, 'Pending');
+  return statusVariant === 'Claimed';
+};
+
+/**
  * Converts Mission bindings to display data for UI
  */
-const missionToDisplayData = (mission: Mission, claimedMissionIds: Set<string>): MissionDisplayData => {
+const missionToDisplayData = (mission: Mission): MissionDisplayData =>  {
   let difficulty: 'Easy' | 'Mid' | 'Hard' = 'Easy';
   if (mission.target_coins >= 1000) difficulty = 'Hard';
   else if (mission.target_coins >= 500) difficulty = 'Mid';
@@ -66,7 +75,7 @@ const missionToDisplayData = (mission: Mission, claimedMissionIds: Set<string>):
   const worldVariant = getEnumVariant(mission.required_world, 'Forest');
   const golemVariant = getEnumVariant(mission.required_golem, 'Fire');
   const completed = isMissionCompleted(mission);
-  const claimed = claimedMissionIds.has(mission.id.toString());
+  const claimed = isMissionClaimed(mission);
   
   const requiredWorld = worldVariant.charAt(0).toUpperCase() + worldVariant.slice(1);
   const requiredGolem = golemVariant.charAt(0).toUpperCase() + golemVariant.slice(1);
@@ -95,20 +104,18 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
     [account]
   );
 
-  // Hooks modulares
+  // Hooks
   const { fetchTodayMissions, isLoading: isQuerying, error: queryError } = useMissionQuery();
   const { spawnMissions, isSpawning, error: spawnError } = useMissionSpawner();
+  const { claimMissionReward, isClaiming, error: claimError } = useMissionRewardClaimer();
+  const { refetch: refetchPlayer } = usePlayer();
   
   // Estado local
   const [missions, setMissions] = useState<Mission[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [claimedMission, setClaimedMission] = useState<MissionDisplayData | null>(null);
-  const [claimedMissionIds, setClaimedMissionIds] = useState<Set<string>>(new Set());
-  
-  // NEW STATE: For claim reward process
   const [claimingMissionId, setClaimingMissionId] = useState<string | null>(null);
-  const [claimError, setClaimError] = useState<string | null>(null);
   
   // Procesar data
   const { todayMissions, hasData } = useMissionData(missions);
@@ -117,70 +124,57 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
   const isLoading = isQuerying || isSpawning;
   const error = queryError || spawnError || claimError;
 
-  // NEW FUNCTION: Refresh missions after claim
+  // Refresh missions after claim
   const refreshMissionsAfterClaim = useCallback(async () => {
     if (!playerAddress) return;
     
     try {
-      console.log("🔄 Refreshing missions after claim...");
       const refreshedMissions = await fetchTodayMissions(playerAddress);
       setMissions(refreshedMissions);
-      console.log("✅ Missions refreshed successfully");
     } catch (error) {
-      console.error("❌ Error refreshing missions:", error);
+      // Silently handle refresh error
     }
   }, [playerAddress, fetchTodayMissions]);
 
-  // NEW FUNCTION: Handle claim reward (placeholder for future implementation)
+  // Handle real claim reward with blockchain transaction
   const handleClaimReward = useCallback(async (mission: MissionDisplayData) => {
-    console.log(`🎯 Claiming reward for mission ${mission.id}:`, mission);
-    
     setClaimingMissionId(mission.id);
-    setClaimError(null);
     
     try {
-      // TODO: Implement actual claim reward transaction
-      // This would call a hook like useMissionRewardClaimer
-      // For now, we'll simulate the process
+      const result = await claimMissionReward(
+        parseInt(mission.id),
+        mission.difficulty  // Use the mission's existing difficulty field
+      );
       
-      console.log("🔄 Processing claim reward transaction...");
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // For now, just mark as claimed locally
-      // In the real implementation, this would be handled by the blockchain transaction
-      setClaimedMission(mission);
-      setShowCelebration(true);
-      setClaimedMissionIds(prev => new Set(prev).add(mission.id));
-      
-      // Refresh missions from blockchain after successful claim
-      await refreshMissionsAfterClaim();
-      
-      console.log("✅ Mission reward claimed successfully");
+      if (result.success) {
+        // Optimistic update
+        setClaimedMission(mission);
+        setShowCelebration(true);
+        
+        // Refresh data from blockchain
+        await Promise.all([
+          refreshMissionsAfterClaim(),
+          refetchPlayer()  // Update player coins
+        ]);
+      }
       
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to claim reward";
-      setClaimError(errorMessage);
-      console.error("❌ Error claiming mission reward:", error);
+      // Error is handled by the hook
     } finally {
       setClaimingMissionId(null);
     }
-  }, [refreshMissionsAfterClaim]);
+  }, [claimMissionReward, refreshMissionsAfterClaim, refetchPlayer]);
 
-  // 🎯 ORQUESTACIÓN PRINCIPAL
+  // Initialize missions
   const initializeMissions = useCallback(async () => {
     if (!playerAddress || isInitialized) return;
 
     try {
-      console.log("📡 Checking for existing missions...");
       const existingMissions = await fetchTodayMissions(playerAddress);
       
       if (existingMissions.length > 0) {
-        console.log(`✅ Found ${existingMissions.length} existing missions`);
         setMissions(existingMissions);
       } else {
-        console.log("🎲 No missions found, creating new ones...");
         const spawnSuccess = await spawnMissions(playerAddress);
         
         if (spawnSuccess) {
@@ -191,23 +185,21 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
       
       setIsInitialized(true);
     } catch (error) {
-      console.error("❌ Error initializing missions:", error);
+      // Silently handle error
     }
   }, [playerAddress, isInitialized, fetchTodayMissions, spawnMissions]);
 
-  // Ejecutar al abrir modal
+  // Load missions when modal opens
   useEffect(() => {
     if (playerAddress) {
       initializeMissions();
     }
   }, [playerAddress, initializeMissions]);
 
-  // Reset cuando cambia de usuario
+  // Reset state when user changes
   useEffect(() => {
     setMissions([]);
     setIsInitialized(false);
-    setClaimedMissionIds(new Set()); // NEW: Reset claimed missions
-    setClaimError(null); // NEW: Reset claim errors
   }, [playerAddress]);
 
   // Early return if no account
@@ -244,12 +236,12 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
     );
   }
 
-  // Convertir misiones - UPDATED to pass claimedMissionIds
+  // Convert missions to display data
   const displayMissions: MissionDisplayData[] = todayMissions.map(mission => {
-    return missionToDisplayData(mission, claimedMissionIds);
+    return missionToDisplayData(mission);
   });
 
-  // NEW FUNCTION: Get mission card styling based on status
+  // Get mission card styling based on status
   const getMissionCardStyling = (mission: MissionDisplayData) => {
     if (mission.completed) {
       if (mission.claimed) {
@@ -283,6 +275,16 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
         return 'bg-red-500 text-white'
       default:
         return 'bg-gray-500 text-white'
+    }
+  };
+
+  // Get fixed reward amount based on difficulty
+  const getFixedReward = (difficulty: MissionDisplayData['difficulty']): number => {
+    switch (difficulty) {
+      case 'Easy': return 100;
+      case 'Mid': return 250;
+      case 'Hard': return 500;
+      default: return 100;
     }
   };
 
@@ -375,6 +377,7 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
                 {displayMissions.map((mission: MissionDisplayData, index: number) => {
                   const styling = getMissionCardStyling(mission);
                   const isClaimingThis = claimingMissionId === mission.id;
+                  const fixedReward = getFixedReward(mission.difficulty);
                   
                   return (
                     <motion.div
@@ -401,7 +404,7 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
                                   : 'text-green-600'
                                 : 'text-yellow-600'
                             }`}>
-                              {mission.reward}
+                              {fixedReward}
                             </span>
                             <img
                               src={coinIcon}
@@ -450,7 +453,7 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
                         </div>
                       </div>
 
-                      {/* NEW SECTION: Action Buttons */}
+                      {/* Action Buttons */}
                       {mission.completed && !mission.claimed && (
                         <div className="flex justify-end">
                           <motion.button
@@ -458,7 +461,7 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
                             whileHover={!isClaimingThis ? { scale: 1.05 } : {}}
                             whileTap={!isClaimingThis ? { scale: 0.95 } : {}}
                             onClick={() => handleClaimReward(mission)}
-                            disabled={isClaimingThis || claimingMissionId !== null}
+                            disabled={isClaimingThis || isClaiming}
                           >
                             {isClaimingThis ? (
                               <>
@@ -470,7 +473,7 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
                                 <span>Claiming...</span>
                               </>
                             ) : (
-                              'Claim Reward'
+                              `Claim ${fixedReward} Coins`
                             )}
                           </motion.button>
                         </div>
@@ -518,7 +521,7 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
         </motion.div>
       </motion.div>
 
-      {/* Animación de celebración */}
+      {/* Celebration animation */}
       <AnimatePresence>
         {showCelebration && claimedMission && (
           <ClaimMissionAnimation
