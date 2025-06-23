@@ -1313,7 +1313,7 @@
   "contracts": [
     {
       "address": "0x36a518498c1d7de4106b8904f0878e1e7b78c73614001fba22eba0adca80387",
-      "class_hash": "0x75e15e84fe204faeaa58f91e626f7e4d0a8ca897763f28e0d96ffc1b0a52c2",
+      "class_hash": "0x71d1daf669d44dd29373944d2172201edcd498d74b472b61e62074ecc2939b4",
       "abi": [
         {
           "type": "impl",
@@ -1745,7 +1745,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x2d620c3d3bc76ab5016d9707bcc9ca995ee446492cb26fc41744600d04ecf0f",
+      "class_hash": "0x310813b32e78c263bae18ccdb161ea6ad27e231607262e6f7d82ba5a7a26a7e",
       "tag": "golem_runner-Mission",
       "selector": "0x53894aba2c90ef9aeb7f37e5690c7f994547a79dcce91e9f2f098baa85587a"
     },
