@@ -53,7 +53,7 @@ const getEnumVariant = (enumObj: any, defaultValue: string): string => {
  */
 const isMissionCompleted = (mission: Mission): boolean => {
   const statusVariant = getEnumVariant(mission.status, 'Pending');
-  return statusVariant === 'Completed';
+  return statusVariant === 'Completed' || statusVariant === 'Claimed';
 };
 
 /**
