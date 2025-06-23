@@ -1,9 +1,16 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import GameCanvas from './GameCanvas';
 import GameOverModal from './GameOverModal'; 
 import { useGameRewards } from '../../../dojo/hooks/useGameRewards'; 
 import { useCoinReward } from './CoinsRewardCalculator';
 import type { GameThemeAssets, GamePhysics, GameDifficultyConfig, MapTheme, ObstacleConfig } from '../../types/game';
+
+import { useMissionCompleter } from '../../../dojo/hooks/useMissionCompleter';
+import { themeToWorldId } from '../../../utils/missionValidation';
+import useAppStore from '../../../zustand/store';
+import { useMissionQuery } from '../../../dojo/hooks/useMissionQuery';
+import { useAccount } from "@starknet-react/core";
+import { addAddressPadding } from "starknet";
 
 import forestBG from '../../../assets/Maps/Forest/ForestMap.webp'; 
 import iceBG from '../../../assets/Maps/Ice/IceMap.webp';
@@ -144,12 +151,12 @@ const THEME_MAP_CONFIGS: Record<MapTheme, {
   },
 };
 
-
 export interface MapComponentProps {
   theme: MapTheme;
   selectedPlayerRunFrames: string[];
   selectedPlayerJumpFrames: string[];
   onExitGame: () => void;
+  selectedGolemId?: number;
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({
@@ -157,12 +164,22 @@ const MapComponent: React.FC<MapComponentProps> = ({
   selectedPlayerRunFrames,
   selectedPlayerJumpFrames,
   onExitGame,
+  selectedGolemId = 1,
 }) => {
   if (!theme || !THEME_MAP_CONFIGS[theme]) {
     return <div className="text-center text-red-500">Invalid theme: {String(theme)}</div>;
   }
 
   const themeConfig = THEME_MAP_CONFIGS[theme];
+
+  // Hooks for mission loading
+  const { account } = useAccount();
+  const { fetchTodayMissions } = useMissionQuery();
+  
+  const playerAddress = useMemo(() => 
+    account ? addAddressPadding(account.address) : null, 
+    [account]
+  );
 
   const [currentScore, setCurrentScore] = useState(0);
   const [highScore, setHighScore] = useState(() =>
@@ -175,7 +192,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     height: window.innerHeight,
   });
   
-  // Get game rewards from hook
+  // Game rewards hook
   const { 
     submitGameResults, 
     isProcessing: isProcessingReward, 
@@ -183,21 +200,58 @@ const MapComponent: React.FC<MapComponentProps> = ({
     txStatus: rewardTxStatus 
   } = useGameRewards();
   
-  //State to track if the reward has been submitted
   const [rewardSubmitted, setRewardSubmitted] = useState(false);
   
-  // Get coin reward based on score from the hook
-  const coinReward = useCoinReward(currentScore);
+  // Mission completion hooks and state
+  const {
+    isCompleting: isMissionCompleting,
+    error: missionError,
+    completedMissions,
+    checkAndCompleteMissions,
+    clearCompletedMissions
+  } = useMissionCompleter();
   
-  // Convert theme to worldId
-  const worldId = useMemo(() => {
-    switch(theme) {
-      case 'forest': return 1;
-      case 'ice': return 2;
-      case 'volcano': return 3;
-      default: return 1;
+  const [missionCompletionSubmitted, setMissionCompletionSubmitted] = useState(false);
+  const [missionsLoaded, setMissionsLoaded] = useState(false);
+  
+  // Store access
+  const { currentGolem, missions: storeMissions, setMissions } = useAppStore();
+
+  const coinReward = useCoinReward(currentScore);
+  const worldId = useMemo(() => themeToWorldId(theme), [theme]);
+  
+  const currentGolemId = useMemo(() => {
+    return currentGolem?.id || selectedGolemId || 1;
+  }, [currentGolem, selectedGolemId]);
+
+  // Load today's missions for mission completion validation
+  const loadTodayMissions = useCallback(async () => {
+    if (!playerAddress || missionsLoaded) return;
+    
+    try {
+      const todayMissions = await fetchTodayMissions(playerAddress);
+      
+      if (todayMissions.length > 0) {
+        setMissions(todayMissions);
+        setMissionsLoaded(true);
+      }
+    } catch (error) {
+      // Silently handle error - missions will be empty
+      // User can still play, just won't complete missions
     }
-  }, [theme]);
+  }, [playerAddress, missionsLoaded, fetchTodayMissions, setMissions]);
+
+  // Load missions when player connects
+  useEffect(() => {
+    if (playerAddress) {
+      loadTodayMissions();
+    }
+  }, [playerAddress, loadTodayMissions]);
+
+  // Reset mission state when player changes
+  useEffect(() => {
+    setMissionsLoaded(false);
+  }, [playerAddress]);
 
   useEffect(() => {
     const updateDimensions = () =>
@@ -219,21 +273,53 @@ const MapComponent: React.FC<MapComponentProps> = ({
     setHighScore(parseInt(localStorage.getItem(`golemRunner_${theme}_highscore`) || '0', 10));
   }, [theme]);
   
-  // Send rewards when modal is shown
+  // Handle mission completion after successful game rewards
+  const handleMissionCompletion = useCallback(async (
+    coinsCollected: number,
+    worldId: number, 
+    golemId: number
+  ) => {
+    if (missionCompletionSubmitted) return;
+
+    // If no missions in store, try to load them
+    if (storeMissions.length === 0) {
+      try {
+        await loadTodayMissions();
+        // Wait for store to update
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        return;
+      }
+    }
+    
+    try {
+      const gameData = {
+        coinsCollected,
+        worldId,
+        golemId
+      };
+      
+      await checkAndCompleteMissions(gameData);
+      setMissionCompletionSubmitted(true);
+      
+    } catch (error) {
+      // Silently handle mission completion errors
+      // Game rewards are already processed successfully
+    }
+  }, [missionCompletionSubmitted, checkAndCompleteMissions, storeMissions.length, loadTodayMissions]);
+  
+  // Process game rewards and trigger mission completion
   useEffect(() => {
     if (showGameOverModal && !rewardSubmitted && currentScore > 0) {
-      console.log(`Submitting game results: score=${currentScore}, coins=${coinReward.coins}, worldId=${worldId}`);
       submitGameResults(currentScore, coinReward.coins, worldId)
         .then(result => {
           if (result.success) {
-            console.log("Game rewards processed successfully");
             setRewardSubmitted(true);
-          } else {
-            console.error("Failed to process game rewards:", result.error);
+            handleMissionCompletion(coinReward.coins, worldId, currentGolemId);
           }
         });
     }
-  }, [showGameOverModal, rewardSubmitted, currentScore, coinReward.coins, worldId, submitGameResults]);
+  }, [showGameOverModal, rewardSubmitted, currentScore, coinReward.coins, worldId, submitGameResults, currentGolemId, handleMissionCompletion]);
 
   const finalAssetsForGameCanvas: GameThemeAssets = useMemo(() => {
     const runFrames = selectedPlayerRunFrames.length > 0 ? selectedPlayerRunFrames : [];
@@ -261,16 +347,24 @@ const MapComponent: React.FC<MapComponentProps> = ({
       localStorage.setItem(`golemRunner_${theme}_highscore`, finalScore.toString());
     }
     setShowGameOverModal(true);
-    setRewardSubmitted(false); // Reset game state
+    setRewardSubmitted(false);
+    setMissionCompletionSubmitted(false);
   };
 
-  const handleRestartGame = () => {
+  const handleCloseModal = useCallback(() => {
     setShowGameOverModal(false);
+    setRewardSubmitted(false);
+    setMissionCompletionSubmitted(false);
+    clearCompletedMissions();
+  }, [clearCompletedMissions]);
+
+  const handleRestartGame = () => {
+    handleCloseModal();
     setGameKey(Date.now());
   };
 
   const handleExitAndCloseModal = () => {
-    setShowGameOverModal(false);
+    handleCloseModal();
     onExitGame();
   };
 
@@ -297,6 +391,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
           isProcessingReward={isProcessingReward}
           rewardError={rewardError}
           rewardTxStatus={rewardTxStatus}
+          isMissionCompleting={isMissionCompleting}
+          missionError={missionError}
+          completedMissions={completedMissions}
+          worldId={worldId}
+          golemId={currentGolemId}
         />
       )}
     </div>
