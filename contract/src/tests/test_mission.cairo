@@ -353,9 +353,9 @@ mod tests {
         let mission2: Mission = world.read_model((mission_id2, PLAYER()));
         let mission3: Mission = world.read_model((mission_id3, PLAYER()));
 
-        assert(mission1.status == MissionStatus::Completed, 'Mission 1 is completed');
+        assert(mission1.status == MissionStatus::Claimed, 'Mission 1 is claimed');
         assert(mission2.status == MissionStatus::Pending, 'Mission 2 is pending');
-        assert(mission3.status == MissionStatus::Completed, 'Mission 3 is completed');
+        assert(mission3.status == MissionStatus::Claimed, 'Mission 3 is completed');
 
         // Verify player received coins from completed missions only
         let player_final: Player = world.read_model(PLAYER());

@@ -327,7 +327,7 @@ pub impl StoreImpl of StoreTrait {
     }
 
     fn reward_mission(mut self: Store, mission_id: u256, coins_collected: u64) -> bool {
-        let mission = self.read_mission(mission_id);
+        let mut mission = self.read_mission(mission_id);
 
         // Verify mission
         if mission.is_zero() {
@@ -343,8 +343,13 @@ pub impl StoreImpl of StoreTrait {
         let mut player = self.read_player();
         player.add_coins(coins_collected);
 
+        // Update mission status
+        mission.status = MissionStatus::Claimed;
+
         // Save the updated player
         self.world.write_model(@player);
+        // Save the updated mission
+        self.world.write_model(@mission);
 
         return true; // Mission rewarded successfully
     }

@@ -1,7 +1,8 @@
 #[derive(Copy, Drop, Serde, Debug, Introspect, PartialEq)]
 pub enum MissionStatus {
     Pending,
-    Completed
+    Completed,
+    Claimed
 }
 
 pub impl IntoMissionStatusFelt252 of Into<MissionStatus, felt252> {
@@ -10,6 +11,7 @@ pub impl IntoMissionStatusFelt252 of Into<MissionStatus, felt252> {
         match self {
             MissionStatus::Pending => 0,
             MissionStatus::Completed => 1,
+            MissionStatus::Claimed => 2,
         }
     }
 }
@@ -20,6 +22,7 @@ pub impl IntoMissionStatusU8 of Into<MissionStatus, u8> {
         match self {
             MissionStatus::Pending => 0,
             MissionStatus::Completed => 1,
+            MissionStatus::Claimed => 2,
         }
     }
 }
@@ -31,6 +34,7 @@ pub impl Intou8MissionStatus of Into<u8, MissionStatus> {
         match mission {
             0 => MissionStatus::Pending,
             1 => MissionStatus::Completed,
+            2 => MissionStatus::Claimed,
             _ => MissionStatus::Pending,
         }
     }
@@ -41,6 +45,7 @@ pub impl MissionStatusDisplay of core::fmt::Display<MissionStatus> {
         let s = match self {
             MissionStatus::Pending => "Pending",
             MissionStatus::Completed => "Completed",
+            MissionStatus::Claimed => "Claimed",
         };
         f.buffer.append(@s);
         Result::Ok(())
