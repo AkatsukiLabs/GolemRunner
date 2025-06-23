@@ -57,9 +57,17 @@ const isMissionCompleted = (mission: Mission): boolean => {
 };
 
 /**
+ * Determines if a mission has been claimed based on its status
+ */
+const isMissionClaimed = (mission: Mission): boolean => {
+  const statusVariant = getEnumVariant(mission.status, 'Pending');
+  return statusVariant === 'Claimed';
+};
+
+/**
  * Converts Mission bindings to display data for UI
  */
-const missionToDisplayData = (mission: Mission, claimedMissionIds: Set<string>): MissionDisplayData => {
+const missionToDisplayData = (mission: Mission): MissionDisplayData =>  {
   let difficulty: 'Easy' | 'Mid' | 'Hard' = 'Easy';
   if (mission.target_coins >= 1000) difficulty = 'Hard';
   else if (mission.target_coins >= 500) difficulty = 'Mid';
@@ -67,7 +75,7 @@ const missionToDisplayData = (mission: Mission, claimedMissionIds: Set<string>):
   const worldVariant = getEnumVariant(mission.required_world, 'Forest');
   const golemVariant = getEnumVariant(mission.required_golem, 'Fire');
   const completed = isMissionCompleted(mission);
-  const claimed = claimedMissionIds.has(mission.id.toString());
+  const claimed = isMissionClaimed(mission);
   
   const requiredWorld = worldVariant.charAt(0).toUpperCase() + worldVariant.slice(1);
   const requiredGolem = golemVariant.charAt(0).toUpperCase() + golemVariant.slice(1);
@@ -107,7 +115,6 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [claimedMission, setClaimedMission] = useState<MissionDisplayData | null>(null);
-  const [claimedMissionIds, setClaimedMissionIds] = useState<Set<string>>(new Set());
   const [claimingMissionId, setClaimingMissionId] = useState<string | null>(null);
   
   // Procesar data
@@ -143,7 +150,6 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
         // Optimistic update
         setClaimedMission(mission);
         setShowCelebration(true);
-        setClaimedMissionIds(prev => new Set(prev).add(mission.id));
         
         // Refresh data from blockchain
         await Promise.all([
@@ -194,7 +200,6 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
   useEffect(() => {
     setMissions([]);
     setIsInitialized(false);
-    setClaimedMissionIds(new Set());
   }, [playerAddress]);
 
   // Early return if no account
@@ -233,7 +238,7 @@ export function DailyMissionsModal({ onClose }: DailyMissionsModalProps) {
 
   // Convert missions to display data
   const displayMissions: MissionDisplayData[] = todayMissions.map(mission => {
-    return missionToDisplayData(mission, claimedMissionIds);
+    return missionToDisplayData(mission);
   });
 
   // Get mission card styling based on status

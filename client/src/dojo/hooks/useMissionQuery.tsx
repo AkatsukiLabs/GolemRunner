@@ -70,7 +70,7 @@ const createCairoEnum = (rawValue: any, enumMap: Record<string, string>, default
 const toriiNodeToMission = (rawNode: RawMissionNode): Mission => {
   const worldEnumMap = { Volcano: "Volcano", Glacier: "Glacier", Forest: "Forest" };
   const golemEnumMap = { Ice: "Ice", Stone: "Stone", Fire: "Fire" };
-  const statusEnumMap = { Completed: "Completed", Pending: "Pending" };
+  const statusEnumMap = { Completed: "Completed", Pending: "Pending", Claimed: "Claimed" };
   
   const required_world = createCairoEnum(rawNode.required_world, worldEnumMap, "Forest");
   const required_golem = createCairoEnum(rawNode.required_golem, golemEnumMap, "Fire");
@@ -98,9 +98,11 @@ const toriiNodeToMission = (rawNode: RawMissionNode): Mission => {
       if (statusObj.variant) {
         if (statusObj.variant.Pending !== undefined) statusKey = "Pending";
         else if (statusObj.variant.Completed !== undefined) statusKey = "Completed";
+        else if (statusObj.variant.Claimed !== undefined) statusKey = "Claimed";
       }
       else if (statusObj.Pending !== undefined) statusKey = "Pending";
       else if (statusObj.Completed !== undefined) statusKey = "Completed";
+      else if (statusObj.Claimed !== undefined) statusKey = "Claimed";
     }
     
     mission.status = new CairoCustomEnum({ [statusKey]: statusKey });

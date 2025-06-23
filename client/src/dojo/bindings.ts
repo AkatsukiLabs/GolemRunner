@@ -165,6 +165,7 @@ export type GolemTypeEnum = CairoCustomEnum;
 export type MissionStatus = {
 	Pending: string;
 	Completed: string;
+	Claimed: string;
 }
 export type MissionStatusEnum = CairoCustomEnum;
 
@@ -258,7 +259,8 @@ export const schema: SchemaType = {
 		description: "",
 		status: new CairoCustomEnum({ 
 				Pending: "Pending",
-				Completed: "Completed", }),
+				Completed: "Completed", 
+				Claimed: "Claimed",}),
 			created_at: 0,
 		},
 		MissionValue: {
@@ -274,7 +276,8 @@ export const schema: SchemaType = {
 		description: "",
 		status: new CairoCustomEnum({ 
 				Pending: "Pending",
-				Completed: "Completed", }),
+				Completed: "Completed", 
+				Claimed: "Claimed",}),
 			created_at: 0,
 		},
 		Player: {
